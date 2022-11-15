@@ -1,14 +1,18 @@
 {
-  "name": "cuiping",
-  "version": "1.0.0",
-  "description": "rendering chemistry strutures to SVG",
-  "main": "index.js",
-  "author": "ForkΨKILLET <fork_killet@qq.com>",
-  "license": "MIT",
-  "dependencies": {
-    "@types/node": "^18.11.9"
-  },
-  "devDependencies": {
-    "typescript": "^4.8.4"
-  }
+	"name": "cuiping",
+	"version": "1.0.0",
+	"description": "rendering chemistry strutures to SVG",
+	"main": "index.js",
+	"scripts": {
+		"build": "tsc",
+		"test": "ts-node ./test/loop.ts"
+	},
+	"author": "ForkΨKILLET <fork_killet@qq.com>",
+	"license": "MIT",
+	"dependencies": {
+		"@types/node": "^18.11.9"
+	},
+	"devDependencies": {
+		"typescript": "^4.8.4"
+	}
 }
