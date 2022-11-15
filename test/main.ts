@@ -1,13 +1,15 @@
-#!/bin/env ts-node
+import chalk from 'chalk'
+import { ChemParser } from '../src/parse.js'
 
-import { ChemParser } from '../src/parse'
+export function testChem(input: string) {
+	const parser = new ChemParser(input)
 
-const parser = new ChemParser(process.argv[2])
-
-try {
-	console.dir(parser.parse(), { depth: 5 })
-}
-catch (err) {
-	console.error('\x1b[31m' + (err as Error).stack + '\x1b[0m\n')
-	process.exit(1)
+	try {
+		console.dir(parser.parse(), { depth: Infinity })
+	}
+	catch (err) {
+		console.error(chalk.red(
+			process.env.DEBUG ? (err as Error).stack : err
+		))
+	}
 }
