@@ -97,6 +97,10 @@ export class ChemParser extends Parser<Chem> {
 		while (BindDirCharset.includes(this.current)) {
 			let d = BindDirTable[this.current as keyof typeof BindDirTable]
 			if (! opt.isPrefix) d = (d + 180) % 360
+			if (dirs.includes(d)) {
+				d = (d + 180) % 360
+				if (dirs.includes(d)) throw new Error(`Duplicated bind direction (${d} deg)`)
+			}
 			dirs.push(d)
 			this.index ++
 		}
@@ -105,8 +109,6 @@ export class ChemParser extends Parser<Chem> {
 	}
 
 	doParseBind(opt: { requirePrefix: boolean } = { requirePrefix: false }): Bind {
-		console.log('parse bind')
-		console.log(this.after)
 
 		if (! BindCharset.includes(this.current)) {
 			if (opt.requirePrefix) throw this.expect('prefix-styled bind')
