@@ -1,15 +1,20 @@
 import chalk from 'chalk'
+import { Debug } from '../src/util.js'
 import { ChemParser } from '../src/parse.js'
+import { expandAggregateBinds } from '../src/expand.js'
 
 export function testChem(input: string) {
 	const parser = new ChemParser(input)
 
 	try {
-		console.dir(parser.parse(), { depth: Infinity })
+		const chem = parser.parse()
+		console.dir(chem, { depth: Infinity })
+		const chemEx = expandAggregateBinds(chem, 0)
+		console.dir(chemEx, { depth: Infinity })
 	}
 	catch (err) {
-		console.error(chalk.red(
-			process.env.DEBUG ? (err as Error).stack : err
-		))
+		Debug.error(
+			Debug.on ? (err as Error).stack : err
+		)
 	}
 }

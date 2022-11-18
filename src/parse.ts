@@ -1,3 +1,5 @@
+import { MathEx } from "./util.js"
+
 export type Group = string
 export type BindCount = 1 | 2 | 3 
 export type BindDir = number
@@ -9,18 +11,7 @@ export type Bind = {
 
 export type Chem = {
 	g: Group,
-	binds: Bind[] | void
-}
-
-export const Dir = {
-	right: 0,
-	up: 90,
-	left: 180,
-	down: 270,
-	h_rightup: 60,
-	h_leftup: 120,
-	h_leftdown: 240,
-	h_rightdown: 300
+	binds: Bind[]
 }
 
 export abstract class Parser<T> {
@@ -117,8 +108,7 @@ export class ChemParser extends Parser<Chem> {
 		}
 		while (BindDirCharset.includes(this.current)) {
 			let d = BindDirTable[this.current as keyof typeof BindDirTable]
-			if (! isPrefix) d = (d + 180) % 360
-			if (dirs.includes(d)) d = (d + 180) % 360
+			if (! isPrefix || dirs.includes(d)) d = MathEx.stdAng(d + 180)
 			if (this.checkDupBindDir(parsedBinds, dirs, dirFrom, d))
 				throw Error(`Duplicated bind direction (${d} deg)`)
 			dirs.push(d)
