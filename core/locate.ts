@@ -1,5 +1,6 @@
 import type { Group, BondCount } from './parse.js'
 import type { ExpandedChem } from './expand.js'
+import { MathEx } from '../utils/math.js'
 
 export type LayoutBond = {
 	c: BondCount,
@@ -16,24 +17,39 @@ export type LayoutGroup = {
 }
 
 export type Layout = {
-	groups: Group,
+	groups: LayoutGroup[],
 	bonds: LayoutBond[],
 	offsetX: number,
 	offsetY: number
 }
 
-/*
 export function locate(chem: ExpandedChem): Layout {
 	const groups: LayoutGroup[] = []
 	const bonds: LayoutBond[] = []
-
-	groups.push({ g: chem.g, x: 0, y: 0 })
+	let xMin = 0, yMin = 0
 
 	const dfs = (c: ExpandedChem, x1: number, y1: number) => {
+		if (x1 < xMin) xMin = x1
+		if (y1 < yMin) yMin = y1
+
+		groups.push({ g: c.g, x: x1, y: y1 })
+
 		c.bonds.forEach(b => {
-			const x2 = x1 + Math.cos(b.d)
-			const y2 = y1 + Math.sin(b.d)
+			const x2 = x1 + MathEx.cosd(b.d)
+			const y2 = y1 + MathEx.sind(b.d)
+
+			bonds.push({ x1, y1, x2, y2, c: b.c })
+
+			dfs(b.n, x2, y2)
 		})
 	}
+
+	dfs(chem, 0, 0)
+
+	return {
+		groups,
+		bonds,
+		offsetX: - xMin,
+		offsetY: - yMin
+	}
 }
-*/

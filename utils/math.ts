@@ -13,13 +13,18 @@ export const MathEx = {
 	r2d: (rad: number) => (
 		rad / Math.PI * 180
 	),
+	round: (x: number, n: number) => {
+		if (! Number.isInteger(n) || n < 0) throw RangeError('n must be a postive integer')
+		const p = 10 ** n
+		return Math.round(x * p) / p
+	},
 	sind: (deg: number) => (
-		Math.sin(MathEx.d2r(deg))
+		MathEx.round(Math.sin(MathEx.d2r(deg)), 15)
 	),
 	cosd: (deg: number) => (
-		Math.cos(MathEx.d2r(deg))
+		MathEx.round(Math.cos(MathEx.d2r(deg)), 15)
 	),
 	tand: (deg: number) => (
-		Math.tan(MathEx.d2r(deg))
+		MathEx.round(Math.tan(MathEx.d2r(deg)), 15)
 	)
 }

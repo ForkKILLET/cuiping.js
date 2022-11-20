@@ -11,7 +11,7 @@ const rl = createInterface({
 	prompt: 'gcp> '
 })
 
-Debug.red = chalk.red
+Debug.errStyle = chalk.red
 Debug.on = !! process.env.DEBUG
 
 rl.prompt()

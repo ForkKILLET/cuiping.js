@@ -71,7 +71,7 @@ export const BondDirTable = {
 
 export class ChemParser extends Parser<Chem> {
 	doParseGroup(): Group {
-		let g = ""
+		let g = ''
 		while (GroupCharset.includes(this.current)) {
 			g += this.current
 			this.index ++

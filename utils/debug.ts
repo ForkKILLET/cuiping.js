@@ -2,16 +2,20 @@ type LogType = (...p: Parameters<typeof console.log>) => void
 
 export const Debug: {
 	on: boolean,
-	red: ((s: string) => string),
-	log: LogType,
-	error: LogType
+	errStyle: ((s: string) => string),
+	D: LogType,
+	E: LogType,
+	O: (object: any) => void
 } = {
 	on: false,
-	red: s => s,
-	log: (...p) => {
+	errStyle: s => s,
+	D: (...p) => {
 		if (Debug.on) console.log(...p)
 	},
-	error: (s, ...p) => {
-		console.error(Debug.red(s), ...p)
+	E: (s, ...p) => {
+		console.error(Debug.errStyle(s), ...p)
+	},
+	O: (obj) => {
+		console.dir(obj, { depth: Infinity })
 	}
 }

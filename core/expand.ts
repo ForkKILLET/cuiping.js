@@ -1,10 +1,10 @@
-import type { Chem, Group } from './parse.js'
+import type { BondCount, BondDir, Chem, Group } from './parse.js'
 import { MathEx } from '../utils/math.js'
 import { Debug } from '../utils/debug.js'
 
 export type ExpandedBond = {
-	c: number,
-	d: number,
+	c: BondCount,
+	d: BondDir,
 	n: ExpandedChem
 }
 
@@ -41,7 +41,7 @@ export function expandAggregateBonds(
 			if (flipY) d = 360 - d
 			d = MathEx.stdAng(d)
 
-			Debug.log(
+			Debug.D(
 				'>'.repeat(depth + 1) + ' '.repeat(8 - depth) +
 				'rd %d,\tfx %o,\tfy %o\t-> %d',
 				rotateD, flipX, flipY, d
