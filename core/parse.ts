@@ -1,4 +1,4 @@
-import { MathEx } from "./util.js"
+import { MathEx } from '../utils/math.js'
 
 export type Group = string
 export type BondCount = 1 | 2 | 3 

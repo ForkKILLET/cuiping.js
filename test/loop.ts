@@ -1,8 +1,8 @@
 #!/bin/env ts-node
 
-import chalk from 'chalk'
 import { createInterface } from 'node:readline'
-import { Debug } from '../src/util.js'
+import chalk from 'chalk'
+import { Debug } from '../utils/debug.js'
 import { testChem } from './main.js'
 
 const rl = createInterface({

@@ -1,13 +1,14 @@
 import type { Chem, Group } from './parse.js'
-import { MathEx, Debug } from './util.js'
+import { MathEx } from '../utils/math.js'
+import { Debug } from '../utils/debug.js'
 
-type ExpandedBond = {
+export type ExpandedBond = {
 	c: number,
 	d: number,
 	n: ExpandedChem
 }
 
-type ExpandedChem = {
+export type ExpandedChem = {
 	g: Group,
 	bonds: ExpandedBond[]
 }

@@ -1,7 +1,7 @@
 import chalk from 'chalk'
-import { Debug } from '../src/util.js'
-import { ChemParser } from '../src/parse.js'
-import { expandAggregateBinds } from '../src/expand.js'
+import { Debug } from '../utils/debug.js'
+import { ChemParser } from '../core/parse.js'
+import { expandAggregateBonds } from '../core/expand.js'
 
 export function testChem(input: string) {
 	const parser = new ChemParser(input)
@@ -9,7 +9,7 @@ export function testChem(input: string) {
 	try {
 		const chem = parser.parse()
 		console.dir(chem, { depth: Infinity })
-		const chemEx = expandAggregateBinds(chem, 0)
+		const chemEx = expandAggregateBonds(chem, 0)
 		console.dir(chemEx, { depth: Infinity })
 	}
 	catch (err) {
