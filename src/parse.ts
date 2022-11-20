@@ -1,17 +1,17 @@
 import { MathEx } from "./util.js"
 
 export type Group = string
-export type BindCount = 1 | 2 | 3 
-export type BindDir = number
-export type Bind = {
-	c: BindCount,
-	d: BindDir[],
+export type BondCount = 1 | 2 | 3 
+export type BondDir = number
+export type Bond = {
+	c: BondCount,
+	d: BondDir[],
 	n: Chem
 }
 
 export type Chem = {
 	g: Group,
-	binds: Bind[]
+	bonds: Bond[]
 }
 
 export abstract class Parser<T> {
@@ -53,16 +53,16 @@ export const GroupCharset
 	+ 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'
 	+ '0123456789'
 	+ '()'
-export const BindCountCharset = '=#'
-export const BindDirCharset = '-|/\\'
-export const BindCharset = BindCountCharset + BindDirCharset
-export const BindsCharset = BindCharset + '[]'
+export const BondCountCharset = '=#'
+export const BondDirCharset = '-|/\\'
+export const BondCharset = BondCountCharset + BondDirCharset
+export const BondsCharset = BondCharset + '[]'
 
-export const BindCountTable: Record<string, BindCount> = {
+export const BondCountTable: Record<string, BondCount> = {
 	'=': 2,
 	'#': 3
 }
-export const BindDirTable = {
+export const BondDirTable = {
 	'-': 0,
 	'/': 60,
 	'|': 90,
@@ -80,85 +80,85 @@ export class ChemParser extends Parser<Chem> {
 		return g
 	}
 
-	private checkDupBindDir(
-		parsedBinds: Bind[],
-		currentDirs: BindDir[],
-		dirFrom: BindDir | null,
-		dir: BindDir
+	private checkDupBondDir(
+		parsedBonds: Bond[],
+		currentDirs: BondDir[],
+		dirFrom: BondDir | null,
+		dir: BondDir
 	) {
 		return currentDirs.includes(dir)
-			|| parsedBinds.some(({ d: dirs }) => dirs.includes(dir))
+			|| parsedBonds.some(({ d: dirs }) => dirs.includes(dir))
 			|| dir === dirFrom
 	}
 
-	doParseBindType({
+	doParseBondType({
 		isPrefix = false,
-		parsedBinds = [],
+		parsedBonds = [],
 		dirFrom = null
 	}: {
 		isPrefix?: boolean,
-		parsedBinds?: Bind[],
-		dirFrom?: BindDir | null
-	} = {}): [ BindCount, BindDir[] ] {
-		let c: BindCount = 1
-		let dirs: BindDir[] = []
-		if (BindCountCharset.includes(this.current)) {
-			c = BindCountTable[this.current as keyof typeof BindCountTable]
+		parsedBonds?: Bond[],
+		dirFrom?: BondDir | null
+	} = {}): [ BondCount, BondDir[] ] {
+		let c: BondCount = 1
+		let dirs: BondDir[] = []
+		if (BondCountCharset.includes(this.current)) {
+			c = BondCountTable[this.current as keyof typeof BondCountTable]
 			this.index ++
 		}
-		while (BindDirCharset.includes(this.current)) {
-			let d = BindDirTable[this.current as keyof typeof BindDirTable]
+		while (BondDirCharset.includes(this.current)) {
+			let d = BondDirTable[this.current as keyof typeof BondDirTable]
 			if (! isPrefix || dirs.includes(d)) d = MathEx.stdAng(d + 180)
-			if (this.checkDupBindDir(parsedBinds, dirs, dirFrom, d))
-				throw Error(`Duplicated bind direction (${d} deg)`)
+			if (this.checkDupBondDir(parsedBonds, dirs, dirFrom, d))
+				throw Error(`Duplicated bond direction (${d} deg)`)
 			dirs.push(d)
 			this.index ++
 		}
-		if (! dirs.length) throw this.expect('at least one bind direction')
+		if (! dirs.length) throw this.expect('at least one bond direction')
 		return [ c, dirs ]
 	}
 
-	doParseBind({
+	doParseBond({
 		requirePrefix = false,
-		parsedBinds = [],
+		parsedBonds = [],
 		dirFrom = null
 	}: {
 		requirePrefix?: false,
-		parsedBinds?: Bind[],
-		dirFrom?: BindDir | null
-	} = {}): Bind {
-		if (! BindCharset.includes(this.current)) {
-			if (requirePrefix) throw this.expect('prefix-styled bind')
+		parsedBonds?: Bond[],
+		dirFrom?: BondDir | null
+	} = {}): Bond {
+		if (! BondCharset.includes(this.current)) {
+			if (requirePrefix) throw this.expect('prefix-styled bond')
 			if (GroupCharset.includes(this.current)) {
 				const n = this.doParse({})
-				const [ c, d ] = this.doParseBindType({ isPrefix: false, parsedBinds, dirFrom })
+				const [ c, d ] = this.doParseBondType({ isPrefix: false, parsedBonds, dirFrom })
 				return { c, d, n }
 			}
-			else throw this.expect('bind')
+			else throw this.expect('bond')
 		}
 		else {
-			const [ c, d ] = this.doParseBindType({ isPrefix: true, parsedBinds, dirFrom })
+			const [ c, d ] = this.doParseBondType({ isPrefix: true, parsedBonds, dirFrom })
 			const n = this.doParse()
 			return { c, d, n }
 		}
 	}
 
-	doParseBinds({
+	doParseBonds({
 		dirFrom = null
 	}: {
-		dirFrom?: BindDir | null
-	}): Bind[] {
-		const binds: Bind[] = []
+		dirFrom?: BondDir | null
+	}): Bond[] {
+		const bonds: Bond[] = []
 
-		while (BindsCharset.includes(this.current)) {
+		while (BondsCharset.includes(this.current)) {
 			if (this.current === '[') {
 				this.index ++
-				bindsInBracket: while (true) {
-					binds.push(this.doParseBind({ parsedBinds: binds, dirFrom }))
+				bondsInBracket: while (true) {
+					bonds.push(this.doParseBond({ parsedBonds: bonds, dirFrom }))
 					switch (this.current as string) {
 						case ']':
 							this.index ++
-							break bindsInBracket
+							break bondsInBracket
 						case ',':
 							this.index ++
 							continue
@@ -167,18 +167,18 @@ export class ChemParser extends Parser<Chem> {
 			}
 			else break
 		}
-		return binds
+		return bonds
 	}
 
 	doParse({
 		dirFrom = null
 	}: {
-		dirFrom?: BindDir | null
+		dirFrom?: BondDir | null
 	} = {}): Chem {
 		const g = this.doParseGroup()
-		const binds = this.doParseBinds({ dirFrom })
+		const bonds = this.doParseBonds({ dirFrom })
 		return {
-			g, binds
+			g, bonds
 		}
 	}
 }

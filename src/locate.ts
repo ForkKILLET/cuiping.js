@@ -1,7 +1,7 @@
-import type { Chem, Group, BindCount } from './parse.js'
+import type { Chem, Group, BondCount } from './parse.js'
 
-export type LayoutBind = {
-	c: BindCount,
+export type LayoutBond = {
+	c: BondCount,
 	x1: number,
 	y1: number,
 	x2: number,
@@ -16,7 +16,7 @@ export type LayoutGroup = {
 
 export type Layout = {
 	groups: Group,
-	binds: LayoutBind[],
+	bonds: LayoutBond[],
 	offsetX: number,
 	offsetY: number
 }
@@ -24,12 +24,12 @@ export type Layout = {
 /*
 export function locate(chem: Chem): Layout {
 	const groups: LayoutGroup[] = []
-	const binds: LayoutBind[] = []
+	const bonds: LayoutBond[] = []
 
 	groups.push({ g: chem.g, x: 0, y: 0 })
 
 	const dfs = (c: Chem, x1: number, y1: number) => {
-		c.binds.forEach(b => {
+		c.bonds.forEach(b => {
 			const x2 = x1 + Math.cos(b.d)
 		})
 	}

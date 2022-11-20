@@ -1,7 +1,7 @@
 import type { Chem, Group } from './parse.js'
 import { MathEx, Debug } from './util.js'
 
-type ExpandedBind = {
+type ExpandedBond = {
 	c: number,
 	d: number,
 	n: ExpandedChem
@@ -9,16 +9,16 @@ type ExpandedBind = {
 
 type ExpandedChem = {
 	g: Group,
-	binds: ExpandedBind[]
+	bonds: ExpandedBond[]
 }
 
-export function expandAggregateBinds(
+export function expandAggregateBonds(
 	chem: Chem,
 	rotateD: number = 0, flipX: boolean = false, flipY: boolean = false,
 	depth: number = 0
 ): ExpandedChem {
-	const binds: ExpandedBind[] = []
-	chem.binds.forEach(b => {
+	const bonds: ExpandedBond[] = []
+	chem.bonds.forEach(b => {
 		const [ d0 ] = b.d
 
 		b.d.forEach(d => {
@@ -46,15 +46,15 @@ export function expandAggregateBinds(
 				rotateD, flipX, flipY, d
 			)
 
-			binds.push({
+			bonds.push({
 				c: b.c,
 				d,
-				n: expandAggregateBinds(b.n, rD, fX, fY, depth + 1)
+				n: expandAggregateBonds(b.n, rD, fX, fY, depth + 1)
 			})
 		})
 	})
 	return {
 		g: chem.g,
-		binds
+		bonds
 	}
 }
