@@ -2,6 +2,7 @@ import { Debug } from '../utils/debug.js'
 import { ChemParser } from '../core/parse.js'
 import { expandAggregateBonds } from '../core/expand.js'
 import { locate } from '../core/locate.js'
+import { renderSVG } from '../core/render.js'
 
 export function testChem(input: string) {
 	const parser = new ChemParser(input)
@@ -15,6 +16,9 @@ export function testChem(input: string) {
 
 		const layout = locate(chemEx)
 		Debug.O(layout)
+
+		const svg = renderSVG(layout)
+		Debug.O(svg)
 	}
 	catch (err) {
 		Debug.E(
