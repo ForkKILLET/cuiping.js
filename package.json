@@ -1,22 +1,13 @@
 {
-	"name": "cuiping",
-	"version": "1.0.0",
-	"description": "rendering chemistry strutures to SVG",
-	"type": "module",
-	"scripts": {
-		"build": "tsc",
-		"dev": "node --experimental-specifier-resolution=node --loader ts-node/esm test/loop.ts",
-		"build:run": "tsc && node dist/test/loop.js"
-	},
-	"author": "ForkΨKILLET <fork_killet@qq.com>",
-	"license": "MIT",
-	"dependencies": {
-		"@types/node": "^18.11.9",
-		"chalk": "^5.1.2"
-	},
-	"devDependencies": {
-		"eslint": "^8.28.0",
-		"ts-node": "^10.9.1",
-		"typescript": "^4.8.4"
-	}
+  "name": "cuiping-workspace",
+  "version": "1.0.0",
+  "main": "index.js",
+  "repository": "git@github.com:ForkKILLET/cuiping.js.git",
+  "author": "ForkΨKILLET <fork_killet@qq.com>",
+  "license": "MIT",
+  "private": true,
+  "workspaces": [
+	"backend",
+	"frontend"
+  ]
 }

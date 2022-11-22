@@ -39,13 +39,21 @@ export abstract class Parser<T> {
 		return this.str
 	}
 
-	parse(): T {
+	parse(onError?: (err: Error) => boolean): T | void {
 		if (this.used) throw Error('Parser is already used.')
 		this.used = true
-		return this.doParse()
+		try {
+			return this.doParse()
+		}
+		catch (err) {
+			if (onError) {
+				if (! onError(err as Error)) throw err
+			}
+			else throw err
+		}
 	}
 
-	abstract doParse(options?: any): T
+	protected abstract doParse(options?: any): T
 }
 
 export const GroupCharset
@@ -70,7 +78,7 @@ export const BondDirTable = {
 }
 
 export class ChemParser extends Parser<Chem> {
-	doParseGroup(): Group {
+	private doParseGroup(): Group {
 		let g = ''
 		while (GroupCharset.includes(this.current)) {
 			g += this.current
@@ -91,7 +99,7 @@ export class ChemParser extends Parser<Chem> {
 			|| dir === dirFrom
 	}
 
-	doParseBondType({
+	private doParseBondType({
 		isPrefix = false,
 		parsedBonds = [],
 		dirFrom = null
@@ -118,7 +126,7 @@ export class ChemParser extends Parser<Chem> {
 		return [ c, dirs ]
 	}
 
-	doParseBond({
+	private doParseBond({
 		requirePrefix = false,
 		parsedBonds = [],
 		dirFrom = null
@@ -143,7 +151,7 @@ export class ChemParser extends Parser<Chem> {
 		}
 	}
 
-	doParseBonds({
+	private doParseBonds({
 		dirFrom = null
 	}: {
 		dirFrom?: BondDir | null
@@ -170,7 +178,7 @@ export class ChemParser extends Parser<Chem> {
 		return bonds
 	}
 
-	doParse({
+	protected doParse({
 		dirFrom = null
 	}: {
 		dirFrom?: BondDir | null
