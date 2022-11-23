@@ -72,9 +72,10 @@ export const BondCountTable: Record<string, BondCount> = {
 }
 export const BondDirTable = {
 	'-': 0,
-	'/': 60,
-	'|': 90,
-	'\\': 300
+	// Note: The y-axis of SVG is top-to-bottom.
+	'/': 300,
+	'|': 270,
+	'\\': 60
 }
 
 export class ChemParser extends Parser<Chem> {
@@ -116,7 +117,8 @@ export class ChemParser extends Parser<Chem> {
 		}
 		while (BondDirCharset.includes(this.current)) {
 			let d = BondDirTable[this.current as keyof typeof BondDirTable]
-			if (! isPrefix || dirs.includes(d)) d = MathEx.stdAng(d + 180)
+			if (! isPrefix || dirs.includes(d))
+				d = MathEx.stdAng(d + 180)
 			if (this.checkDupBondDir(parsedBonds, dirs, dirFrom, d))
 				throw Error(`Duplicated bond direction (${d} deg)`)
 			dirs.push(d)
