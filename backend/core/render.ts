@@ -2,25 +2,29 @@ import { Layout } from './locate.js'
 
 export type svgRendererOption = {
 	unitLen?: number,
-	offsetX?: number,
-	offsetY?: number,
+	paddingX?: number,
+	paddingY?: number,
 	displayBonds?: boolean,
 	bondPadding?: number
 }
 
 export function renderSVG(l: Layout, {
 	unitLen = 30,
-	offsetX = 20,
-	offsetY = 20,
+	paddingX = 20,
+	paddingY = 20,
 	displayBonds = true,
 	bondPadding: bp = 0.2
 } : svgRendererOption = {}): string {
-	let svg = `<svg xmlns="http://www.w3.org/2000/svg">`
+	let svg = ''
 
+	const width = l.width * unitLen + paddingX * 2
+	const height = l.height * unitLen + paddingY * 2
+
+	svg += `<svg xmlns="http://www.w3.org/2000/svg" width="${width}" height="${height}">`
 	svg += `<style>text { text-anchor: middle; dominant-baseline: middle; }</style>`
 
-	const X = (x: number) => (x + l.offsetX) * unitLen + offsetX
-	const Y = (y: number) => (y + l.offsetY) * unitLen + offsetY
+	const X = (x: number) => (x + l.offsetX) * unitLen + paddingX
+	const Y = (y: number) => (y + l.offsetY) * unitLen + paddingY
 
 	for (const { x, y, g } of l.groups) {
 		svg += `<text x="${X(x)}" y="${Y(y)}">${g}</text>`

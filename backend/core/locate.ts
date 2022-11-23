@@ -20,17 +20,21 @@ export type Layout = {
 	groups: LayoutGroup[],
 	bonds: LayoutBond[],
 	offsetX: number,
-	offsetY: number
+	offsetY: number,
+	width: number,
+	height: number
 }
 
 export function locate(chem: ExpandedChem): Layout {
 	const groups: LayoutGroup[] = []
 	const bonds: LayoutBond[] = []
-	let xMin = 0, yMin = 0
+	let xMin = 0, yMin = 0, xMax = 0, yMax = 0
 
 	const dfs = (c: ExpandedChem, x1: number, y1: number) => {
 		if (x1 < xMin) xMin = x1
+		if (x1 > xMax) xMax = x1
 		if (y1 < yMin) yMin = y1
+		if (y1 > yMax) yMax = y1
 
 		groups.push({ g: c.g, x: x1, y: y1 })
 
@@ -50,6 +54,8 @@ export function locate(chem: ExpandedChem): Layout {
 		groups,
 		bonds,
 		offsetX: - xMin,
-		offsetY: - yMin
+		offsetY: - yMin,
+		width: xMax - xMin,
+		height: yMax - yMin
 	}
 }

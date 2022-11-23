@@ -86,6 +86,8 @@ export class ChemParser extends Parser<Chem> {
 			this.index ++
 		}
 
+		if (! g) throw this.expect('atom group')
+
 		return g
 	}
 
