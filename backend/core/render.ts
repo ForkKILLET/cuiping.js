@@ -5,7 +5,8 @@ export type svgRendererOption = {
 	paddingX?: number,
 	paddingY?: number,
 	displayBonds?: boolean,
-	bondPadding?: number
+	uBondPadding?: number,
+	uBondGap?: number
 }
 
 export function renderSVG(l: Layout, {
@@ -13,15 +14,21 @@ export function renderSVG(l: Layout, {
 	paddingX = 20,
 	paddingY = 20,
 	displayBonds = true,
-	bondPadding: bp = 0.2
+	uBondPadding: bp = 0.2,
+	uBondGap: bg = 0.08
 } : svgRendererOption = {}): string {
 	let svg = ''
 
 	const width = l.width * unitLen + paddingX * 2
 	const height = l.height * unitLen + paddingY * 2
 
-	svg += `<svg xmlns="http://www.w3.org/2000/svg" width="${width}" height="${height}">`
-	svg += `<style>text { text-anchor: middle; dominant-baseline: middle; }</style>`
+	const id = `mol-${ (Math.random() * 1e6 | 0) }-${Date.now().toString().slice(- 10)}`
+
+	svg += `<svg id="${id}" xmlns="http://www.w3.org/2000/svg" width="${width}" height="${height}">`
+	svg += `<style>`
+			+ `#${id} text { text-anchor: middle; dominant-baseline: middle; }`
+			+ `#${id} line { stroke: black; }`
+		+ `</style>`
 
 	const X = (x: number) => (x + l.offsetX) * unitLen + paddingX
 	const Y = (y: number) => (y + l.offsetY) * unitLen + paddingY
@@ -36,11 +43,19 @@ export function renderSVG(l: Layout, {
 		if (y2 !== y1) y1 += bp * (y2 - y1)
 		if (x2 !== x1) x2 -= bp * (x2 - x1)
 		if (y2 !== y1) y2 -= bp * (y2 - y1)
-		const ln = (attr: string) => `<line x1="${X(x1)}" y1="${Y(y1)}" x2="${X(x2)}" y2="${Y(y2)}" ${attr}></line>`
-		if (c === 1) svg += ln(`stroke="black"`)
+		if (c === 1) svg += `<line x1="${X(x1)}" y1="${Y(y1)}" x2="${X(x2)}" y2="${Y(y2)}"></line>`
 		else if (c === 2) {
-			svg += ln(`stroke="black" stroke-width="4"`)
-			svg += ln(`stroke="white" stroke-width="2"`)
+			const xg = bg * (y2 - y1)
+			const yg = bg * (x2 - x1)
+			svg += `<line x1="${X(x1 - xg)}" y1="${Y(y1 + yg)}" x2="${X(x2 - xg)}" y2="${Y(y2 + yg)}"></line>`
+			svg += `<line x1="${X(x1 + xg)}" y1="${Y(y1 - yg)}" x2="${X(x2 + xg)}" y2="${Y(y2 - yg)}"></line>`
+		}
+		else if (c === 3) {
+			const xg = (bg + 0.1) * (y2 - y1)
+			const yg = (bg + 0.1) * (x2 - x1)
+			svg += `<line x1="${X(x1)}" y1="${Y(y1)}" x2="${X(x2)}" y2="${Y(y2)}"></line>`
+			svg += `<line x1="${X(x1 - xg)}" y1="${Y(y1 + yg)}" x2="${X(x2 - xg)}" y2="${Y(y2 + yg)}"></line>`
+			svg += `<line x1="${X(x1 + xg)}" y1="${Y(y1 - yg)}" x2="${X(x2 + xg)}" y2="${Y(y2 - yg)}"></line>`
 		}
 	}
 
