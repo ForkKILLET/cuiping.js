@@ -4,8 +4,8 @@ import { MathEx } from '../utils/math.js'
 
 export type LayoutBond = {
 	c: BondCount,
-	g1: string,
-	g2: string,
+	g1: Group,
+	g2: Group,
 	x1: number,
 	y1: number,
 	x2: number,

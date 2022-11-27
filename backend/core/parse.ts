@@ -1,6 +1,9 @@
 import { MathEx } from '../utils/math.js'
 
-export type Group = string
+export type Group = {
+	t: string
+	a: Record<string, string>
+}
 export type BondCount = 1 | 2 | 3 
 export type BondDir = number
 export type Bond = {
@@ -107,19 +110,47 @@ export const BondDirTable = {
 
 export class ChemParser extends Parser<Chem> {
 	private doParseGroup(): Group {
-		let g = ''
+		let t = ''
 		while (GroupCharset.includes(this.current)) {
-			g += this.current
+			t += this.current
 			this.index ++
 		}
 
-		if (! g) throw this.expect('atom group')
-		if (g.includes('*') && g.length > 1)
+		const a: Record<string, string> = {}
+		if (this.current === '<') {
+			this.index ++
+			let k = ''
+			let readingValue = false
+			attr: while (this.current) {
+				switch (this.current as string) {
+					case '>':
+						break attr
+					case ':':
+						readingValue = true
+						a[k] = ''
+						break
+					case ',':
+						k = ''
+						readingValue = false
+						break
+					default:
+						if (readingValue) a[k] += this.current
+						else k += this.current
+				}
+				this.index ++
+			}
+			if (! this.current) throw this.expect(`delimiter '>' of attribute`)
+			this.index ++
+		}
+
+		if (! t) throw this.expect('atom group')
+		if (t.includes('*') && t.length > 1)
 			throw Error(`Willcard groups mustn't include any characters except '*'`)
-		if (g.includes('.') && g.length > 1)
+		if (t.includes('.') && t.length > 1)
 			throw Error(`Collpased carbon mustn't include any characters except '.'`)
 
-		return g
+		// TODO: validate
+		return { t, a }
 	}
 
 	private checkDupBondDir(
