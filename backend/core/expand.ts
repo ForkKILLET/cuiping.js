@@ -23,18 +23,20 @@ export function expandAggregateBonds(
 	chem.bonds.forEach(b => {
 		const [ d0 ] = b.d
 
-		b.d.forEach(d => {
+		b.d.forEach((d, i) => {
 			let rD = rotateD
 			let fX = flipX
 			let fY = flipY
 
-			if (d + d0 === 360)
-				fY = ! fY
-			else if (d + d0 === 180)
-				fX = ! fX
-			else {
-				const dd = d - d0
-				rD += MathEx.stdAng(flipX === flipY ? dd : - dd)
+			if (i) {
+				if (d + d0 === 360)
+					fY = ! fY
+				else if (d + d0 === 180)
+					fX = ! fX
+				else {
+					const dd = d - d0
+					rD += MathEx.stdAng(flipX === flipY ? dd : - dd)
+				}
 			}
 
 			d += rotateD
