@@ -73,6 +73,7 @@ function copyFormula() {
 
 .toolbar {
     position: absolute;
+    z-index: 1;
     display: none;
     top: 0;
     left: 100%;

@@ -1,32 +1,56 @@
 <script setup lang="ts">
-import { ref } from 'vue'
+import { watch, reactive, ref } from 'vue'
 import Cuiping from './components/Cuiping.vue'
 
-const molecule = ref<string | void>()
+const molecule = ref<string | undefined>()
 
 const examples = [
     'C[--||H]',
-    'C[H\\/,=-C[\\/H]]',
-    'S[-|OH,O-|]',
+    'C=C[|Cl]-C=C',
+    'C[H\\/]=C[\\/H]',
     'C[H-,||H,-C[=|O,-O[-H]]]'
 ]
+
+const history = reactive<string[]>(JSON.parse(localStorage.getItem('cuipingHistory') ?? '[]'))
+watch(history, () => {
+    localStorage.setItem('cuipingHistory', JSON.stringify(history))
+})
 </script>
 
 <template>
     <header>
         <h1>Cuiping.js</h1>
 
-        <p><input v-model="molecule" placeholder="Enter Cuiping formula" /></p>
+        <p><textarea v-model="molecule" placeholder="Enter Cuiping formula"></textarea></p>
 
         <p>The structure of <code>"{{ molecule }}"</code> is:</p>
         <Cuiping :molecule="molecule" />
     </header>
 
     <article>
+        <h2>History</h2>
+        <button @click="history.push(molecule ?? '')">Save current</button>
+        <button @click="history.splice(0, history.length)">Clear</button>
+        <br />
+        <div class="mols">
+            <template v-if="history.length">
+                <div v-for="mol, index in history">
+                    <code>{{ mol }}</code>
+                    <button @click="history.splice(index, 1)">Remove</button>
+                    <button @click="molecule = mol">Select</button>
+                    <br />
+                    <Cuiping :molecule="mol" :key="mol" />
+                </div>
+            </template>
+            <p v-else>No history yet.</p>
+        </div>
+
         <h2>Examples</h2>
-        <div class="examples">
+        <div class="mols">
             <div v-for="mol in examples">
                 <code>{{ mol }}</code>
+                <button @click="molecule = mol">Select</button>
+                <br />
                 <Cuiping :molecule="mol" :key="mol" />
             </div>
         </div>
@@ -51,7 +75,6 @@ article {
     background-color: #e6f0e8;
 }
 
-
 h1 {
     color: #1cd91c;
     font-size: 3em;
@@ -73,7 +96,7 @@ h2::before {
     background-color: black;
 }
 
-input {
+textarea {
     font-size: 1.6em;
     outline: none;
     border: .1em solid black;
@@ -86,27 +109,39 @@ code {
 }
 
 article code {
-    display: block;
+    display: inline-block;
     background-color: black;
     padding: .1em .3em;
     border-radius: .4em;
     margin-bottom: 1em;
 }
 
-.examples {
+.mols {
     display: flex;
 }
 
-.examples > div {
+.mols > div {
     display: inline-block;
     padding: 1em;
 }
 
-.examples > div:nth-child(2n + 1) {
+.mols > div:nth-child(2n + 1) {
     background-color: #e0e0e0;
 }
 
 :deep(svg) {
     background-color: white;
+}
+
+button {
+    border: none;
+    outline: none;
+    background: none;
+    text-decoration: underline;
+    transition: .5s color;
+}
+
+button:hover {
+    color: #1cd91c;
 }
 </style>
