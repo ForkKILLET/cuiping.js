@@ -27,6 +27,7 @@ export function renderSVG(l: Layout, {
 	const Y = (y: number) => (y + l.offsetY) * unitLen + paddingY
 
 	for (const { x, y, g } of l.groups) {
+		if (g === '*') continue
 		svg += `<text x="${X(x)}" y="${Y(y)}">${g}</text>`
 	}
 

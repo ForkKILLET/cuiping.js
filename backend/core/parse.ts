@@ -53,6 +53,32 @@ export abstract class Parser<T> {
 		}
 	}
 
+	protected try<R>(fn: () => R) {
+		const indexNow = this.index
+		let res: R, err: Error | undefined
+		try {
+			res = fn()
+		}
+		catch (e) {
+			err = e as Error
+		}
+		return {
+			except: <D>(expect: string, or: D): R | D => {
+				if (! err) return res
+				if (err.message.startsWith(`Expecting ${expect}`)) {
+					this.index = indexNow
+					return or
+				}
+				throw err
+			},
+			catch: <D>(or: D): R | D => {
+				if (! err) return res
+				this.index = indexNow
+				return or
+			}
+		}
+	}
+
 	protected abstract doParse(options?: any): T
 }
 
@@ -61,10 +87,10 @@ export const GroupCharset
 	+ 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'
 	+ '0123456789'
 	+ '()'
+	+ '*' // Note: willcard
 export const BondCountCharset = '=#'
 export const BondDirCharset = '-|/\\'
 export const BondCharset = BondCountCharset + BondDirCharset
-export const BondsCharset = BondCharset + '[]'
 
 export const BondCountTable: Record<string, BondCount> = {
 	'=': 2,
@@ -87,6 +113,8 @@ export class ChemParser extends Parser<Chem> {
 		}
 
 		if (! g) throw this.expect('atom group')
+		if (g.includes('*') && g.length !== 1)
+			throw Error(`Willcard groups mustn't include any characters except '*'`)
 
 		return g
 	}
@@ -117,32 +145,38 @@ export class ChemParser extends Parser<Chem> {
 			c = BondCountTable[this.current as keyof typeof BondCountTable]
 			this.index ++
 		}
-		while (BondDirCharset.includes(this.current)) {
-			let d = BondDirTable[this.current as keyof typeof BondDirTable]
+
+		let auto0Deg = ! BondDirCharset.includes(this.current) && c > 1
+		while (BondDirCharset.includes(this.current) || auto0Deg) {
+			let d = auto0Deg
+				? 0
+				: BondDirTable[this.current as keyof typeof BondDirTable]
 			if (! isPrefix || dirs.includes(d))
 				d = MathEx.stdAng(d + 180)
 			if (this.checkDupBondDir(parsedBonds, dirs, dirFrom, d))
 				throw Error(`Duplicated bond direction (${d} deg)`)
 			dirs.push(d)
+			if (auto0Deg) break
 			this.index ++
 		}
-		if (! dirs.length) throw this.expect('at least one bond direction')
+		if (! dirs.length)
+			throw this.expect('at least one bond direction')
 		return [ c, dirs ]
 	}
 
 	private doParseBond({
 		requirePrefix = false,
 		parsedBonds = [],
-		dirFrom = null
+		dirFrom = null,
 	}: {
-		requirePrefix?: false,
+		requirePrefix?: boolean,
 		parsedBonds?: Bond[],
-		dirFrom?: BondDir | null
-	} = {}): Bond {
+		dirFrom?: BondDir | null,
+	} = {}): Bond | undefined {
 		if (! BondCharset.includes(this.current)) {
 			if (requirePrefix) throw this.expect('prefix-styled bond')
 			if (GroupCharset.includes(this.current)) {
-				const n = this.doParse({})
+				const n = this.doParse()
 				const [ c, d ] = this.doParseBondType({ isPrefix: false, parsedBonds, dirFrom })
 				return { c, d, n }
 			}
@@ -156,28 +190,31 @@ export class ChemParser extends Parser<Chem> {
 	}
 
 	private doParseBonds({
-		dirFrom = null
+		dirFrom = null,
 	}: {
-		dirFrom?: BondDir | null
+		dirFrom?: BondDir | null,
 	}): Bond[] {
 		const bonds: Bond[] = []
 
-		while (BondsCharset.includes(this.current)) {
-			if (this.current === '[') {
-				this.index ++
-				bondsInBracket: while (true) {
-					bonds.push(this.doParseBond({ parsedBonds: bonds, dirFrom }))
-					switch (this.current as string) {
-						case ']':
-							this.index ++
-							break bondsInBracket
-						case ',':
-							this.index ++
-							continue
-					}
+		if (this.current === '[') {
+			this.index ++
+			bondsInBracket: while (true) {
+				bonds.push(this.doParseBond({ parsedBonds: bonds, dirFrom })!)
+				switch (this.current as string) {
+					case ']':
+						this.index ++
+						break bondsInBracket
+					case ',':
+						this.index ++
+						continue
 				}
 			}
-			else break
+		}
+		if (BondCharset.includes(this.current)) {
+			const bond = this
+				.try(() => this.doParseBond({ parsedBonds: bonds, dirFrom }))
+				.except('atom group', null)
+			if (bond) bonds.push(bond)
 		}
 		return bonds
 	}
