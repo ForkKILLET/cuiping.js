@@ -4,6 +4,8 @@ import { MathEx } from '../utils/math.js'
 
 export type LayoutBond = {
 	c: BondCount,
+	g1: string,
+	g2: string,
 	x1: number,
 	y1: number,
 	x2: number,
@@ -42,9 +44,9 @@ export function locate(chem: ExpandedChem): Layout {
 			const x2 = x1 + MathEx.cosd(b.d)
 			const y2 = y1 + MathEx.sind(b.d)
 
-			bonds.push({ x1, y1, x2, y2, c: b.c })
+			bonds.push({ g1: b.f, g2: b.t.g, x1, y1, x2, y2, c: b.c })
 
-			dfs(b.n, x2, y2)
+			dfs(b.t, x2, y2)
 		})
 	}
 

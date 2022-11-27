@@ -88,6 +88,7 @@ export const GroupCharset
 	+ '0123456789'
 	+ '()'
 	+ '*' // Note: willcard
+	+ '.' // Note: collpased carbon
 export const BondCountCharset = '=#'
 export const BondDirCharset = '-|/\\'
 export const BondCharset = BondCountCharset + BondDirCharset
@@ -113,8 +114,10 @@ export class ChemParser extends Parser<Chem> {
 		}
 
 		if (! g) throw this.expect('atom group')
-		if (g.includes('*') && g.length !== 1)
+		if (g.includes('*') && g.length > 1)
 			throw Error(`Willcard groups mustn't include any characters except '*'`)
+		if (g.includes('.') && g.length > 1)
+			throw Error(`Collpased carbon mustn't include any characters except '.'`)
 
 		return g
 	}

@@ -5,7 +5,8 @@ import { Debug } from '../utils/debug.js'
 export type ExpandedBond = {
 	c: BondCount,
 	d: BondDir,
-	n: ExpandedChem
+	t: ExpandedChem,
+	f: Group
 }
 
 export type ExpandedChem = {
@@ -50,7 +51,8 @@ export function expandAggregateBonds(
 			bonds.push({
 				c: b.c,
 				d,
-				n: expandAggregateBonds(b.n, rD, fX, fY, depth + 1)
+				t: expandAggregateBonds(b.n, rD, fX, fY, depth + 1),
+				f: chem.g
 			})
 		})
 	})

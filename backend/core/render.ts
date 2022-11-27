@@ -34,15 +34,20 @@ export function renderSVG(l: Layout, {
 	const Y = (y: number) => (y + l.offsetY) * unitLen + paddingY
 
 	for (const { x, y, g } of l.groups) {
-		if (g === '*') continue
+		if (g === '*' || g === '.') continue
 		svg += `<text x="${X(x)}" y="${Y(y)}">${g}</text>`
 	}
 
-	if (displayBonds) for (let { x1, y1, x2, y2, c } of l.bonds) {
-		if (x2 !== x1) x1 += bp * (x2 - x1)
-		if (y2 !== y1) y1 += bp * (y2 - y1)
-		if (x2 !== x1) x2 -= bp * (x2 - x1)
-		if (y2 !== y1) y2 -= bp * (y2 - y1)
+	if (displayBonds) for (let { g1, g2, x1, y1, x2, y2, c } of l.bonds) {
+		if (g1 !== '.') {
+			if (x2 !== x1) x1 += bp * (x2 - x1)
+			if (y2 !== y1) y1 += bp * (y2 - y1)
+		}
+		if (g2 !== '.') {
+			if (x2 !== x1) x2 -= bp * (x2 - x1)
+			if (y2 !== y1) y2 -= bp * (y2 - y1)
+		}
+
 		if (c === 1) svg += `<line x1="${X(x1)}" y1="${Y(y1)}" x2="${X(x2)}" y2="${Y(y2)}"></line>`
 		else if (c === 2) {
 			const xg = bg * (y2 - y1)
