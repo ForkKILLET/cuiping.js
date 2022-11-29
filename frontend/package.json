@@ -10,7 +10,8 @@
   "dependencies": {
     "@types/node": "^18.11.9",
     "cuiping": "workspace:*",
-    "vue": "^3.2.41"
+    "vue": "^3.2.41",
+    "vue-i18n": "^9.2.2"
   },
   "devDependencies": {
     "@vitejs/plugin-vue": "^3.2.0",

@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { watch, reactive, ref } from 'vue'
+import { useI18n } from 'vue-i18n'
 import Cuiping from './components/Cuiping.vue'
 
 const molecule = ref<string | undefined>()
@@ -11,51 +12,75 @@ const examples = [
     'C[H-,||H,-C[=|O,-O[-H]]]'
 ]
 
-const history = reactive<string[]>(JSON.parse(localStorage.getItem('cuipingHistory') ?? '[]'))
+const history = reactive<string[]>(
+    JSON.parse(localStorage.getItem('cuipingHistory') ?? '[]')
+)
 watch(history, () => {
     localStorage.setItem('cuipingHistory', JSON.stringify(history))
 })
+
+const i18n = useI18n()
+const { t } = i18n
+
+function setLocale(locale: string) {
+    localStorage.setItem('cuipingLocale', i18n.locale.value = locale)
+}
 </script>
 
 <template>
     <header>
         <h1>Cuiping.js</h1>
 
-        <p><textarea v-model="molecule" placeholder="Enter Cuiping formula"></textarea></p>
+        <span v-for="locale, i in i18n.availableLocales">
+            {{ i ? ' | ' : '' }}<span
+                class="locale"
+                :class="{ active: locale === i18n.locale.value }"
+                @click="setLocale(locale)"
+            >{{ locale }}</span>
+        </span>
 
-        <p>The structure of <code>"{{ molecule }}"</code> is:</p>
+        <p>
+            <textarea
+                v-model="molecule"
+                :placeholder="t('info.enterFormula')"
+            ></textarea>
+        </p>
+
+        <p v-html="
+            t('info.structure', { formula: `<code>\`${molecule ?? ''}\`</code>` })
+        "></p>
         <Cuiping :molecule="molecule" />
     </header>
 
     <article>
-        <h2>History</h2>
-        <button @click="history.push(molecule ?? '')">Save current</button>
-        <button @click="history.splice(0, history.length)">Clear</button>
+        <h2>{{ t('title.history') }}</h2>
+        <button @click="history.push(molecule ?? '')">{{ t('op.save_current') }}</button>
+        <button @click="history.splice(0, history.length)">{{ t('op.clear') }}</button>
         <br />
         <div class="mols">
             <template v-if="history.length">
                 <div v-for="mol, index in history">
                     <code>{{ mol }}</code>
-                    <button @click="history.splice(index, 1)">Remove</button>
-                    <button @click="molecule = mol">Select</button>
+                    <button @click="history.splice(index, 1)">{{ t('op.remove') }}</button>
+                    <button @click="molecule = mol">{{ t('op.select') }}</button>
                     <br />
                     <Cuiping :molecule="mol" :key="mol" />
                 </div>
             </template>
-            <p v-else>No history yet.</p>
+            <p v-else>{{ t('info.noHistory') }}</p>
         </div>
 
-        <h2>Examples</h2>
+        <h2>{{ t('title.examples') }}</h2>
         <div class="mols">
             <div v-for="mol in examples">
                 <code>{{ mol }}</code>
-                <button @click="molecule = mol">Select</button>
+                <button @click="molecule = mol">{{ t('op.select') }}</button>
                 <br />
                 <Cuiping :molecule="mol" :key="mol" />
             </div>
         </div>
 
-        <h2>About</h2>
+        <h2>{{ t('title.about') }}</h2>
         GitHub: <a href="//github.com/ForkKILLET/cuiping.js">ForkKILLET/cuiping.js</a> <br />
         npm: <a href="//www.npmjs.com/package/cuiping">cuiping</a>
     </article>
@@ -67,6 +92,15 @@ header {
     text-align: center;
     background-color: #1f1a1a;
     color: white;
+}
+
+.locale.active {
+    color: #1cd91c;
+}
+
+.locale {
+    padding: .2em;
+    cursor: pointer;
 }
 
 article {
@@ -104,7 +138,7 @@ textarea {
     padding: .1em;
 }
 
-code {
+:deep(code) {
     color: #1cd91c;
 }
 
