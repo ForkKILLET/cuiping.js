@@ -7,17 +7,15 @@ importers:
 
   backend:
     specifiers:
-      '@types/node': ^18.11.9
       chalk: ^5.1.2
       eslint: ^8.28.0
       ts-node: ^10.9.1
       typescript: ^4.8.4
     dependencies:
-      '@types/node': 18.11.9
       chalk: 5.1.2
     devDependencies:
       eslint: 8.28.0
-      ts-node: 10.9.1_wup25etrarvlqkprac7h35hj7u
+      ts-node: 10.9.1_typescript@4.9.3
       typescript: 4.9.3
 
   frontend:
@@ -1246,7 +1244,7 @@ packages:
     resolution: {integrity: sha512-/OaKK0xYrs3DmxRYqL/yDc+FxFUVYhDlXMhRmv3z915w2HF1tnN1omB354j8VUGO/hbRzyD6Y3sA7v7GS/ceog==}
     engines: {node: '>=4'}
 
-  /ts-node/10.9.1_wup25etrarvlqkprac7h35hj7u:
+  /ts-node/10.9.1_typescript@4.9.3:
     resolution: {integrity: sha512-NtVysVPkxxrwFGUUxGYhfux8k78pQB3JqYBXlLRZgdGUqTO5wU/UyHop5p70iEbGhB7q5KmiZiU0Y3KlJrScEw==}
     hasBin: true
     peerDependencies:
@@ -1265,7 +1263,6 @@ packages:
       '@tsconfig/node12': 1.0.11
       '@tsconfig/node14': 1.0.3
       '@tsconfig/node16': 1.0.3
-      '@types/node': 18.11.9
       acorn: 8.8.1
       acorn-walk: 8.2.0
       arg: 4.1.3
