@@ -8,7 +8,7 @@ import { renderSVG } from 'cuiping/core/render'
 const error = ref<boolean>(false)
 
 const props = defineProps<{
-    molecule: string | void
+    molecule?: string
 }>()
 
 const svg = computed(() => {

@@ -5,11 +5,13 @@ import Cuiping from './components/Cuiping.vue'
 
 const molecule = ref<string | undefined>()
 
-const examples = [
-    'C[--||H]',
-    'C=C[|Cl]-C=C',
-    'C[H\\/]=C[\\/H]',
-    'C[H-,||H,-C[=|O,-O[-H]]]'
+const examples: [ Record<string, string>, string][] = [
+    [ { zh: '甲烷', en: 'methane' }, 'C[--||H]' ],
+    [ { zh: '氮气', en: 'nitrogen' }, 'N#N' ],
+    [ { zh: '乙烯', en: 'ethylene' }, 'C[H\\/]=C[\\/H]' ],
+    [ { zh: '碳碳双键 (官能团)', en: 'C-C double bond (functional group)' }, 'C[*\\/]=C[\\/*]' ],
+    [ { zh: '2-氯-1,3-丁二烯 (仅碳链)', en: 'chloroprene (carbon chain only)' }, 'C=C[|Cl]-C=C' ],
+    [ { zh: '乙酸', en: 'acetic acid' }, 'C[H-,||H]-C[=|O]-O-H' ]
 ]
 
 const history = reactive<string[]>(
@@ -18,6 +20,15 @@ const history = reactive<string[]>(
 watch(history, () => {
     localStorage.setItem('cuipingHistory', JSON.stringify(history))
 })
+
+function selectMol(mol: string) {
+    molecule.value = mol
+    window.scrollTo({
+        left: 0,
+        top: 0,
+        behavior: 'smooth'
+    })
+}
 
 const i18n = useI18n()
 const { t } = i18n
@@ -62,7 +73,7 @@ function setLocale(locale: string) {
                 <div v-for="mol, index in history">
                     <code>{{ mol }}</code>
                     <button @click="history.splice(index, 1)">{{ t('op.remove') }}</button>
-                    <button @click="molecule = mol">{{ t('op.select') }}</button>
+                    <button @click="selectMol(mol)">{{ t('op.select') }}</button>
                     <br />
                     <Cuiping :molecule="mol" :key="mol" />
                 </div>
@@ -72,9 +83,10 @@ function setLocale(locale: string) {
 
         <h2>{{ t('title.examples') }}</h2>
         <div class="mols">
-            <div v-for="mol in examples">
+            <div v-for="[ desc, mol ] in examples">
+                <strong>{{ desc[i18n.locale.value] }}</strong><br />
                 <code>{{ mol }}</code>
-                <button @click="molecule = mol">{{ t('op.select') }}</button>
+                <button @click="selectMol(mol)">{{ t('op.select') }}</button>
                 <br />
                 <Cuiping :molecule="mol" :key="mol" />
             </div>
