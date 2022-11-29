@@ -94,7 +94,8 @@ function setLocale(locale: string) {
 
         <h2>{{ t('title.about') }}</h2>
         GitHub: <a href="//github.com/ForkKILLET/cuiping.js">ForkKILLET/cuiping.js</a> <br />
-        npm: <a href="//www.npmjs.com/package/cuiping">cuiping</a>
+        npm: <a href="//www.npmjs.com/package/cuiping">cuiping (backend)</a> |
+        <a href="//www.npmjs.com/package/cuiping-component">cuiping-component</a>
     </article>
 </template>
 
@@ -188,6 +189,15 @@ button {
 }
 
 button:hover {
+    color: #1cd91c;
+}
+
+a, a:visited {
+    color: gray;
+    transition: .5s color;
+}
+
+a:hover, a:active {
     color: #1cd91c;
 }
 </style>
