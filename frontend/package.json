@@ -9,7 +9,7 @@
   },
   "dependencies": {
     "@types/node": "^18.11.9",
-    "cuiping": "workspace:*",
+    "cuiping-component": "workspace:^1.0.0",
     "vue": "^3.2.41",
     "vue-i18n": "^9.2.2"
   },

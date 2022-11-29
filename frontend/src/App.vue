@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { watch, reactive, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
-import Cuiping from './components/Cuiping.vue'
+import Cuiping from 'cuiping-component/src/Cuiping.vue'
 
 const molecule = ref<string | undefined>()
 

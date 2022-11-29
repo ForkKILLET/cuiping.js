@@ -46,8 +46,8 @@ const isCopying = ref<boolean>(false)
 function copyFormula() {
     if (isCopying.value) return
     isCopying.value = true
-    navigator.clipboard
-        .writeText(props.molecule ?? '')
+    if (props.molecule) navigator.clipboard
+        .writeText(props.molecule)
         .finally(() => {
             isCopying.value = false
         })

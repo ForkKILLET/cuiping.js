@@ -5,9 +5,5 @@
   "repository": "git@github.com:ForkKILLET/cuiping.js.git",
   "author": "ForkΨKILLET <fork_killet@qq.com>",
   "license": "MIT",
-  "private": true,
-  "workspaces": [
-	"backend",
-	"frontend"
-  ]
+  "private": true
 }
