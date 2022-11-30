@@ -21,10 +21,12 @@ importers:
   component:
     specifiers:
       '@types/node': ^18.11.9
+      canvg: ^4.0.1
       cuiping: workspace:^1.1.0
       vue: ^3.2.41
     dependencies:
       '@types/node': 18.11.9
+      canvg: registry.npmmirror.com/canvg/4.0.1
       cuiping: link:../backend
       vue: 3.2.45
 
@@ -1412,3 +1414,64 @@ packages:
     resolution: {integrity: sha512-rVksvsnNCdJ/ohGc6xgPwyN8eheCxsiLM8mxuE/t/mOVqJewPuO1miLpTHQiRgTKCLexL4MeAFVagts7HmNZ2Q==}
     engines: {node: '>=10'}
     dev: true
+
+  registry.npmmirror.com/@types/offscreencanvas/2019.7.0:
+    resolution: {integrity: sha512-PGcyveRIpL1XIqK8eBsmRBt76eFgtzuPiSTyKHZxnGemp2yzGzWpjYKAfK3wIMiU7eH+851yEpiuP8JZerTmWg==, registry: http://registry.npm.taobao.org/, tarball: https://registry.npmmirror.com/@types/offscreencanvas/-/offscreencanvas-2019.7.0.tgz}
+    name: '@types/offscreencanvas'
+    version: 2019.7.0
+    dev: false
+
+  registry.npmmirror.com/@types/raf/3.4.0:
+    resolution: {integrity: sha512-taW5/WYqo36N7V39oYyHP9Ipfd5pNFvGTIQsNGj86xV88YQ7GnI30/yMfKDF7Zgin0m3e+ikX88FvImnK4RjGw==, registry: http://registry.npm.taobao.org/, tarball: https://registry.npmmirror.com/@types/raf/-/raf-3.4.0.tgz}
+    name: '@types/raf'
+    version: 3.4.0
+    dev: false
+
+  registry.npmmirror.com/canvg/4.0.1:
+    resolution: {integrity: sha512-5gD/d6SiCCT7baLnVr0hokYe93DfcHW2rSqdKOuOQD84YMlyfttnZ8iQsThTdX6koYam+PROz/FuQTo500zqGw==, registry: http://registry.npm.taobao.org/, tarball: https://registry.npmmirror.com/canvg/-/canvg-4.0.1.tgz}
+    name: canvg
+    version: 4.0.1
+    engines: {node: '>=12.0.0'}
+    dependencies:
+      '@types/offscreencanvas': registry.npmmirror.com/@types/offscreencanvas/2019.7.0
+      '@types/raf': registry.npmmirror.com/@types/raf/3.4.0
+      raf: registry.npmmirror.com/raf/3.4.1
+      rgbcolor: registry.npmmirror.com/rgbcolor/1.0.1
+      stackblur-canvas: registry.npmmirror.com/stackblur-canvas/2.5.0
+      svg-pathdata: registry.npmmirror.com/svg-pathdata/6.0.3
+    dev: false
+
+  registry.npmmirror.com/performance-now/2.1.0:
+    resolution: {integrity: sha512-7EAHlyLHI56VEIdK57uwHdHKIaAGbnXPiw0yWbarQZOKaKpvUIgW0jWRVLiatnM+XXlSwsanIBH/hzGMJulMow==, registry: http://registry.npm.taobao.org/, tarball: https://registry.npmmirror.com/performance-now/-/performance-now-2.1.0.tgz}
+    name: performance-now
+    version: 2.1.0
+    dev: false
+
+  registry.npmmirror.com/raf/3.4.1:
+    resolution: {integrity: sha512-Sq4CW4QhwOHE8ucn6J34MqtZCeWFP2aQSmrlroYgqAV1PjStIhJXxYuTgUIfkEk7zTLjmIjLmU5q+fbD1NnOJA==, registry: http://registry.npm.taobao.org/, tarball: https://registry.npmmirror.com/raf/-/raf-3.4.1.tgz}
+    name: raf
+    version: 3.4.1
+    dependencies:
+      performance-now: registry.npmmirror.com/performance-now/2.1.0
+    dev: false
+
+  registry.npmmirror.com/rgbcolor/1.0.1:
+    resolution: {integrity: sha512-9aZLIrhRaD97sgVhtJOW6ckOEh6/GnvQtdVNfdZ6s67+3/XwLS9lBcQYzEEhYVeUowN7pRzMLsyGhK2i/xvWbw==, registry: http://registry.npm.taobao.org/, tarball: https://registry.npmmirror.com/rgbcolor/-/rgbcolor-1.0.1.tgz}
+    name: rgbcolor
+    version: 1.0.1
+    engines: {node: '>= 0.8.15'}
+    dev: false
+
+  registry.npmmirror.com/stackblur-canvas/2.5.0:
+    resolution: {integrity: sha512-EeNzTVfj+1In7aSLPKDD03F/ly4RxEuF/EX0YcOG0cKoPXs+SLZxDawQbexQDBzwROs4VKLWTOaZQlZkGBFEIQ==, registry: http://registry.npm.taobao.org/, tarball: https://registry.npmmirror.com/stackblur-canvas/-/stackblur-canvas-2.5.0.tgz}
+    name: stackblur-canvas
+    version: 2.5.0
+    engines: {node: '>=0.1.14'}
+    dev: false
+
+  registry.npmmirror.com/svg-pathdata/6.0.3:
+    resolution: {integrity: sha512-qsjeeq5YjBZ5eMdFuUa4ZosMLxgr5RZ+F+Y1OrDhuOCEInRMA3x74XdBtggJcj9kOeInz0WE+LgCPDkZFlBYJw==, registry: http://registry.npm.taobao.org/, tarball: https://registry.npmmirror.com/svg-pathdata/-/svg-pathdata-6.0.3.tgz}
+    name: svg-pathdata
+    version: 6.0.3
+    engines: {node: '>=12.0.0'}
+    dev: false

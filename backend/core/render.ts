@@ -16,7 +16,11 @@ export function renderSVG(l: Layout, {
 	displayBonds = true,
 	uBondPadding: bp = 0.2,
 	uBondGap: bg = 0.08
-} : svgRendererOption = {}): string {
+} : svgRendererOption = {}): {
+	svg: string,
+	width: number,
+	height: number
+} {
 	let svg = ''
 
 	const width = l.width * unitLen + paddingX * 2
@@ -70,5 +74,5 @@ export function renderSVG(l: Layout, {
 
 	svg += '</svg>'
 
-	return svg
+	return { svg, width, height }
 }

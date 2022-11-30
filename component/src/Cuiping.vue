@@ -1,38 +1,45 @@
 <script setup lang="ts">
-import { computed, ref } from 'vue'
+import { computed, nextTick, ref, toRefs, unref, watch } from 'vue'
+import { Canvg } from 'canvg'
 import { ChemParser } from 'cuiping/core/parse'
 import { expandAggregateBonds } from 'cuiping/core/expand'
 import { locate } from 'cuiping/core/locate'
 import { renderSVG } from 'cuiping/core/render'
 
-const error = ref<boolean>(false)
+const props = withDefaults(defineProps<{
+    molecule?: string,
+    canvasScale?: number
+}>(), {
+    canvasScale: 1
+})
 
-const props = defineProps<{
-    molecule?: string
-}>()
-
-const svg = computed(() => {
-    if (! props.molecule) return '...'
+const res = computed(() => {
+    if (! props.molecule) return { state: 'empty' as const }
 
     let errMsg: string = ''
     const parser = new ChemParser(props.molecule)
     const chem = parser.parse((err) => {
         errMsg = err.toString()
-        error.value = true
         return true
     })
 
-    if (errMsg) return errMsg
-    error.value = false
+    if (errMsg) return {
+        state: 'error' as const,
+        errMsg
+    }
 
     const chemEx = expandAggregateBonds(chem!)
     const layout = locate(chemEx)
-    const svg = renderSVG(layout)
-    return svg
+    return {
+        state: 'ok' as const,
+        data: renderSVG(layout)
+    }
 })
 
 function downloadSvg() {
-    const blob = new Blob([svg.value])
+    if (res.value.state !== 'ok') return
+
+    const blob = new Blob([ res.value.data.svg ])
     const url = URL.createObjectURL(blob)
     const a = document.createElement('a')
     a.download = 'mol.svg'
@@ -52,15 +59,55 @@ function copyFormula() {
             isCopying.value = false
         })
 }
+
+const canvas = ref<HTMLCanvasElement>()
+const canvg = ref<Canvg | undefined>()
+const canvasOk = ref<boolean>(false)
+
+const scaleHeight = ref(0)
+const scaleWidth = ref(0)
+
+watch([ canvas, props ], () => {
+    if (canvg.value) canvg.value.stop()
+
+    if (res.value.state !== 'ok' || ! canvas.value) return
+
+    const ctx = canvas.value.getContext('2d')
+    if (! ctx) return
+
+    const { data } = res.value
+    canvasOk.value = false
+    scaleHeight.value = props.canvasScale * data.height
+    scaleWidth.value = props.canvasScale * data.width
+
+    nextTick(() => {
+        const v = Canvg.fromString(ctx, data.svg)
+        canvg.value = v
+        v.start({
+            ignoreMouse: true
+        })
+        canvasOk.value = true
+    })
+}, { immediate: true })
 </script>
 
 <template>
-    <div class="root">
-        <div v-html="svg" class="container" :class="{ error }"></div>
+    <div class="root" :class="res.state">
+        <div v-if="res.state === 'ok'" class="container">
+            <canvas
+                ref="canvas"
+                :width="scaleWidth" :height="scaleHeight"
+            ></canvas>
+            <img v-if="canvasOk" :src="canvas!.toDataURL('data/png')" />
+        </div>
+        <p v-else-if="res.state === 'error'">{{ res.errMsg }}</p>
+        <p v-else>...</p>
         <div class="toolbar">
             <div class="toolbar-inner">
-                <button @click="downloadSvg">Download</button>
-                <button @click="copyFormula">{{ isCopying ? 'Copying...' : 'Cuiping' }}</button>
+                <button @click="downloadSvg">SVG</button>
+                <button @click="copyFormula">
+                    {{ isCopying ? 'Copying...' : 'Cuiping' }}
+                </button>
             </div>
         </div>
     </div>
@@ -109,5 +156,17 @@ function copyFormula() {
 .root {
     position: relative;
     display: inline-block;
+}
+
+.container {
+    background: white;
+}
+
+canvas {
+    display: none;
+}
+
+img {
+    display: block;
 }
 </style>

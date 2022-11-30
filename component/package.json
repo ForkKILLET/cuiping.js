@@ -11,7 +11,8 @@
   "license": "ISC",
   "dependencies": {
     "@types/node": "^18.11.9",
-    "cuiping": "workspace:^1.1.0",
-    "vue": "^3.2.41"
+    "canvg": "^4.0.1",
+    "vue": "^3.2.41",
+    "cuiping": "workspace:^1.1.0"
   }
 }
