@@ -7,6 +7,8 @@ import { locate } from 'cuiping/core/locate'
 import { renderSVG } from 'cuiping/core/render'
 import type { svgRendererOption } from 'cuiping/core/render'
 
+Object.assign(window, {ref_c:ref})
+
 const props = withDefaults(defineProps<{
     molecule?: string,
     useCanvas?: boolean,
@@ -96,6 +98,7 @@ watch([ canvas, props ], () => {
 </script>
 
 <template>
+    <MyComp molecule="C[--||H]"></MyComp>
     <div class="root" :class="res.state">
         <div v-if="res.state === 'ok'" class="container">
             <template v-if="useCanvas">

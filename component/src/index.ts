@@ -1,3 +1,8 @@
-import Cuiping from './renderer.vue'
+import { App } from 'vue'
+import Cuiping from './Cuiping.vue'
 
-export default Cuiping
+export default {
+    install(Vue: App) {
+        Vue.component('Cuiping', Cuiping)
+    }
+}

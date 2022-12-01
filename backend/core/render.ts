@@ -1,4 +1,4 @@
-import { Layout } from './locate.js'
+import type { Layout } from './locate.js'
 
 export type svgRendererOption = {
 	unitLen?: number,

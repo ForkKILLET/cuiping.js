@@ -26,8 +26,8 @@ jobs:
       - name: Build frontend
         run: |
           pnpm i
-          cd frontend
-          pnpm build
+          pnpm -F cuiping-component build
+          pnpm -F cuiping-frontend build
 
       - name: Deploy to GitHub Pages
         uses: crazy-max/ghaction-github-pages@v2

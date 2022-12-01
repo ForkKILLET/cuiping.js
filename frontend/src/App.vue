@@ -1,8 +1,9 @@
 <script setup lang="ts">
 import { watch, reactive, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
-import Cuiping from 'cuiping-component/src'
-import Conf, { Schemas, SchemasToValues } from './conf';
+import Conf, { SchemasToValues } from './conf';
+
+Object.assign(window,{ref_a:ref})
 
 const molecule = ref<string | undefined>()
 
@@ -68,6 +69,7 @@ function toggleConf() {
 </script>
 
 <template>
+    <MyComp/>
     <header>
         <h1>Cuiping.js</h1>
 
