@@ -1,15 +1,19 @@
 <script setup lang="ts">
-import { computed, nextTick, ref, toRefs, unref, watch } from 'vue'
+import { computed, nextTick, ref, watch } from 'vue'
 import { Canvg } from 'canvg'
 import { ChemParser } from 'cuiping/core/parse'
 import { expandAggregateBonds } from 'cuiping/core/expand'
 import { locate } from 'cuiping/core/locate'
 import { renderSVG } from 'cuiping/core/render'
+import type { svgRendererOption } from 'cuiping/core/render'
 
 const props = withDefaults(defineProps<{
     molecule?: string,
-    canvasScale?: number
+    useCanvas?: boolean,
+    canvasScale?: number,
+    renderOptions?: svgRendererOption
 }>(), {
+    useCanvas: false,
     canvasScale: 1
 })
 
@@ -32,7 +36,7 @@ const res = computed(() => {
     const layout = locate(chemEx)
     return {
         state: 'ok' as const,
-        data: renderSVG(layout)
+        data: renderSVG(layout, props.renderOptions)
     }
 })
 
@@ -68,6 +72,7 @@ const scaleHeight = ref(0)
 const scaleWidth = ref(0)
 
 watch([ canvas, props ], () => {
+    canvasOk.value = false
     if (canvg.value) canvg.value.stop()
 
     if (res.value.state !== 'ok' || ! canvas.value) return
@@ -76,7 +81,6 @@ watch([ canvas, props ], () => {
     if (! ctx) return
 
     const { data } = res.value
-    canvasOk.value = false
     scaleHeight.value = props.canvasScale * data.height
     scaleWidth.value = props.canvasScale * data.width
 
@@ -94,11 +98,14 @@ watch([ canvas, props ], () => {
 <template>
     <div class="root" :class="res.state">
         <div v-if="res.state === 'ok'" class="container">
-            <canvas
-                ref="canvas"
-                :width="scaleWidth" :height="scaleHeight"
-            ></canvas>
-            <img v-if="canvasOk" :src="canvas!.toDataURL('data/png')" />
+            <template v-if="useCanvas">
+                <canvas
+                    ref="canvas"
+                    :width="scaleWidth" :height="scaleHeight"
+                ></canvas>
+                <img v-if="canvasOk" :src="canvas!.toDataURL('data/png')" />
+            </template>
+            <div v-else v-html="res.data.svg"></div>
         </div>
         <p v-else-if="res.state === 'error'">{{ res.errMsg }}</p>
         <p v-else>...</p>
@@ -125,6 +132,7 @@ watch([ canvas, props ], () => {
     top: 0;
     left: 100%;
     height: 100%;
+    user-select: none;
 }
 
 .toolbar-inner {
@@ -166,7 +174,7 @@ canvas {
     display: none;
 }
 
-img {
+img, :deep(svg) {
     display: block;
 }
 </style>

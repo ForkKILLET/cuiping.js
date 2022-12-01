@@ -42,7 +42,7 @@ export abstract class Parser<T> {
 		return this.str
 	}
 
-	parse(onError?: (err: Error) => boolean): T | void {
+	parse(onError?: (err: Error) => boolean): T | undefined {
 		if (this.used) throw Error('Parser is already used.')
 		this.used = true
 		try {

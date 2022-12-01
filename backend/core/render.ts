@@ -6,7 +6,9 @@ export type svgRendererOption = {
 	paddingY?: number,
 	displayBonds?: boolean,
 	uBondPadding?: number,
-	uBondGap?: number
+	uBondGap?: number,
+	lineBaseColor?: string
+	textBaseColor?: string
 }
 
 export function renderSVG(l: Layout, {
@@ -15,7 +17,9 @@ export function renderSVG(l: Layout, {
 	paddingY = 20,
 	displayBonds = true,
 	uBondPadding: bp = 0.2,
-	uBondGap: bg = 0.08
+	uBondGap: bg = 0.08,
+	lineBaseColor = 'black',
+	textBaseColor = 'black'
 } : svgRendererOption = {}): {
 	svg: string,
 	width: number,
@@ -30,8 +34,13 @@ export function renderSVG(l: Layout, {
 
 	svg += `<svg id="${id}" xmlns="http://www.w3.org/2000/svg" width="${width}" height="${height}">`
 	svg += `<style>`
-			+ `#${id} text { text-anchor: middle; dominant-baseline: middle; }`
-			+ `#${id} line { stroke: black; }`
+			+ `#${id} text {`
+				+ `text-anchor: middle; dominant-baseline: middle;`
+				+ `fill: ${textBaseColor};`
+			+ `}`
+			+ `#${id} line {`
+				+ `stroke: ${lineBaseColor};`
+			+ `}`
 		+ `</style>`
 
 	const X = (x: number) => (x + l.offsetX) * unitLen + paddingX

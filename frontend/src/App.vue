@@ -1,7 +1,8 @@
 <script setup lang="ts">
 import { watch, reactive, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
-import Cuiping from 'cuiping-component/src/Cuiping.vue'
+import Cuiping from 'cuiping-component/src'
+import Conf, { Schemas, SchemasToValues } from './conf';
 
 const molecule = ref<string | undefined>()
 
@@ -36,6 +37,34 @@ const { t } = i18n
 function setLocale(locale: string) {
     localStorage.setItem('cuipingLocale', i18n.locale.value = locale)
 }
+
+const schemasComp = {
+    useCanvas: { ty: 'boolean', def: false }
+} as const
+
+const confComp = ref<SchemasToValues<typeof schemasComp>>()
+
+const schemasRender = {
+	unitLen: { ty: 'number', def: 30 },
+	paddingX: { ty: 'number', def: 20 },
+	paddingY: { ty: 'number', def: 20 },
+	displayBonds: { ty: 'boolean', def: true },
+	uBondPadding: { ty: 'number', def: 0.2 },
+	uBondGap: { ty: 'number', def: 0.08 },
+	lineBaseColor: { ty: 'color', def: 'black' },
+	textBaseColor: { ty: 'color', def: 'black' }
+} as const
+
+const confRender = ref<SchemasToValues<typeof schemasRender>>()
+
+const confFolden = ref<boolean>(
+    JSON.parse(localStorage.getItem('cuipingConfFolden') ?? '"false"')
+)
+function toggleConf() {
+    localStorage.setItem('cuipingConfFolden',
+        JSON.stringify(confFolden.value = ! confFolden.value)
+    )
+}
 </script>
 
 <template>
@@ -60,7 +89,18 @@ function setLocale(locale: string) {
         <p v-html="
             t('info.structure', { formula: `<code>\`${molecule ?? ''}\`</code>` })
         "></p>
-        <Cuiping :molecule="molecule" />
+        <Cuiping
+            :molecule="molecule"
+            v-bind="confComp" :render-options="confRender"
+        />
+
+        <div class="confs" :class="{ folden: confFolden }">
+            <p>{{ t('title.conf') }}&emsp;<span class="folder" @click="toggleConf">^</span></p>
+            <div>
+                <Conf :schemas="schemasComp" v-model="confComp" />
+                <Conf :schemas="schemasRender" v-model="confRender" />
+            </div>
+        </div>
     </header>
 
     <article>
@@ -75,7 +115,10 @@ function setLocale(locale: string) {
                     <button @click="history.splice(index, 1)">{{ t('op.remove') }}</button>
                     <button @click="selectMol(mol)">{{ t('op.select') }}</button>
                     <br />
-                    <Cuiping :molecule="mol" :key="mol" />
+                    <Cuiping
+                        :molecule="mol" :key="mol"
+                        v-bind="confComp" :render-options="confRender"
+                    />
                 </div>
             </template>
             <p v-else>{{ t('info.noHistory') }}</p>
@@ -88,7 +131,10 @@ function setLocale(locale: string) {
                 <code>{{ mol }}</code>
                 <button @click="selectMol(mol)">{{ t('op.select') }}</button>
                 <br />
-                <Cuiping :molecule="mol" :key="mol" />
+                <Cuiping
+                    :molecule="mol" :key="mol"
+                    v-bind="confComp" :render-options="confRender"
+                />
             </div>
         </div>
 
@@ -149,6 +195,12 @@ textarea {
     border: .1em solid black;
     border-radius: .3em;
     padding: .1em;
+    font-family: monospace;
+    transition: .3s box-shadow ease-out;
+}
+
+textarea:focus {
+    box-shadow: 0 0 .15em .07em #1cd91c;
 }
 
 :deep(code) {
@@ -165,11 +217,14 @@ article code {
 
 .mols {
     display: flex;
+    flex-wrap: wrap;
+    margin-bottom: -1em;
 }
 
 .mols > div {
     display: inline-block;
     padding: 1em;
+    margin-bottom: 1em;
 }
 
 .mols > div:nth-child(2n + 1) {
@@ -199,5 +254,34 @@ a, a:visited {
 
 a:hover, a:active {
     color: #1cd91c;
+}
+
+.confs {
+    width: 50vw;
+    margin: auto;
+    border-radius: 1em 1em 0 0;
+    padding: .5em;
+    background-color: white;
+    color: black;
+}
+
+.confs > p {
+    font-size: 1.3em;
+    font-weight: bold;
+    margin: .4em 0;
+}
+
+.confs.folden > div {
+    display: none;
+}
+
+.folder {
+    display: inline-block;
+    user-select: none;
+    transition: .6s transform;
+}
+
+.folden .folder {
+    transform: rotate(180deg);
 }
 </style>
