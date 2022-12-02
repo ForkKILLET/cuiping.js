@@ -70,6 +70,8 @@ function toggleConf() {
         JSON.stringify(confFolden.value = ! confFolden.value)
     )
 }
+
+const buildTime = import.meta.env.VITE_BUILD_TIME ?? 'DEV'
 </script>
 
 <template>
@@ -149,6 +151,8 @@ function toggleConf() {
         GitHub: <a href="//github.com/ForkKILLET/cuiping.js">ForkKILLET/cuiping.js</a> <br />
         npm: <a href="//www.npmjs.com/package/cuiping">cuiping (backend)</a> |
         <a href="//www.npmjs.com/package/cuiping-component">cuiping-component</a>
+        <br />
+        <i>{{ t('info.build', { buildTime }) }}</i>
     </article>
 </template>
 
