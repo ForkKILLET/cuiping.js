@@ -1,7 +1,11 @@
 import { MathEx } from '../utils/math.js'
+import { getWidth } from '../utils/measure.js'
 
 export type Group = {
-	t: string
+	t: string[] & { w: number }
+	// Note:
+	// each item contains the characters in one border box
+	// w: relative text width
 	a: Record<string, string>
 }
 export type BondCount = 1 | 2 | 3 
@@ -103,7 +107,7 @@ export const BondCountTable: Record<string, BondCount> = {
 }
 export const BondDirTable = {
 	'-': 0,
-	// Note: The y-axis of SVG is top-to-bottom.
+	// Note: the y-axis of SVG is top-to-bottom
 	'/': 300,
 	'|': 270,
 	'\\': 60
@@ -111,9 +115,9 @@ export const BondDirTable = {
 
 export class ChemParser extends Parser<Chem> {
 	private doParseGroup(): Group {
-		let t = ''
+		let s = ''
 		while (GroupCharset.includes(this.current)) {
-			t += this.current
+			s += this.current
 			this.index ++
 		}
 
@@ -144,11 +148,28 @@ export class ChemParser extends Parser<Chem> {
 			this.index ++
 		}
 
-		if (! t) throw this.expect('atom group')
-		if (t.includes('*') && t.length > 1)
+		if (! s) throw this.expect('atom group')
+		if (s.includes('*') && s.length > 1)
 			throw Error(`Willcard groups mustn't include any characters except '*'`)
-		if (t.includes('.') && t.length > 1)
+		if (s.includes('.') && s.length > 1)
 			throw Error(`Collpased carbon mustn't include any characters except '.'`)
+
+		const t = Object.assign([] as string[], { w: 0 })
+
+		let afterCapital = false
+		for (const ch of s) {
+			if (ch >= 'A' && ch <= 'Z') afterCapital = true
+			else if (afterCapital) {
+				afterCapital = false
+				if (ch >= 'a' && ch <= 'z') {
+					t[t.length - 1] += ch
+					continue
+				}
+			}
+			t.push(ch)
+		}
+
+		t.w = t.reduce((w, ch) => w + getWidth(ch), 0)
 
 		// TODO: validate
 		return { t, a }

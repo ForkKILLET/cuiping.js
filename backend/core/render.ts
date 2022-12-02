@@ -2,6 +2,7 @@ import type { Group, BondCount } from './parse.js'
 import type { ExpandedChem } from './expand.js'
 import { MathEx } from '../utils/math.js'
 import { Debug } from '../utils/debug.js'
+import { getWidth } from '../utils/measure.js'
 
 export type LayoutBond = {
 	c: BondCount,
@@ -45,8 +46,8 @@ export function locate(chem: ExpandedChem, {
 	) => {
 		groups.push({ g: c.g, x: x1, y: y1, xo, yo })
 
-		const w = c.g.t.length * 2
-		const cxo = 1 // Note: center offset x, depends on center atom
+		const w = c.g.t.w * 2
+		const cxo = getWidth(c.g.t[0]) // Note: center offset x, depends on center atom
 
 		c.bonds.forEach(b => {
 			// Note: distance to text border
@@ -59,22 +60,25 @@ export function locate(chem: ExpandedChem, {
 			const dxo = h * (Math.abs(t) > Math.abs(k)
 				? yr / t // Note: yr / dxo = tan d
 				: xr)
+
 			const dyo = h * (Math.abs(t) > Math.abs(k)
 				? yr
-				: (xr + cxo) * t) // Note: dyo / xr = tan d
+				: xr * t) // Note: dyo / xr = tan d
+
+			const { t: T } = b.t.g
 
 			const x2 = x1 + MathEx.cosd(b.d) * u
-			const cx2 = x1 + MathEx.cosd(b.d) * (u + h)
+			const cx2 = x1 + MathEx.cosd(b.d) * (u + getWidth(T[0]) * h)
 			const y2 = y1 + MathEx.sind(b.d) * u
 			const cy2 = y1 + MathEx.sind(b.d) * (u + h)
 
-			const txo = MathEx.cosd(b.d) > 0 // Note: text offset x of target group
+			const txo = MathEx.cosd(b.d) >= 0 // Note: text offset x of target group
 				? 0
-				: (- b.t.g.t.length + cxo) * 2 * h
+				: (- T.w + cxo) * 2 * h
 
 			bonds.push({
 				g1: b.f, g2: b.t.g,
-				x1, y1, x2, y2, xo: xo + cxo * h + dxo, yo: yo + dyo,
+				x1, y1, x2, y2, xo: xo + dxo, yo: yo + dyo,
 				c: b.c
 			})
 
@@ -102,13 +106,13 @@ export function getViewport(l: Layout, h: number) {
 		const y = g.y + g.yo
 		if (y < yMin) yMin = y
 		if (y > yMax) yMax = y
-		const x0 = g.x + g.xo
-		const x = x0 + g.g.t.length * h * 2 // Note: Calculate right border of text.
-		if (x0 < xMin) xMin = x0
-		if (x > xMax) xMax = x
+		// Note: calculate border of text
+		const x1 = g.x + g.xo - h
+		const x2 = g.x + g.xo + (g.g.t.w * 2 - 1) * h
+		if (x1 < xMin) xMin = x1
+		if (x2 > xMax) xMax = x2
 	}
 	return {
-		// Note: text anchor effects x offset and width
 		xMin, yMin, xMax, yMax,
 		xOffset: - xMin,
 		yOffset: - yMin,
@@ -182,16 +186,20 @@ export function renderSVG(c: ExpandedChem, opt: svgRendererOption = {}): {
 		O.x = xo
 		O.y = yo
 
-		if (g.t === '*' || g.t === '.') continue
+		if (g.t[0] === '*' || g.t[0] === '.') continue
 		let attr = ''
 		if (g.a.color ??= g.a.C) {
 			attr += `fill="${g.a.color}"`
 		}
-		for (const [i, ch] of [...g.t].entries()) {
-			// Note: plus 1 for text anchor
-			svg += `<text x="${X(x + (i * 2 + 1) * h)}" y="${Y(y)}" ${attr}>${ch}</text>`
+
+		let w = 0
+		for (const s of g.t) {
+			const wb = getWidth(s)
+			if (w > 0) w += wb / 2
+			svg += `<text x="${X(x + w * 2 * h)}" y="${Y(y)}" ${attr}>${s}</text>`
 			if (Debug.on) // Note: text border box
-				svg += `<rect x="${X(x + (i * 2) * h)}" y="${Y(y - h)}" width="${h * 2}" height="${h * 2}" stroke="red" fill="transparent"></rect>`
+				svg += `<rect x="${X(x + (w * 2 - wb) * h)}" y="${Y(y - h)}" width="${h * wb * 2}" height="${h * 2}" stroke="red" fill="transparent"></rect>`
+			w += wb / 2
 		}
 	}
 
@@ -201,11 +209,11 @@ export function renderSVG(c: ExpandedChem, opt: svgRendererOption = {}): {
 		O.x = xo
 		O.y = yo
 	
-		if (g1.t !== '.') {
+		if (g1.t[0] !== '.') {
 			if (x2 !== x1) x1 += bp * (x2 - x1)
 			if (y2 !== y1) y1 += bp * (y2 - y1)
 		}
-		if (g2.t !== '.') {
+		if (g2.t[0] !== '.') {
 			if (x2 !== x1) x2 -= bp * (x2 - x1)
 			if (y2 !== y1) y2 -= bp * (y2 - y1)
 		}
