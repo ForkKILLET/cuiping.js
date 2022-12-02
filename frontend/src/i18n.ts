@@ -27,7 +27,8 @@ export const messages = {
             bondGap: 'Bond gap',
             lineBaseColor: 'Line base color',
             textBaseColor: 'Text base color',
-            halfFontSize: 'Half font size'
+            halfFontSize: 'Half font size',
+            halfFontBorder: 'Half font border'
         }
     },
     zh: {
@@ -58,7 +59,8 @@ export const messages = {
             bondGap: '键间距',
             lineBaseColor: '线基色',
             textBaseColor: '文字基色',
-            halfFontSize: '半字号'
+            halfFontSize: '半字号',
+            halfFontBorder: '半字框'
         }
     }
 }

@@ -30,10 +30,10 @@ export type Layout = {
 
 export function locate(chem: ExpandedChem, {
 	unitLen: u = 30,
-	halfFontSize: h = 8
+	halfFontBorder: h = 8
 }: {
 	unitLen?: number,
-	halfFontSize?: number
+	halfFontBorder?: number
 }): Layout {
 	const groups: LayoutGroup[] = []
 	const bonds: LayoutBond[] = []
@@ -68,6 +68,10 @@ export function locate(chem: ExpandedChem, {
 			const y2 = y1 + MathEx.sind(b.d) * u
 			const cy2 = y1 + MathEx.sind(b.d) * (u + h)
 
+			const txo = MathEx.cosd(b.d) > 0 // Note: text offset x of target group
+				? 0
+				: (- b.t.g.t.length + cxo) * 2 * h
+
 			bonds.push({
 				g1: b.f, g2: b.t.g,
 				x1, y1, x2, y2, xo: xo + cxo * h + dxo, yo: yo + dyo,
@@ -77,7 +81,7 @@ export function locate(chem: ExpandedChem, {
 			dfs(
 				b.t,
 				cx2, cy2,
-				xo + dxo,
+				xo + dxo + txo,
 				yo + dyo,
 			)
 		})
@@ -98,15 +102,17 @@ export function getViewport(l: Layout, h: number) {
 		const y = g.y + g.yo
 		if (y < yMin) yMin = y
 		if (y > yMax) yMax = y
-		const x = g.x + g.xo + g.g.t.length * h * 2 // Note: Calculate right border of text.
-		if (x < xMin) xMin = x
+		const x0 = g.x + g.xo
+		const x = x0 + g.g.t.length * h * 2 // Note: Calculate right border of text.
+		if (x0 < xMin) xMin = x0
 		if (x > xMax) xMax = x
 	}
 	return {
 		// Note: text anchor effects x offset and width
-		xOffset: - xMin + h * 2,
+		xMin, yMin, xMax, yMax,
+		xOffset: - xMin,
 		yOffset: - yMin,
-		width: xMax - xMin + h * 2,
+		width: xMax - xMin,
 		height: yMax - yMin
 	}
 }
@@ -121,6 +127,7 @@ export type svgRendererOption = {
 	lineBaseColor?: string
 	textBaseColor?: string
 	halfFontSize?: number
+	halfFontBorder?: number
 }
 
 export function renderSVG(c: ExpandedChem, opt: svgRendererOption = {}): {
@@ -139,7 +146,8 @@ export function renderSVG(c: ExpandedChem, opt: svgRendererOption = {}): {
 		bondGap: bg = 2,
 		lineBaseColor = 'black',
 		textBaseColor = 'black',
-		halfFontSize: h = 8
+		halfFontSize = 8,
+		halfFontBorder: h = 8
 	} = opt
 
 	let svg = ''
@@ -158,7 +166,7 @@ export function renderSVG(c: ExpandedChem, opt: svgRendererOption = {}): {
 			+ `#${id} text {`
 				+ `dominant-baseline: central;`
 				+ `text-anchor: middle;`
-				+ `font-size: ${h * 2}px;`
+				+ `font-size: ${halfFontSize * 2}px;`
 				+ `fill: ${textBaseColor};`
 			+ `}`
 			+ `#${id} line {`

@@ -54,7 +54,8 @@ const schemasRender = {
 	bondGap: { ty: 'number', def: 2 },
 	lineBaseColor: { ty: 'color', def: 'black' },
 	textBaseColor: { ty: 'color', def: 'black' },
-    halfFontSize: { ty: 'number', def: 8 }
+    halfFontSize: { ty: 'number', def: 8 },
+    halfFontBorder: { ty: 'number', def: 8 }
 } as const
 
 const confRender = ref<SchemasToValues<typeof schemasRender>>()
