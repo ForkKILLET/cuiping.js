@@ -46,7 +46,6 @@ export function locate(chem: ExpandedChem, {
 		x1: number, y1: number,
 		xo: number, yo: number
 	) => {
-		debugger
 		groups.push({ g: c.g, x: x1, y: y1, xo, yo })
 
 		const w = c.g.t.w * 2
@@ -183,8 +182,15 @@ export function renderSVG(c: ExpandedChem, opt: svgRendererOption = {}): {
 				+ `dominant-baseline: central;`
 				+ `text-anchor: middle;`
 				+ `font-size: ${halfFontSize * 2}px;`
+			+ `}`
+			+ `#${id} text:not([nobasecolor]) {`
 				+ `fill: ${textBaseColor};`
 			+ `}`
+			+ `#${id} text[number] {`
+				+ `font-size: ${halfFontSize * 1.5}px;`
+				+ `dominant-baseline: hanging;`
+			+ `}`
+			+ `#${id} text[bold] { font-weight: bold; }`
 			+ `#${id} line {`
 				+ `stroke: ${lineBaseColor};`
 			+ `}`
@@ -200,15 +206,17 @@ export function renderSVG(c: ExpandedChem, opt: svgRendererOption = {}): {
 
 		let w = 0
 		for (const s of g.t) {
-			let attr = ''
-			if (g.a.color ??= g.a.C) {
-				attr += `fill="${g.a.color}"`
-			}
+			const attr = []
+			if (g.a.color)
+				attr.push(`nobasecolor`, `fill="${g.a.color}"`)
+			if (g.a.bold)
+				attr.push(`bold`)
 
 			const wb = getWidth(s)
 			if (w > 0) w += wb / 2
 			if (s !== '*' && s !== '.') {
-				svg += `<text x="${X(x + w * 2 * hw)}" y="${Y(y)}" ${attr}>${s}</text>`
+				if (s.match(/\d/)) attr.push('number')
+				svg += `<text x="${X(x + w * 2 * hw)}" y="${Y(y)}" ${attr.join(' ')}>${s}</text>`
 			}
 			if (showTextBox) // Note: text box
 				svg += `<rect x="${X(x + (w * 2 - wb) * hw)}" y="${Y(y - hh)}" width="${hw * wb * 2 || 1}" height="${hh * 2}" stroke="red" fill="transparent"></rect>`

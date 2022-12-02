@@ -13,7 +13,8 @@ const examples: [ Record<string, string>, string][] = [
     [ { zh: '乙烯', en: 'ethylene' }, 'C[H\\/]=C[\\/H]' ],
     [ { zh: '碳碳双键 (官能团)', en: 'C-C double bond (functional group)' }, 'C[*\\/]=C[\\/*]' ],
     [ { zh: '2-氯-1,3-丁二烯 (仅碳链)', en: 'chloroprene (carbon chain only)' }, 'C=C[|Cl]-C=C' ],
-    [ { zh: '乙酸', en: 'acetic acid' }, 'C[H-,||H]-C[=|O]-O-H' ]
+    [ { zh: '乙酸', en: 'acetic acid' }, 'C[H-,||H]-C[=|O]-O-H' ],
+    [ { zh: '2-氯丙烷 (附样式)', en: '2-chloropropane (with style)' }, 'CH3-CH<B>[|Cl<C:green>]-CH3' ]
 ]
 
 const history = reactive<string[]>(
@@ -91,7 +92,9 @@ function toggleConf() {
         </p>
 
         <p v-html="
-            t('info.structure', { formula: `<code>\`${molecule ?? ''}\`</code>` })
+            t('info.structure', {
+                formula: `<code>\`${molecule?.replace(/./g, (ch) => `&#x${ch.charCodeAt(0).toString(16)};`) ?? ''}\`</code>`
+            })
         "></p>
         <Cuiping
             :molecule="molecule"

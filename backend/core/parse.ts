@@ -1,3 +1,4 @@
+import { Debug } from '../utils/debug.js'
 import { MathEx } from '../utils/math.js'
 import { getWidth } from '../utils/measure.js'
 
@@ -6,7 +7,7 @@ export type Group = {
 	// Note:
 	// each item contains the characters in one border box
 	// w: relative text width
-	a: Record<string, string>
+	a: Record<string, string | boolean>
 }
 export type BondCount = 1 | 2 | 3 
 export type BondDir = number
@@ -27,9 +28,10 @@ export abstract class Parser<T> {
 
 	protected expect(expect: string, got?: string) {
 		return Error(`Expecting ${expect}, but got ${
-			got ?? this.current
+			got ?? (this.current
 				? `'${this.current}'`
 				: 'end of input'
+			)
 		}.`)
 	}
 
@@ -113,6 +115,17 @@ export const BondDirTable = {
 	'\\': 60
 }
 
+export const attributes = {
+	color: { type: 'string' },
+	C: 'color',
+	bold: { type: 'boolean' },
+	B: 'bold'
+} as const
+
+const isAttribute = (k: string): k is keyof typeof attributes => {
+	return k in attributes
+}
+
 export class ChemParser extends Parser<Chem> {
 	private doParseGroup(): Group {
 		let s = ''
@@ -121,7 +134,7 @@ export class ChemParser extends Parser<Chem> {
 			this.index ++
 		}
 
-		const a: Record<string, string> = {}
+		const a: Record<string, string | boolean> = {}
 		if (this.current === '<') {
 			this.index ++
 			let k = ''
@@ -129,12 +142,14 @@ export class ChemParser extends Parser<Chem> {
 			attr: while (this.current) {
 				switch (this.current as string) {
 					case '>':
+						if (! readingValue) a[k] = true
 						break attr
 					case ':':
 						readingValue = true
 						a[k] = ''
 						break
 					case ',':
+						if (! readingValue) a[k] = true
 						k = ''
 						readingValue = false
 						break
@@ -148,6 +163,22 @@ export class ChemParser extends Parser<Chem> {
 			this.index ++
 		}
 
+		Debug.D('attr %o', a)
+
+		for (const k in a) {
+			if (isAttribute(k)) {
+				let ak = attributes[k]
+				if (typeof ak === 'string') {
+					a[ak] = a[k]
+					ak = attributes[ak]
+				}
+				const ty = ak.type
+				const tyNow = typeof a[k]
+				if (tyNow !== ty) throw this.expect(`group atrribute '${k}' to be ${ty} type`, tyNow)
+			}
+			else throw Error(`Unknown group attribute '${k}'.`)
+		}
+
 		if (! s) throw this.expect('atom group')
 		if (s.includes('*') && s.length > 1)
 			throw Error(`Willcard groups mustn't include any characters except '*'`)
@@ -156,22 +187,18 @@ export class ChemParser extends Parser<Chem> {
 
 		const t = Object.assign([] as string[], { w: 0 })
 
-		let afterCapital = false
-		for (const ch of s) {
-			if (ch >= 'A' && ch <= 'Z') afterCapital = true
-			else if (afterCapital) {
-				afterCapital = false
-				if (ch >= 'a' && ch <= 'z') {
-					t[t.length - 1] += ch
-					continue
-				}
+		for (const [ i, ch ] of [...s].entries()) {
+			if (i && (
+				s[i - 1].match(/[A-Z]/) && ch.match(/[a-z]/)
+			)) {
+				t[t.length - 1] += ch
+				continue
 			}
 			t.push(ch)
 		}
 
 		t.w = t.reduce((w, ch) => w + getWidth(ch), 0)
 
-		// TODO: validate
 		return { t, a }
 	}
 
