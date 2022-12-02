@@ -140,7 +140,7 @@ watch([ canvas, props ], () => {
     margin: 0 .5em;
     background-color: white;
     border-radius: .4em;
-    box-shadow: 0 0 0.1em 0.1em #dadada;
+    box-shadow: 0 0 2px 2px #dadada;
     overflow: hidden;
 }
 

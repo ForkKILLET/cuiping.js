@@ -102,7 +102,7 @@ function toggleConf() {
         />
 
         <div class="confs" :class="{ folden: confFolden }">
-            <p>{{ t('title.conf') }}&emsp;<span class="folder" @click="toggleConf">^</span></p>
+            <p>{{ t('title.conf') }}&emsp;<span class="folder" @click="toggleConf">&Delta;</span></p>
             <div>
                 <Conf :schemas="schemasComp" v-model="confComp" />
                 <Conf :schemas="schemasRender" v-model="confRender" />
@@ -192,12 +192,12 @@ h2::before {
     left: -20vw;
     top: .4em;
     width: calc(20vw - .5em);
-    height: .1em;
+    height: 2px;
     background-color: black;
 }
 
 textarea {
-    font-size: 1.6em;
+    font-size: 1.4em;
     outline: none;
     border: .1em solid black;
     border-radius: .3em;
@@ -278,8 +278,14 @@ a:hover, a:active {
     margin: .4em 0;
 }
 
+.confs > div {
+    max-height: 40vw;
+    transition: .4s max-height;
+    overflow-y: scroll;
+}
+
 .confs.folden > div {
-    display: none;
+    max-height: 0;
 }
 
 .folder {
