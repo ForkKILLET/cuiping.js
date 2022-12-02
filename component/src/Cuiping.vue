@@ -3,7 +3,6 @@ import { computed, nextTick, ref, watch } from 'vue'
 import { Canvg } from 'canvg'
 import { ChemParser } from 'cuiping/core/parse'
 import { expandAggregateBonds } from 'cuiping/core/expand'
-import { locate } from 'cuiping/core/locate'
 import { renderSVG } from 'cuiping/core/render'
 import type { svgRendererOption } from 'cuiping/core/render'
 
@@ -35,10 +34,9 @@ const res = computed(() => {
     }
 
     const chemEx = expandAggregateBonds(chem!)
-    const layout = locate(chemEx)
     return {
         state: 'ok' as const,
-        data: renderSVG(layout, props.renderOptions)
+        data: renderSVG(chemEx, props.renderOptions)
     }
 })
 
@@ -98,7 +96,6 @@ watch([ canvas, props ], () => {
 </script>
 
 <template>
-    <MyComp molecule="C[--||H]"></MyComp>
     <div class="root" :class="res.state">
         <div v-if="res.state === 'ok'" class="container">
             <template v-if="useCanvas">

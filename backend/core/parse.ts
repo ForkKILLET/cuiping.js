@@ -9,7 +9,8 @@ export type BondDir = number
 export type Bond = {
 	c: BondCount,
 	d: BondDir[],
-	n: Chem
+	n: Chem,
+	i: number // Note: index of connected atom
 }
 
 export type Chem = {
@@ -212,14 +213,14 @@ export class ChemParser extends Parser<Chem> {
 			if (GroupCharset.includes(this.current)) {
 				const n = this.doParse()
 				const [ c, d ] = this.doParseBondType({ isPrefix: false, parsedBonds, dirFrom })
-				return { c, d, n }
+				return { c, d, n, i: 0 }
 			}
 			else throw this.expect('bond')
 		}
 		else {
 			const [ c, d ] = this.doParseBondType({ isPrefix: true, parsedBonds, dirFrom })
 			const n = this.doParse()
-			return { c, d, n }
+			return { c, d, n, i: 0 }
 		}
 	}
 

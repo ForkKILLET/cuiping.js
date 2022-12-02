@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { reactive, watch } from 'vue'
+import { reactive } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { Schemas } from './index'
 

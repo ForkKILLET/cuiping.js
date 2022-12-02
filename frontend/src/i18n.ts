@@ -23,10 +23,11 @@ export const messages = {
             paddingX: 'X padding',
             paddingY: 'Y padding',
             displayBonds: 'Display bonds',
-            uBondPadding: 'Bond padding (unit)',
-            uBondGap: 'Bond gap (unit)',
+            bondPadding: 'Bond padding',
+            bondGap: 'Bond gap',
             lineBaseColor: 'Line base color',
-            textBaseColor: 'Text base color'
+            textBaseColor: 'Text base color',
+            halfFontSize: 'Half font size'
         }
     },
     zh: {
@@ -53,10 +54,11 @@ export const messages = {
             paddingX: '横向留白',
             paddingY: '纵向留白',
             displayBonds: '显示键',
-            uBondPadding: '键留白 (单位)',
-            uBondGap: '键间距 (单位)',
+            bondPadding: '键留白',
+            bondGap: '键间距',
             lineBaseColor: '线基色',
-            textBaseColor: '文字基色'
+            textBaseColor: '文字基色',
+            halfFontSize: '半字号'
         }
     }
 }

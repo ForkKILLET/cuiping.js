@@ -50,10 +50,11 @@ const schemasRender = {
 	paddingX: { ty: 'number', def: 20 },
 	paddingY: { ty: 'number', def: 20 },
 	displayBonds: { ty: 'boolean', def: true },
-	uBondPadding: { ty: 'number', def: 0.2 },
-	uBondGap: { ty: 'number', def: 0.08 },
+	bondPadding: { ty: 'number', def: 0 },
+	bondGap: { ty: 'number', def: 2 },
 	lineBaseColor: { ty: 'color', def: 'black' },
-	textBaseColor: { ty: 'color', def: 'black' }
+	textBaseColor: { ty: 'color', def: 'black' },
+    halfFontSize: { ty: 'number', def: 8 }
 } as const
 
 const confRender = ref<SchemasToValues<typeof schemasRender>>()
@@ -69,7 +70,6 @@ function toggleConf() {
 </script>
 
 <template>
-    <MyComp/>
     <header>
         <h1>Cuiping.js</h1>
 
