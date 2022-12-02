@@ -46,16 +46,17 @@ const schemasComp = {
 const confComp = ref<SchemasToValues<typeof schemasComp>>()
 
 const schemasRender = {
-	unitLen: { ty: 'number', def: 30 },
+	unitLen: { ty: 'number', def: 20 },
 	paddingX: { ty: 'number', def: 20 },
 	paddingY: { ty: 'number', def: 20 },
 	displayBonds: { ty: 'boolean', def: true },
-	bondPadding: { ty: 'number', def: 0 },
 	bondGap: { ty: 'number', def: 2 },
 	lineBaseColor: { ty: 'color', def: 'black' },
 	textBaseColor: { ty: 'color', def: 'black' },
     halfFontSize: { ty: 'number', def: 8 },
-    halfFontBorder: { ty: 'number', def: 8 }
+    halfTextBoxWidth: { ty: 'number', def: 6 },
+    halfTextBoxHeight: { ty: 'number', def: 8 },
+    showTextBox: { ty: 'boolean', def: false }
 } as const
 
 const confRender = ref<SchemasToValues<typeof schemasRender>>()

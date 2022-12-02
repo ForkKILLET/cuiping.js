@@ -23,12 +23,13 @@ export const messages = {
             paddingX: 'X padding',
             paddingY: 'Y padding',
             displayBonds: 'Display bonds',
-            bondPadding: 'Bond padding',
             bondGap: 'Bond gap',
             lineBaseColor: 'Line base color',
             textBaseColor: 'Text base color',
             halfFontSize: 'Half font size',
-            halfFontBorder: 'Half font border'
+            halfTextBoxWidth: 'Half text box width',
+            halfTextBoxHeight: 'Half text box height',
+            showTextBox: 'Show text box (debug)'
         }
     },
     zh: {
@@ -55,12 +56,13 @@ export const messages = {
             paddingX: '横向留白',
             paddingY: '纵向留白',
             displayBonds: '显示键',
-            bondPadding: '键留白',
             bondGap: '键间距',
             lineBaseColor: '线基色',
             textBaseColor: '文字基色',
             halfFontSize: '半字号',
-            halfFontBorder: '半字框'
+            halfTextBoxWidth: '半字框宽',
+            halfTextBoxHeight: '半字框高',
+            showTextBox: '显示字框 (调试)'
         }
     }
 }
