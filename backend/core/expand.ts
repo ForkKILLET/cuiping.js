@@ -14,7 +14,7 @@ export type ExpandedChem = {
 	bonds: ExpandedBond[]
 }
 
-export function expandAggregateBonds(
+export function expand(
 	chem: Chem,
 	rotateD: number = 0, flipX: boolean = false, flipY: boolean = false,
 	depth: number = 0
@@ -53,7 +53,7 @@ export function expandAggregateBonds(
 			bonds.push({
 				c: b.c,
 				d,
-				t: expandAggregateBonds(b.n, rD, fX, fY, depth + 1),
+				t: expand(b.n, rD, fX, fY, depth + 1),
 				f: chem.g
 			})
 		})

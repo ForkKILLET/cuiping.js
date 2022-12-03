@@ -1,18 +1,17 @@
 <script setup lang="ts">
 import { computed, nextTick, ref, watch } from 'vue'
 import { Canvg } from 'canvg'
-import { ChemParser } from 'cuiping/core/parse'
-import { expandAggregateBonds } from 'cuiping/core/expand'
-import { renderSVG } from 'cuiping/core/render'
-import type { svgRendererOption } from 'cuiping/core/render'
-
-Object.assign(window, {ref_c:ref})
+import {
+    ChemParser,
+    expand,
+    renderSVG, SvgRendererOption
+} from 'cuiping'
 
 const props = withDefaults(defineProps<{
     molecule?: string,
     useCanvas?: boolean,
     canvasScale?: number,
-    renderOptions?: svgRendererOption
+    renderOptions?: SvgRendererOption
 }>(), {
     useCanvas: false,
     canvasScale: 1
@@ -33,7 +32,7 @@ const res = computed(() => {
         errMsg
     }
 
-    const chemEx = expandAggregateBonds(chem!)
+    const chemEx = expand(chem!)
     return {
         state: 'ok' as const,
         data: renderSVG(chemEx, props.renderOptions)

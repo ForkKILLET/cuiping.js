@@ -130,7 +130,7 @@ export function getViewport(l: Layout, h: number) {
 	}
 }
 
-export type svgRendererOption = {
+export type SvgRendererOption = {
 	unitLen?: number,
 	paddingX?: number,
 	paddingY?: number,
@@ -144,7 +144,7 @@ export type svgRendererOption = {
 	showTextBox?: boolean
 }
 
-export function renderSVG(c: ExpandedChem, opt: svgRendererOption = {}): {
+export function renderSVG(c: ExpandedChem, opt: SvgRendererOption = {}): {
 	svg: string,
 	width: number,
 	height: number

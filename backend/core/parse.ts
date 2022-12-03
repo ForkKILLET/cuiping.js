@@ -121,15 +121,15 @@ export const BondDirTable = {
 	'+': [ 0, 90, 180, 270 ]
 }
 
-export const attributes = {
+export const Attributes = {
 	color: { type: 'string' },
 	C: 'color',
 	bold: { type: 'boolean' },
 	B: 'bold'
 } as const
 
-const isAttribute = (k: string): k is keyof typeof attributes => {
-	return k in attributes
+const isAttribute = (k: string): k is keyof typeof Attributes => {
+	return k in Attributes
 }
 
 export class ChemParser extends Parser<Chem> {
@@ -177,10 +177,10 @@ export class ChemParser extends Parser<Chem> {
 
 		for (const k in a) {
 			if (isAttribute(k)) {
-				let ak = attributes[k]
+				let ak = Attributes[k]
 				if (typeof ak === 'string') {
 					a[ak] = a[k]
-					ak = attributes[ak]
+					ak = Attributes[ak]
 				}
 				const ty = ak.type
 				const tyNow = typeof a[k]

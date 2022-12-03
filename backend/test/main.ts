@@ -1,6 +1,6 @@
 import { Debug } from '../utils/debug.js'
 import { ChemParser } from '../core/parse.js'
-import { expandAggregateBonds } from '../core/expand.js'
+import { expand } from '../core/expand.js'
 import { renderSVG } from '../core/render.js'
 
 export function testChem(input: string) {
@@ -15,7 +15,7 @@ export function testChem(input: string) {
 	if (chem) Debug.O(chem)
 	else return
 
-	const chemEx = expandAggregateBonds(chem, 0)
+	const chemEx = expand(chem, 0)
 	Debug.O(chemEx)
 
 	const svg = renderSVG(chemEx)

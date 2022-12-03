@@ -3,8 +3,6 @@ import { watch, reactive, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 import Conf, { SchemasToValues } from './conf';
 
-Object.assign(window,{ref_a:ref})
-
 const molecule = ref<string | undefined>()
 
 const examples: [ Record<string, string>, string][] = [
