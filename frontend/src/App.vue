@@ -71,7 +71,8 @@ function toggleConf() {
     )
 }
 
-const buildTime = import.meta.env.VITE_BUILD_TIME ?? 'DEV'
+const buildTime = import.meta.env.VITE_BUILD_TIME ?? 'dev'
+const buildEnv = import.meta.env.VITE_BUILD_ENV ?? 'local'
 </script>
 
 <template>
@@ -152,7 +153,7 @@ const buildTime = import.meta.env.VITE_BUILD_TIME ?? 'DEV'
         npm: <a href="//www.npmjs.com/package/cuiping">cuiping (backend)</a> |
         <a href="//www.npmjs.com/package/cuiping-component">cuiping-component</a>
         <br />
-        <i>{{ t('info.build', { buildTime }) }}</i>
+        <i class="build">{{ t('info.build', { buildTime, buildEnv }) }}</i>
     </article>
 </template>
 
@@ -300,5 +301,9 @@ a:hover, a:active {
 
 .folden .folder {
     transform: rotate(180deg);
+}
+
+.build {
+    color: gray;
 }
 </style>

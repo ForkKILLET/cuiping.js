@@ -16,7 +16,7 @@ export const messages = {
             noHistory: 'No history yet.',
             enterFormula: 'Enter Cuiping formula',
             structure: 'The structure of {formula} is',
-            build: 'build on {buildTime} by Vite'
+            build: 'build by Vite at {buildTime} on {buildEnv}'
         },
         conf: {
             useCanvas: 'Use canvas',
@@ -50,7 +50,7 @@ export const messages = {
             noHistory: '暂无历史',
             enterFormula: '输入 Cuiping 式',
             structure: '{formula} 的结构是：',
-            build: '使用 Vite 构建于 {buildTime}'
+            build: '使用 Vite 构建于 {buildTime}，在 {buildEnv} 上'
         },
         conf: {
             useCanvas: '使用画布',
