@@ -1,4 +1,4 @@
-export const messages = {
+export default {
     en: {
         op: {
             remove: 'Remove',
