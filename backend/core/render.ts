@@ -69,7 +69,7 @@ export function locate(chem: ExpandedChem, {
 
 			const dyo = collpased
 				? 0
-				: hw * (Math.abs(t) > Math.abs(k)
+				: hh * (Math.abs(t) > Math.abs(k)
 					? yr
 					: xr * t) // Note: dyo / xr = tan d
 
