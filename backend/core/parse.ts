@@ -104,7 +104,7 @@ export const GroupCharset
 	+ '*' // Note: willcard
 	+ '.' // Note: collpased carbon
 export const BondCountCharset = '=#'
-export const BondDirCharset = '-|/\\'
+export const BondDirCharset = '-|/\\+'
 export const BondDirModifierCharset = '!'
 export const BondCharset = BondCountCharset + BondDirCharset + BondDirModifierCharset
 
@@ -113,11 +113,12 @@ export const BondCountTable: Record<string, BondCount> = {
 	'#': 3
 }
 export const BondDirTable = {
-	'-': 0,
+	'-': [ 0 ],
 	// Note: the y-axis of SVG is top-to-bottom
-	'/': 300,
-	'|': 270,
-	'\\': 60
+	'/': [ 300 ],
+	'|': [ 270 ],
+	'\\': [ 60 ],
+	'+': [ 0, 90, 180, 270 ]
 }
 
 export const attributes = {
@@ -132,6 +133,10 @@ const isAttribute = (k: string): k is keyof typeof attributes => {
 }
 
 export class ChemParser extends Parser<Chem> {
+	constructor(str: string) {
+		super(str.replace(/\s/g, ''))
+	}
+
 	private doParseGroup(): Group {
 		let s = ''
 		while (GroupCharset.includes(this.current)) {
@@ -243,17 +248,20 @@ export class ChemParser extends Parser<Chem> {
 		const auto180Deg = noImplictDir && plus180Deg
 
 		while (BondDirCharset.includes(this.current) || auto0Deg || auto180Deg) {
-			let d = 0
-			if (auto0Deg || auto180Deg) d = 0
-			else d = BondDirTable[this.current as keyof typeof BondDirTable]
-			if (plus180Deg) d += 180
+			const ds = []
+			if (auto0Deg || auto180Deg) ds.push(0)
+			else ds.push(...BondDirTable[this.current as keyof typeof BondDirTable])
 
-			if (! isPrefix || dirs.includes(d))
-				d = MathEx.stdAng(d + 180)
-			if (this.checkDupBondDir(parsedBonds, dirs, dirFrom, d))
-				throw Error(`Duplicated bond direction (${d} deg)`)
+			for (let d of ds) {
+				if (plus180Deg) d = MathEx.stdAng(d + 180)
+				if (! isPrefix || dirs.includes(d)) d = MathEx.stdAng(d + 180)
 
-			dirs.push(d)
+				if (this.checkDupBondDir(parsedBonds, dirs, dirFrom, d))
+					throw Error(`Duplicated bond direction (${ds} deg)`)
+
+				dirs.push(d)
+			}
+
 			if (auto0Deg || auto180Deg) break
 			this.index ++
 		}
