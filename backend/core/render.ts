@@ -169,7 +169,7 @@ export function renderSVG(c: ExpandedChem, opt: svgRendererOption = {}): {
 
 	const vp = getViewport(l, hw)
 
-	Debug.D(l, vp)
+	Debug.D('layout: %o, viewport: %o', l, vp)
 
 	const width = vp.width + paddingX * 2
 	const height = vp.height + paddingY * 2

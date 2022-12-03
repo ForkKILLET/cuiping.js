@@ -53,7 +53,11 @@ export abstract class Parser<T> {
 		if (this.used) throw Error('Parser is already used.')
 		this.used = true
 		try {
-			return this.doParse()
+			const result = this.doParse()
+			if (this.index !== this.str.length)
+				throw Error(`Unexcepted trailing characters '${this.after}'`)
+			Debug.D('parse: %o', result)
+			return result
 		}
 		catch (err) {
 			if (onError) {
@@ -101,7 +105,8 @@ export const GroupCharset
 	+ '.' // Note: collpased carbon
 export const BondCountCharset = '=#'
 export const BondDirCharset = '-|/\\'
-export const BondCharset = BondCountCharset + BondDirCharset
+export const BondDirModifierCharset = '!'
+export const BondCharset = BondCountCharset + BondDirCharset + BondDirModifierCharset
 
 export const BondCountTable: Record<string, BondCount> = {
 	'=': 2,
@@ -163,7 +168,7 @@ export class ChemParser extends Parser<Chem> {
 			this.index ++
 		}
 
-		Debug.D('attr %o', a)
+		Debug.D('attr: %o', a)
 
 		for (const k in a) {
 			if (isAttribute(k)) {
@@ -223,27 +228,38 @@ export class ChemParser extends Parser<Chem> {
 		dirFrom?: BondDir | null
 	} = {}): [ BondCount, BondDir[] ] {
 		let c: BondCount = 1
-		let dirs: BondDir[] = []
+		const dirs: BondDir[] = []
+
+		const plus180Deg = this.current === '!'
+		if (plus180Deg) this.index ++
+
 		if (BondCountCharset.includes(this.current)) {
 			c = BondCountTable[this.current as keyof typeof BondCountTable]
 			this.index ++
 		}
 
-		let auto0Deg = ! BondDirCharset.includes(this.current) && c > 1
-		while (BondDirCharset.includes(this.current) || auto0Deg) {
-			let d = auto0Deg
-				? 0
-				: BondDirTable[this.current as keyof typeof BondDirTable]
+		const noImplictDir = ! BondDirCharset.includes(this.current)
+		const auto0Deg = noImplictDir && c > 1
+		const auto180Deg = noImplictDir && plus180Deg
+
+		while (BondDirCharset.includes(this.current) || auto0Deg || auto180Deg) {
+			let d = 0
+			if (auto0Deg || auto180Deg) d = 0
+			else d = BondDirTable[this.current as keyof typeof BondDirTable]
+			if (plus180Deg) d += 180
+
 			if (! isPrefix || dirs.includes(d))
 				d = MathEx.stdAng(d + 180)
 			if (this.checkDupBondDir(parsedBonds, dirs, dirFrom, d))
 				throw Error(`Duplicated bond direction (${d} deg)`)
+
 			dirs.push(d)
-			if (auto0Deg) break
+			if (auto0Deg || auto180Deg) break
 			this.index ++
 		}
-		if (! dirs.length)
+		if (! dirs.length) {
 			throw this.expect('at least one bond direction')
+		}
 		return [ c, dirs ]
 	}
 
