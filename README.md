@@ -2,7 +2,7 @@
 
 _English document WIP_
 
-<center><img alt="logo" src="./docs/logo.svg" /></center>
+<p align="center"><img width="200" alt="logo" src="./docs/logo.svg" /></p>
 
 ## 简介
 
