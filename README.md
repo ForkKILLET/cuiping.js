@@ -1,8 +1,8 @@
 # Cuiping.js
 
-_WIP: English document_
+_English document WIP_
 
-_WIP: Logo_
+<center><img alt="logo" src="./docs/logo.svg" /></center>
 
 ## 简介
 
