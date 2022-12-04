@@ -208,14 +208,14 @@ export function renderSVG(c: ExpandedChem, opt: SvgRendererOption = {}): {
 		for (const s of g.t) {
 			const attr = []
 			if (g.a.color)
-				attr.push(`nobasecolor`, `fill="${g.a.color}"`)
+				attr.push(`nobasecolor=""`, `fill="${g.a.color}"`)
 			if (g.a.bold)
-				attr.push(`bold`)
+				attr.push(`bold=""`)
 
 			const wb = getWidth(s)
 			if (w > 0) w += wb / 2
 			if (s !== '*' && s !== '.') {
-				if (s.match(/\d/)) attr.push('number')
+				if (s.match(/\d/)) attr.push('number=""')
 				svg += `<text x="${X(x + w * 2 * hw)}" y="${Y(y)}" ${attr.join(' ')}>${s}</text>`
 			}
 			if (showTextBox) // Note: text box

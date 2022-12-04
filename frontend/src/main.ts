@@ -5,7 +5,6 @@ import messages from './i18n/messages'
 import { getLocale } from './i18n/getLocale'
 
 import CuipingVue from 'cuiping-component/src'
-import 'cuiping-component/dist/style.css'
 
 import App from './App.vue'
 import './style.css'
