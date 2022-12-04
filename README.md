@@ -51,6 +51,22 @@ _English document WIP_
     }
     ```
 
+### 渲染配置
+
+| 选项                  | 类型   | 描述
+| :-------------------- | :----- | :--- 
+| `unitLen`             | 数值   | 单位长度
+| `paddingX`            | 数值   | 横向留白
+| `paddingY`            | 数值   | 纵向留白
+| `displayBonds`        | 布尔   | 显示键
+| `bondGap`             | 数值   | 键间距
+| `lineBaseColor`       | 字符串 | 线基色
+| `textBaseColor`       | 字符串 | 文字基色
+| `halfFontSize`        | 数值   | 半字号
+| `halfTextBoxWidth`    | 数值   | 半字框宽
+| `halfTextBoxHeight`   | 数值   | 半字框高
+| `showTextBox`         | 布尔   | 显示字框
+
 ### 在浏览器中使用 Vue 组件
 
 1. 使用你熟悉的包管理器安装 Cuiping.js 组件包 `cuiping-component`
