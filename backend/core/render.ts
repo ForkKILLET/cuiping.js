@@ -146,6 +146,7 @@ export type SvgRendererOption = {
 
 export function renderSVG(c: ExpandedChem, opt: SvgRendererOption = {}): {
 	svg: string,
+	id: string,
 	width: number,
 	height: number
 } {
@@ -176,12 +177,14 @@ export function renderSVG(c: ExpandedChem, opt: SvgRendererOption = {}): {
 
 	const id = `mol-${ (Math.random() * 1e6 | 0) }-${Date.now().toString().slice(- 10)}`
 
-	svg += `<svg id="${id}" xmlns="http://www.w3.org/2000/svg" width="${width}" height="${height}">`
+	svg += `<svg id="${id}" xmlns="http://www.w3.org/2000/svg" `
+		+ `width="${width}" height="${height}" viewBox="0 0 ${width} ${height}">`
 	svg += `<style>`
 			+ `#${id} text {`
 				+ `dominant-baseline: central;`
 				+ `text-anchor: middle;`
 				+ `font-size: ${halfFontSize * 2}px;`
+				+ `font-family: serif;`
 			+ `}`
 			+ `#${id} text:not([nobasecolor]) {`
 				+ `fill: ${textBaseColor};`
@@ -190,7 +193,7 @@ export function renderSVG(c: ExpandedChem, opt: SvgRendererOption = {}): {
 				+ `font-size: ${halfFontSize * 1.5}px;`
 				+ `dominant-baseline: hanging;`
 			+ `}`
-			+ `#${id} text[bold] { font-weight: bold; }`
+			+ `#${id} text[bold] {font-weight: bold;}`
 			+ `#${id} line {`
 				+ `stroke: ${lineBaseColor};`
 			+ `}`
@@ -249,5 +252,5 @@ export function renderSVG(c: ExpandedChem, opt: SvgRendererOption = {}): {
 
 	svg += '</svg>'
 
-	return { svg, width, height }
+	return { svg, id, width, height }
 }

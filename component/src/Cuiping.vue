@@ -1,6 +1,5 @@
 <script setup lang="ts">
-import { computed, nextTick, ref, watch } from 'vue'
-import { Canvg } from 'canvg'
+import { computed, ref } from 'vue'
 import {
     ChemParser,
     expand,
@@ -9,12 +8,12 @@ import {
 
 const props = withDefaults(defineProps<{
     molecule?: string,
-    useCanvas?: boolean,
-    canvasScale?: number,
+    useImage?: boolean,
+    imageScale?: number,
     renderOptions?: SvgRendererOption
 }>(), {
-    useCanvas: false,
-    canvasScale: 1
+    useImage: false,
+    imageScale: 1
 })
 
 const res = computed(() => {
@@ -45,7 +44,7 @@ function downloadSvg() {
     const blob = new Blob([ res.value.data.svg ])
     const url = URL.createObjectURL(blob)
     const a = document.createElement('a')
-    a.download = 'mol.svg'
+    a.download = `${res.value.data.id}.svg`
     a.href = url
     a.click()
     URL.revokeObjectURL(url)
@@ -63,47 +62,36 @@ function copyFormula() {
         })
 }
 
-const canvas = ref<HTMLCanvasElement>()
-const canvg = ref<Canvg | undefined>()
-const canvasOk = ref<boolean>(false)
 
-const scaleHeight = ref(0)
-const scaleWidth = ref(0)
+const imgBase64 = computed(() => 'data:image/svg+xml;base64,'
+    + btoa(res.value.data!.svg
+        .replace(/[\u00A0-\u2666]/g, c => `&#${c.charCodeAt(0)};`) ?? ''
+    )
+)
 
-watch([ canvas, props ], () => {
-    canvasOk.value = false
-    if (canvg.value) canvg.value.stop()
-
-    if (res.value.state !== 'ok' || ! canvas.value) return
-
-    const ctx = canvas.value.getContext('2d')
-    if (! ctx) return
-
-    const { data } = res.value
-    scaleHeight.value = props.canvasScale * data.height
-    scaleWidth.value = props.canvasScale * data.width
-
-    nextTick(() => {
-        const v = Canvg.fromString(ctx, data.svg)
-        canvg.value = v
-        v.start({
-            ignoreMouse: true
-        })
-        canvasOk.value = true
-    })
-}, { immediate: true })
+const imgWidth = computed(() => res.value.data!.width * props.imageScale)
+const imageReverseScale = computed(() => `scale(${ 1 / props.imageScale })`)
 </script>
 
 <template>
     <div class="root" :class="res.state">
-        <div v-if="res.state === 'ok'" class="container">
-            <template v-if="useCanvas">
-                <canvas
-                    ref="canvas"
-                    :width="scaleWidth" :height="scaleHeight"
-                ></canvas>
-                <img v-if="canvasOk" :src="canvas!.toDataURL('data/png')" />
-            </template>
+        <div
+            v-if="res.state === 'ok'"
+            class="container"
+            :style="{
+                width: res.data.width + 'px',
+                height: res.data.height + 'px'
+            }"
+        >
+            <img
+                v-if="useImage"
+                :src="imgBase64"
+                :width="imgWidth"
+                :style="{
+                    transform: imageReverseScale,
+                    transformOrigin: 'left top'
+                }"
+            />
             <div v-else v-html="res.data.svg"></div>
         </div>
         <p v-else-if="res.state === 'error'">{{ res.errMsg }}</p>
@@ -167,10 +155,6 @@ watch([ canvas, props ], () => {
 
 .container {
     background: white;
-}
-
-canvas {
-    display: none;
 }
 
 img, :deep(svg) {

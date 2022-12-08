@@ -39,22 +39,23 @@ function setLocale(locale: string) {
 }
 
 const schemasComp = {
-    useCanvas: { ty: 'boolean', def: false }
+    useImage: { ty: 'boolean', def: false },
+    imageScale: { ty: 'number', min: 0, def: 1 }
 } as const
 
 const confComp = ref<SchemasToValues<typeof schemasComp>>()
 
 const schemasRender = {
-	unitLen: { ty: 'number', def: 20 },
+	unitLen: { ty: 'number', min: 0, def: 20 },
 	paddingX: { ty: 'number', def: 20 },
 	paddingY: { ty: 'number', def: 20 },
 	displayBonds: { ty: 'boolean', def: true },
-	bondGap: { ty: 'number', def: 2 },
+	bondGap: { ty: 'number', min: 0, def: 2 },
 	lineBaseColor: { ty: 'color', def: 'black' },
 	textBaseColor: { ty: 'color', def: 'black' },
-    halfFontSize: { ty: 'number', def: 8 },
-    halfTextBoxWidth: { ty: 'number', def: 6 },
-    halfTextBoxHeight: { ty: 'number', def: 8 },
+    halfFontSize: { ty: 'number', min: 0, def: 8 },
+    halfTextBoxWidth: { ty: 'number', min: 0, def: 6 },
+    halfTextBoxHeight: { ty: 'number', min: 0, def: 8 },
     showTextBox: { ty: 'boolean', def: false }
 } as const
 

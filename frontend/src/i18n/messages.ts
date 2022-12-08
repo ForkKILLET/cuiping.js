@@ -19,7 +19,8 @@ export default {
             build: 'build by Vite at {buildTime} on {buildEnv}'
         },
         conf: {
-            useCanvas: 'Use canvas',
+            useImage: 'Use image',
+            imageScale: 'Image scale (clarity)',
             unitLen: 'Unit length',
             paddingX: 'X padding',
             paddingY: 'Y padding',
@@ -53,7 +54,8 @@ export default {
             build: '使用 Vite 构建于 {buildTime}，在 {buildEnv} 上'
         },
         conf: {
-            useCanvas: '使用画布',
+            useImage: '使用图片',
+            imageScale: '图片缩放 (清晰度)',
             unitLen: '单位长度',
             paddingX: '横向留白',
             paddingY: '纵向留白',
