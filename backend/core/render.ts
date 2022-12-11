@@ -248,15 +248,15 @@ export function renderSVG(c: ExpandedChem, opt: SvgRendererOption = {}): {
 			else if (c === 2) {
 				const xg = bg * (y2 - y1) / u
 				const yg = bg * (x2 - x1) / u
-				ln(x1 - xg, y1 + xg, x2 - xg, y2 + yg, attr)
-				ln(x1 + xg, y1 - xg, x2 + xg, y2 - yg, attr)
+				ln(x1 - xg, y1 + yg, x2 - xg, y2 + yg, attr)
+				ln(x1 + xg, y1 - yg, x2 + xg, y2 - yg, attr)
 			}
 			else if (c === 3) {
 				const xg = (bg + 1) * (y2 - y1) / u
 				const yg = (bg + 1) * (x2 - x1) / u
 				ln(x1, y1, x2, y2, attr)
-				ln(x1 - xg, y1 + xg, x2 - xg, y2 + yg, attr)
-				ln(x1 + xg, y1 - xg, x2 + xg, y2 - yg, attr)
+				ln(x1 - xg, y1 + yg, x2 - xg, y2 + yg, attr)
+				ln(x1 + xg, y1 - yg, x2 + xg, y2 - yg, attr)
 			}
 		}
 	}
