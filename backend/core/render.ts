@@ -1,4 +1,4 @@
-import type { Group, BondCount } from './parse.js'
+import type { Group, BondCount, AttrOfBond } from './parse.js'
 import type { ExpandedChem } from './expand.js'
 import { MathEx } from '../utils/math.js'
 import { Debug } from '../utils/debug.js'
@@ -6,18 +6,20 @@ import { getWidth } from '../utils/measure.js'
 
 export type LayoutBond = {
 	c: BondCount,
+	a: AttrOfBond,
 	g1: Group,
 	g2: Group,
 	x1: number,
 	y1: number,
 	x2: number,
 	y2: number,
-	xo: number
+	xo: number,
 	yo: number
 }
 
 export type LayoutGroup = {
-	g: Group,
+	t: Group['t'],
+	a: Group['a'],
 	x: number,
 	y: number,
 	xo: number,
@@ -46,7 +48,7 @@ export function locate(chem: ExpandedChem, {
 		x1: number, y1: number,
 		xo: number, yo: number
 	) => {
-		groups.push({ g: c.g, x: x1, y: y1, xo, yo })
+		groups.push({ ...c.g, x: x1, y: y1, xo, yo })
 
 		const w = c.g.t.w * 2
 		const cxo = getWidth(c.g.t[0]) // Note: center offset x, depends on center atom
@@ -87,7 +89,7 @@ export function locate(chem: ExpandedChem, {
 			bonds.push({
 				g1: b.f, g2: b.t.g,
 				x1, y1, x2, y2, xo: xo + dxo, yo: yo + dyo,
-				c: b.c
+				c: b.c, a: b.a
 			})
 
 			dfs(
@@ -115,9 +117,9 @@ export function getViewport(l: Layout, h: number) {
 		if (y < yMin) yMin = y
 		if (y > yMax) yMax = y
 		// Note: calculate border of text
-		const h0 = g.g.t.w ? h : 0
+		const h0 = g.t.w ? h : 0
 		const x1 = g.x + g.xo - h0
-		const x2 = g.x + g.xo + (g.g.t.w * 2 - 1) * h0
+		const x2 = g.x + g.xo + (g.t.w * 2 - 1) * h0
 		if (x1 < xMin) xMin = x1
 		if (x2 > xMax) xMax = x2
 	}
@@ -194,7 +196,7 @@ export function renderSVG(c: ExpandedChem, opt: SvgRendererOption = {}): {
 				+ `dominant-baseline: hanging;`
 			+ `}`
 			+ `#${id} text[bold] {font-weight: bold;}`
-			+ `#${id} line {`
+			+ `#${id} line:not([nobasecolor]) {`
 				+ `stroke: ${lineBaseColor};`
 			+ `}`
 		+ `</style>`
@@ -203,16 +205,16 @@ export function renderSVG(c: ExpandedChem, opt: SvgRendererOption = {}): {
 	const X = (x: number) => x + vp.xOffset + paddingX + O.x
 	const Y = (y: number) => y + vp.yOffset + paddingY + O.y
 
-	for (const { x, y, xo, yo, g } of l.groups) {
+	for (const { x, y, xo, yo, t, a } of l.groups) {
 		O.x = xo
 		O.y = yo
 
 		let w = 0
-		for (const s of g.t) {
+		for (const s of t) {
 			const attr = []
-			if (g.a.color)
-				attr.push(`nobasecolor=""`, `fill="${g.a.color}"`)
-			if (g.a.bold)
+			if (a.color)
+				attr.push(`nobasecolor=""`, `fill="${a.color}"`)
+			if (a.bold)
 				attr.push(`bold=""`)
 
 			const wb = getWidth(s)
@@ -228,25 +230,34 @@ export function renderSVG(c: ExpandedChem, opt: SvgRendererOption = {}): {
 		}
 	}
 
-	if (displayBonds) for (let {
-		x1, y1, x2, y2, xo, yo, c
-	} of l.bonds) {
-		O.x = xo
-		O.y = yo
-	
-		if (c === 1) svg += `<line x1="${X(x1)}" y1="${Y(y1)}" x2="${X(x2)}" y2="${Y(y2)}"></line>`
-		else if (c === 2) {
-			const xg = bg * (y2 - y1) / u
-			const yg = bg * (x2 - x1) / u
-			svg += `<line x1="${X(x1 - xg)}" y1="${Y(y1 + yg)}" x2="${X(x2 - xg)}" y2="${Y(y2 + yg)}"></line>`
-			svg += `<line x1="${X(x1 + xg)}" y1="${Y(y1 - yg)}" x2="${X(x2 + xg)}" y2="${Y(y2 - yg)}"></line>`
+	if (displayBonds) {
+		const ln = (x1: number, y1: number, x2: number, y2: number, attr: string[]) => {
+			svg += `<line x1="${X(x1)}" y1="${Y(y1)}" x2="${X(x2)}" y2="${Y(y2)}" ${attr.join(' ')}></line>`
 		}
-		else if (c === 3) {
-			const xg = (bg + 1) * (y2 - y1) / u
-			const yg = (bg + 1) * (x2 - x1) / u
-			svg += `<line x1="${X(x1)}" y1="${Y(y1)}" x2="${X(x2)}" y2="${Y(y2)}"></line>`
-			svg += `<line x1="${X(x1 - xg)}" y1="${Y(y1 + yg)}" x2="${X(x2 - xg)}" y2="${Y(y2 + yg)}"></line>`
-			svg += `<line x1="${X(x1 + xg)}" y1="${Y(y1 - yg)}" x2="${X(x2 + xg)}" y2="${Y(y2 - yg)}"></line>`
+
+		for (let {
+			x1, y1, x2, y2, xo, yo, c, a
+		} of l.bonds) {
+			O.x = xo
+			O.y = yo
+
+			const attr: string[] = []
+			if (a.color) attr.push('nobasecolor=""', `stroke="${a.color}"`)
+		
+			if (c === 1) ln(x1, y1, x2, y2, attr)
+			else if (c === 2) {
+				const xg = bg * (y2 - y1) / u
+				const yg = bg * (x2 - x1) / u
+				ln(x1 - xg, y1 + xg, x2 - xg, y2 + yg, attr)
+				ln(x1 + xg, y1 - xg, x2 + xg, y2 - yg, attr)
+			}
+			else if (c === 3) {
+				const xg = (bg + 1) * (y2 - y1) / u
+				const yg = (bg + 1) * (x2 - x1) / u
+				ln(x1, y1, x2, y2, attr)
+				ln(x1 - xg, y1 + xg, x2 - xg, y2 + yg, attr)
+				ln(x1 + xg, y1 - xg, x2 + xg, y2 - yg, attr)
+			}
 		}
 	}
 

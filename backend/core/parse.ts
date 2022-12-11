@@ -2,12 +2,19 @@ import { Debug } from '../utils/debug.js'
 import { MathEx } from '../utils/math.js'
 import { getWidth } from '../utils/measure.js'
 
+export type Attr<S extends Record<string, string | { type: 'string' | 'boolean' }>> = {
+	[k in keyof S]?: S[k] extends string
+		? never
+		: S[k] extends { type: 'string' } ? string
+		: S[k] extends { type: 'boolean' } ? boolean
+		: never
+}
+export type AttrOfGroup = Attr<typeof GroupAttrs>
+export type AttrOfBond = Attr<typeof BondAttrs>
+
 export type Group = {
 	t: string[] & { w: number }
-	// Note:
-	// each item contains the characters in one border box
-	// w: relative text width
-	a: Record<string, string | boolean>
+	a: AttrOfGroup
 }
 export type BondCount = 1 | 2 | 3 
 export type BondDir = number
@@ -15,6 +22,7 @@ export type Bond = {
 	c: BondCount,
 	d: BondDir[],
 	n: Chem,
+	a: AttrOfBond,
 	i: number // Note: index of connected atom
 }
 
@@ -96,10 +104,12 @@ export abstract class Parser<T> {
 	protected abstract doParse(options?: any): T
 }
 
-export const GroupCharset
+export const IdentifierCharset
 	= 'abcdefghijklmnopqrstuvwxyz'
 	+ 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'
 	+ '0123456789'
+export const GroupCharset
+	= IdentifierCharset
 	+ '()'
 	+ '*' // Note: willcard
 	+ '.' // Note: collpased carbon
@@ -121,15 +131,22 @@ export const BondDirTable = {
 	'+': [ 0, 90, 180, 270 ]
 }
 
-export const Attributes = {
+export const GroupAttrs = {
 	color: { type: 'string' },
 	C: 'color',
 	bold: { type: 'boolean' },
 	B: 'bold'
 } as const
 
-const isAttribute = (k: string): k is keyof typeof Attributes => {
-	return k in Attributes
+export const BondAttrs = {
+	color: { type: 'string' },
+	C: 'color'
+} as const
+
+type AttrSchema = typeof GroupAttrs | typeof BondAttrs
+
+const isAttribute = (k: string, attrSchema: AttrSchema): k is keyof typeof attrSchema => {
+	return k in attrSchema
 }
 
 export class ChemParser extends Parser<Chem> {
@@ -137,56 +154,59 @@ export class ChemParser extends Parser<Chem> {
 		super(str.replace(/\s/g, ''))
 	}
 
-	private doParseGroup(): Group {
-		let s = ''
-		while (GroupCharset.includes(this.current)) {
-			s += this.current
-			this.index ++
-		}
+	private doParseAttr<T extends AttrSchema>(attrSchema: T): Attr<T> {
+		this.index ++ // Note: skip '{'
 
 		const a: Record<string, string | boolean> = {}
-		if (this.current === '<') {
-			this.index ++
-			let k = ''
-			let readingValue = false
-			attr: while (this.current) {
-				switch (this.current as string) {
-					case '>':
-						if (! readingValue) a[k] = true
-						break attr
-					case ':':
-						readingValue = true
-						a[k] = ''
-						break
-					case ',':
-						if (! readingValue) a[k] = true
-						k = ''
-						readingValue = false
-						break
-					default:
-						if (readingValue) a[k] += this.current
-						else k += this.current
-				}
-				this.index ++
+		let k = ''
+		let readingValue = false
+		attr: while (this.current) {
+			switch (this.current as string) {
+				case '}':
+					if (! readingValue) a[k] = true
+					break attr
+				case ':':
+					readingValue = true
+					a[k] = ''
+					break
+				case ',':
+					if (! readingValue) a[k] = true
+					k = ''
+					readingValue = false
+					break
+				default:
+					if (readingValue) a[k] += this.current
+					else k += this.current
 			}
-			if (! this.current) throw this.expect(`delimiter '>' of attribute`)
 			this.index ++
 		}
+		if (! this.current) throw this.expect(`delimiter '}' of attribute`)
+		this.index ++
 
 		Debug.D('attr: %o', a)
 
 		for (const k in a) {
-			if (isAttribute(k)) {
-				let ak = Attributes[k]
+			if (isAttribute(k, attrSchema)) {
+				let ak = attrSchema[k]
 				if (typeof ak === 'string') {
 					a[ak] = a[k]
-					ak = Attributes[ak]
+					ak = attrSchema[ak]
 				}
 				const ty = ak.type
 				const tyNow = typeof a[k]
 				if (tyNow !== ty) throw this.expect(`group atrribute '${k}' to be ${ty} type`, tyNow)
 			}
 			else throw Error(`Unknown group attribute '${k}'.`)
+		}
+
+		return a as Attr<T>
+	}
+	
+	private doParseGroup(): Group {
+		let s = ''
+		while (GroupCharset.includes(this.current)) {
+			s += this.current
+			this.index ++
 		}
 
 		if (! s) throw this.expect('atom group')
@@ -208,6 +228,10 @@ export class ChemParser extends Parser<Chem> {
 		}
 
 		t.w = t.reduce((w, ch) => w + getWidth(ch), 0)
+
+		const a = this.current === '{'
+			? this.doParseAttr(GroupAttrs)
+			: {}
 
 		return { t, a }
 	}
@@ -231,7 +255,7 @@ export class ChemParser extends Parser<Chem> {
 		isPrefix?: boolean,
 		parsedBonds?: Bond[],
 		dirFrom?: BondDir | null
-	} = {}): [ BondCount, BondDir[] ] {
+	} = {}): { c: BondCount, d: BondDir[], a: AttrOfBond} {
 		let c: BondCount = 1
 		const dirs: BondDir[] = []
 
@@ -268,7 +292,12 @@ export class ChemParser extends Parser<Chem> {
 		if (! dirs.length) {
 			throw this.expect('at least one bond direction')
 		}
-		return [ c, dirs ]
+
+		const a = this.current === '{'
+			? this.doParseAttr(BondAttrs)
+			: {}
+
+		return { c, d: dirs, a }
 	}
 
 	private doParseBond({
@@ -284,15 +313,15 @@ export class ChemParser extends Parser<Chem> {
 			if (requirePrefix) throw this.expect('prefix-styled bond')
 			if (GroupCharset.includes(this.current)) {
 				const n = this.doParse()
-				const [ c, d ] = this.doParseBondType({ isPrefix: false, parsedBonds, dirFrom })
-				return { c, d, n, i: 0 }
+				const { c, d, a } = this.doParseBondType({ isPrefix: false, parsedBonds, dirFrom })
+				return { c, d, n, a, i: 0 }
 			}
 			else throw this.expect('bond')
 		}
 		else {
-			const [ c, d ] = this.doParseBondType({ isPrefix: true, parsedBonds, dirFrom })
+			const { c, d, a } = this.doParseBondType({ isPrefix: true, parsedBonds, dirFrom })
 			const n = this.doParse()
-			return { c, d, n, i: 0 }
+			return { c, d, n, a, i: 0 }
 		}
 	}
 
@@ -326,11 +355,27 @@ export class ChemParser extends Parser<Chem> {
 		return bonds
 	}
 
+	// Disable:
+	//  private doParseAttrStruct(): Chem {
+	//  	this.index ++ // Note: skip '$'
+
+	//  	let name = ''
+	//  	while (IdentifierCharset.includes(this.current)) {
+	//  		name += this.current
+	//  		this.index ++
+	//  	}
+	//  }
+
 	protected doParse({
 		dirFrom = null
 	}: {
 		dirFrom?: BondDir | null
 	} = {}): Chem {
+		// Disable:
+		//  if (this.current === '$') {
+		//  	return this.doParseAttrStruct()
+		//  }
+
 		const g = this.doParseGroup()
 		const bonds = this.doParseBonds({ dirFrom })
 		return {

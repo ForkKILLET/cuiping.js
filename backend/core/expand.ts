@@ -1,4 +1,4 @@
-import type { BondCount, BondDir, Chem, Group } from './parse.js'
+import type { AttrOfBond, BondCount, BondDir, Chem, Group } from './parse.js'
 import { MathEx } from '../utils/math.js'
 import { Debug } from '../utils/debug.js'
 
@@ -6,7 +6,8 @@ export type ExpandedBond = {
 	c: BondCount,
 	d: BondDir,
 	t: ExpandedChem,
-	f: Group
+	f: Group,
+	a: AttrOfBond
 }
 
 export type ExpandedChem = {
@@ -52,6 +53,7 @@ export function expand(
 
 			bonds.push({
 				c: b.c,
+				a: b.a,
 				d,
 				t: expand(b.n, rD, fX, fY, depth + 1),
 				f: chem.g

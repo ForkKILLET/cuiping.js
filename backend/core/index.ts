@@ -1,5 +1,5 @@
 export {
-    Attributes,
+    GroupAttrs as Attributes,
     BondCharset,
     BondCountTable,
     BondDirTable,
