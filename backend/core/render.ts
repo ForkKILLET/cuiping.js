@@ -196,7 +196,7 @@ export function renderSVG(c: ExpandedChem, opt: SvgRendererOption = {}): {
 				+ `dominant-baseline: hanging;`
 			+ `}`
 			+ `#${id} text[bold] {font-weight: bold;}`
-			+ `#${id} line:not([nobasecolor]) {`
+			+ `#${id} line:not([nobasecolor]), #${id} path:not([nobasecolor]) {`
 				+ `stroke: ${lineBaseColor};`
 			+ `}`
 		+ `</style>`
@@ -211,7 +211,7 @@ export function renderSVG(c: ExpandedChem, opt: SvgRendererOption = {}): {
 
 		let w = 0
 		for (const s of t) {
-			const attr = []
+			const attr: string[] = []
 			if (a.color)
 				attr.push(`nobasecolor=""`, `fill="${a.color}"`)
 			if (a.bold)
@@ -244,7 +244,16 @@ export function renderSVG(c: ExpandedChem, opt: SvgRendererOption = {}): {
 			const attr: string[] = []
 			if (a.color) attr.push('nobasecolor=""', `stroke="${a.color}"`)
 		
-			if (c === 1) ln(x1, y1, x2, y2, attr)
+			if (a.highEnergy) {
+                const x3 = (x1 + 1 / 3 * x2) / (1 + 1 / 3)
+				const y3 = (y1 + 1 / 3 * y2) / (1 + 1 / 3)
+                const x4 = (x1 + 3 * x2) / (1 + 3)
+				const y4 = (y1 + 3 * y2) / (1 + 3)
+				const xw = 4 * (y2 - y1) / u
+				const yw = 4 * (x2 - x1) / u
+				svg += `<path d="M ${X(x1)} ${Y(y1)} C ${X(x3 + xw)} ${Y(y3 - yw)} ${X(x4 - xw)} ${Y(y4 + yw)} ${X(x2)} ${Y(y2)}"></path>`
+			}
+			else if (c === 1) ln(x1, y1, x2, y2, attr)
 			else if (c === 2) {
 				const xg = bg * (y2 - y1) / u
 				const yg = bg * (x2 - x1) / u

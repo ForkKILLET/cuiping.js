@@ -140,7 +140,9 @@ export const GroupAttrs = {
 
 export const BondAttrs = {
 	color: { type: 'string' },
-	C: 'color'
+	C: 'color',
+	highEnergy: { type: 'boolean' },
+	HE: 'highEnergy'
 } as const
 
 type AttrSchema = typeof GroupAttrs | typeof BondAttrs
