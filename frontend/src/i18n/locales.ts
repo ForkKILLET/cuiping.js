@@ -12,3 +12,4 @@ export const getLocale = () => {
     }
     return defaultLocale
 }
+export type Locales = 'zh' | 'en'

@@ -258,7 +258,25 @@ export function renderSVG(c: ExpandedChem, opt: SvgRendererOption = {}): {
 					+ `C ${X(x3 + xw)} ${Y(y3 - yw)} ${X(x4 - xw)} ${Y(y4 + yw)} ${X(x2)} ${Y(y2)}`
 				+ `" ${attr.join(' ')}></path>`
 			}
-			else if (c === 1) ln(x1, y1, x2, y2, attr)
+			else if (c === 1) {
+				ln(x1, y1, x2, y2, attr)
+				if (a.to || a.from) {
+					const wh = 6
+					const xwh = wh * (x2 - x1) / u
+					const ywh = wh * (y2 - y1) / u
+					const wv = 4
+					const xwv = wv * (y2 - y1) / u
+					const ywv = wv * (x2 - x1) / u
+					if (a.to) {
+						ln(x2, y2, x2 - xwh + xwv, y2 - ywh - ywv, attr)
+						ln(x2, y2, x2 - xwh - xwv, y2 - ywh + ywv, attr)
+					}
+					else if (a.from) {
+						ln(x1, y1, x1 + xwh + xwv, y1 + ywh - ywv, attr)
+						ln(x1, y1, x1 + xwh - xwv, y1 + ywh + ywv, attr)
+					}
+				}
+			}
 			else if (c === 2) {
 				const xg = bg * (y2 - y1) / u
 				const yg = bg * (x2 - x1) / u

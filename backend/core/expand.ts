@@ -1,4 +1,4 @@
-import type { AttrOfBond, BondCount, BondDir, Chem, Group } from './parse.js'
+import type { AttrOfBond, BondCount, BondDir, Struct, Group } from './parse.js'
 import { MathEx } from '../utils/math.js'
 import { Debug } from '../utils/debug.js'
 
@@ -16,52 +16,58 @@ export type ExpandedChem = {
 }
 
 export function expand(
-	chem: Chem,
+	struct: Struct,
 	rotateD: number = 0, flipX: boolean = false, flipY: boolean = false,
 	depth: number = 0
 ): ExpandedChem {
-	const bonds: ExpandedBond[] = []
-	chem.bonds.forEach(b => {
-		const [ d0 ] = b.d
+	if (struct.S === 'chem') {
+		const bonds: ExpandedBond[] = []
+		struct.bonds.forEach(b => {
+			const [ d0 ] = b.d
 
-		b.d.forEach((d, i) => {
-			let rD = rotateD
-			let fX = flipX
-			let fY = flipY
+			b.d.forEach((d, i) => {
+				let rD = rotateD
+				let fX = flipX
+				let fY = flipY
 
-			if (i) {
-				if (d + d0 === 360)
-					fY = ! fY
-				else if (d + d0 === 180)
-					fX = ! fX
-				else {
-					const dd = d - d0
-					rD += MathEx.stdAng(flipX === flipY ? dd : - dd)
+				if (i) {
+					if (d + d0 === 360)
+						fY = ! fY
+					else if (d + d0 === 180)
+						fX = ! fX
+					else {
+						const dd = d - d0
+						rD += MathEx.stdAng(flipX === flipY ? dd : - dd)
+					}
 				}
-			}
 
-			d += rotateD
-			if (flipX) d = 180 - d
-			if (flipY) d = 360 - d
-			d = MathEx.stdAng(d)
+				d += rotateD
+				if (flipX) d = 180 - d
+				if (flipY) d = 360 - d
+				d = MathEx.stdAng(d)
 
-			Debug.D(
-				'>'.repeat(depth + 1) + ' '.repeat(8 - depth) +
-				'rd %d,\tfx %o,\tfy %o\t-> %d',
-				rotateD, flipX, flipY, d
-			)
+				Debug.D(
+					'>'.repeat(depth + 1) + ' '.repeat(8 - depth) +
+					'rd %d,\tfx %o,\tfy %o\t-> %d',
+					rotateD, flipX, flipY, d
+				)
 
-			bonds.push({
-				c: b.c,
-				a: b.a,
-				d,
-				t: expand(b.n, rD, fX, fY, depth + 1),
-				f: chem.g
+				bonds.push({
+					c: b.c,
+					a: b.a,
+					d,
+					t: expand(b.n, rD, fX, fY, depth + 1),
+					f: struct.g
+				})
 			})
 		})
-	})
-	return {
-		g: chem.g,
-		bonds
+		return {
+			g: struct.g,
+			bonds
+		}
 	}
+	else if (struct.S === 'attr') {
+		const def = struct.d
+	}
+	throw Error('Not implemented')
 }

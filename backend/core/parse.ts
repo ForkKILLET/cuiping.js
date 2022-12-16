@@ -1,35 +1,7 @@
 import { Debug } from '../utils/debug.js'
 import { MathEx } from '../utils/math.js'
 import { getWidth } from '../utils/measure.js'
-
-export type Attr<S extends Record<string, string | { type: 'string' | 'boolean' }>> = {
-	[k in keyof S]?: S[k] extends string
-		? never
-		: S[k] extends { type: 'string' } ? string
-		: S[k] extends { type: 'boolean' } ? boolean
-		: never
-}
-export type AttrOfGroup = Attr<typeof GroupAttrs>
-export type AttrOfBond = Attr<typeof BondAttrs>
-
-export type Group = {
-	t: string[] & { w: number }
-	a: AttrOfGroup
-}
-export type BondCount = 1 | 2 | 3 
-export type BondDir = number
-export type Bond = {
-	c: BondCount,
-	d: BondDir[],
-	n: Chem,
-	a: AttrOfBond,
-	i: number // Note: index of connected atom
-}
-
-export type Chem = {
-	g: Group,
-	bonds: Bond[]
-}
+import type { MaybeArray, TupleToUnion, ValueOf } from '../utils/types'
 
 export abstract class Parser<T> {
 	constructor(protected str: string) {}
@@ -104,6 +76,82 @@ export abstract class Parser<T> {
 	protected abstract doParse(options?: any): T
 }
 
+type t = AttrMaybeOne<typeof BondAttrs['from']>
+type t2 = AttrMany<typeof BondAttrs['from']>
+
+export type AttrOne<R extends AttrSchemaRule> =
+	R extends { type: 'string' } ? string :
+	R extends { type: 'boolean' } ? boolean :
+	R extends { type: 'integer' } ? number :
+	never
+
+export type AttrMany<S extends readonly AttrSchemaRule[]> =
+	TupleToUnion<{ 
+		[L in keyof S]: S[L] extends AttrSchemaRule
+			? AttrOne<S[L]>
+			: never
+	}>
+
+export type AttrMaybeOne<S extends Readonly<ValueOf<AttrSchema>>> =
+	S extends readonly AttrSchemaRule[] ? TupleToUnion<{ 
+		[L in keyof S]: S[L] extends AttrSchemaRule
+			? AttrOne<S[L]>
+			: never
+	}> :
+	S extends AttrSchemaRule ? AttrOne<S> :
+	never
+
+export type Attr<S extends AttrSchema> = {
+	[K in keyof S]?:
+		S[K] extends keyof S
+			? S[S[K]] extends MaybeArray<AttrSchemaRule>
+				? AttrMaybeOne<S[S[K]]>
+				: never
+			: S[K] extends Readonly<MaybeArray<AttrSchemaRule>>
+				? AttrMaybeOne<S[K]>
+				: never
+}
+
+export type AttrOfGroup = Attr<typeof GroupAttrs>
+export type AttrOfBond = Attr<typeof BondAttrs>
+
+export type AttrSchemaRule = Readonly<{
+	type: 'boolean'
+} | {
+	type: 'integer',
+	min?: number,
+	max?: number
+} | {
+	type: 'string'
+}>
+
+export type AttrSchema
+	= typeof GroupAttrs
+	| typeof BondAttrs
+	| Readonly<Record<string, MaybeArray<AttrSchemaRule>>>
+
+export type Group = {
+	t: string[] & { w: number }
+	a: AttrOfGroup
+}
+export type BondCount = 1 | 2 | 3 
+export type BondDir = number
+export type Bond = {
+	c: BondCount,
+	d: BondDir[],
+	n: Struct,
+	a: AttrOfBond,
+	i: number // Note: index of connected atom
+}
+
+export type Struct = ChemStruct | AttrStruct
+
+export type ChemStruct = {
+	S: 'chem',
+	g: Group,
+	bonds: Bond[]
+}
+
 export const IdentifierCharset
 	= 'abcdefghijklmnopqrstuvwxyz'
 	+ 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'
@@ -135,24 +183,56 @@ export const GroupAttrs = {
 	color: { type: 'string' },
 	C: 'color',
 	bold: { type: 'boolean' },
-	B: 'bold'
+	B: 'bold',
+	ref: { type: 'integer' },
+	'&': 'ref'
 } as const
 
 export const BondAttrs = {
 	color: { type: 'string' },
 	C: 'color',
 	highEnergy: { type: 'boolean' },
-	HE: 'highEnergy'
+	HE: 'highEnergy',
+	'~': 'highEnergy',
+	from: [
+		{ type: 'boolean' },
+		{ type: 'integer', min: 1, max: 3 }
+	],
+	'<': 'from',
+	to: [
+		{ type: 'boolean' },
+		{ type: 'integer', min: 1, max: 3 }
+	],
+	'>': 'to'
 } as const
 
-type AttrSchema = typeof GroupAttrs | typeof BondAttrs
+export type AttrStruct = {
+	S: 'attr',
+	d: AttrStructDef,
+	a: Attr<any>
+}
+
+export type ChemDef = {
+
+}
+
+export type AttrStructDef = {
+	type: 'chem',
+	attr: AttrSchema,
+	chem: ChemDef
+} | {
+	type: 'void',
+	attr: AttrSchema
+}
+
+export type AttrStructDefs = Record<string, AttrStructDef>
 
 const isAttribute = (k: string, attrSchema: AttrSchema): k is keyof typeof attrSchema => {
 	return k in attrSchema
 }
 
-export class ChemParser extends Parser<Chem> {
-	constructor(str: string) {
+export class ChemParser extends Parser<Struct> {
+	constructor(str: string, private defs: AttrStructDefs = {}) {
 		super(str.replace(/\s/g, ''))
 	}
 
@@ -165,7 +245,10 @@ export class ChemParser extends Parser<Chem> {
 		attr: while (this.current) {
 			switch (this.current as string) {
 				case '}':
-					if (! readingValue) a[k] = true
+					if (! readingValue) {
+						if (! k) throw Error('Attributes mustn\'t be empty.')
+						a[k] = true
+					}
 					break attr
 				case ':':
 					readingValue = true
@@ -182,23 +265,38 @@ export class ChemParser extends Parser<Chem> {
 			}
 			this.index ++
 		}
-		if (! this.current) throw this.expect(`delimiter '}' of attribute`)
+		if (! this.current) throw this.expect(`delimiter '}' of attributes`)
 		this.index ++
 
 		Debug.D('attr: %o', a)
 
 		for (const k in a) {
 			if (isAttribute(k, attrSchema)) {
-				let ak = attrSchema[k]
-				if (typeof ak === 'string') {
-					a[ak] = a[k]
-					ak = attrSchema[ak]
+				let ss = attrSchema[k]
+				if (typeof ss === 'string') {
+					a[ss] = a[k]
+					ss = attrSchema[ss]
 				}
-				const ty = ak.type
+				if (! Array.isArray(ss)) ss = [ ss ]
 				const tyNow = typeof a[k]
-				if (tyNow !== ty) throw this.expect(`group atrribute '${k}' to be ${ty} type`, tyNow)
+				let tyMatched = false
+				typeCheck: for (const s of ss) {
+					const ty = s.type
+					if (tyNow === ty || (tyNow === 'number' && ty === 'integer')) {
+						switch (ty) {
+							case 'integer':
+								if (! Number.isInteger(ty)) break typeCheck
+						}
+						tyMatched = true
+						break
+					}
+				}
+				if (! tyMatched)
+					throw this.expect(`Attribute '${k}' to be ${
+						ss.map(s => s.type).join(' or ')
+					} type`, tyNow + ' ' + a[k])
 			}
-			else throw Error(`Unknown group attribute '${k}'.`)
+			else throw Error(`Unknown attribute '${k}'.`)
 		}
 
 		return a as Attr<T>
@@ -357,31 +455,40 @@ export class ChemParser extends Parser<Chem> {
 		return bonds
 	}
 
-	// Disable:
-	//  private doParseAttrStruct(): Chem {
-	//  	this.index ++ // Note: skip '$'
+	private doParseAttrStruct(): AttrStruct {
+		this.index ++ // Note: skip '$'
 
-	//  	let name = ''
-	//  	while (IdentifierCharset.includes(this.current)) {
-	//  		name += this.current
-	//  		this.index ++
-	//  	}
-	//  }
+		let name = ''
+		while (IdentifierCharset.includes(this.current)) {
+			name += this.current
+			this.index ++
+		}
+
+		const def = this.defs[name]
+		if (! def) throw Error(`Unknown attr struct "${name}"`)
+		if (def.type !== 'chem')
+			throw this.expect('attr struct in chem type', `${def.type} type`)
+
+		const a = this.current === '{'
+			? this.doParseAttr({ ...GroupAttrs, ...def.attr })
+			: {}
+
+		return { S: 'attr', d: def, a }
+	}
 
 	protected doParse({
 		dirFrom = null
 	}: {
 		dirFrom?: BondDir | null
-	} = {}): Chem {
-		// Disable:
-		//  if (this.current === '$') {
-		//  	return this.doParseAttrStruct()
-		//  }
+	} = {}): Struct {
+		if (this.current === '$') {
+			return this.doParseAttrStruct()
+		}
 
 		const g = this.doParseGroup()
 		const bonds = this.doParseBonds({ dirFrom })
 		return {
-			g, bonds
+			S: 'chem', g, bonds
 		}
 	}
 }

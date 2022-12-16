@@ -11,7 +11,7 @@ export type {
     Bond,
     BondCount,
     BondDir,
-    Chem,
+    Struct as Chem,
     Group
 } from './parse'
 
