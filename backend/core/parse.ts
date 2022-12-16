@@ -1,3 +1,4 @@
+import { group } from 'node:console'
 import { Debug } from '../utils/debug.js'
 import { MathEx } from '../utils/math.js'
 import { getWidth } from '../utils/measure.js'
@@ -115,7 +116,15 @@ export type Attr<S extends AttrSchema> = {
 export type AttrOfGroup = Attr<typeof GroupAttrs>
 export type AttrOfBond = Attr<typeof BondAttrs>
 
-export type AttrSchemaRule = Readonly<{
+export type AttrValidatorParams = {
+	group?: Group,
+	bondType?: BondType
+}
+
+export type AttrValidator =
+	((raw: Attr<any>, params: AttrValidatorParams) => void)
+
+export type AttrSchemaRule = Readonly<({
 	type: 'boolean'
 } | {
 	type: 'integer',
@@ -123,12 +132,11 @@ export type AttrSchemaRule = Readonly<{
 	max?: number
 } | {
 	type: 'string'
+}) & {
+	validate?: AttrValidator
 }>
 
-export type AttrSchema
-	= typeof GroupAttrs
-	| typeof BondAttrs
-	| Readonly<Record<string, MaybeArray<AttrSchemaRule>>>
+export type AttrSchema = Readonly<Record<string, string | Readonly<MaybeArray<AttrSchemaRule>>>>
 
 export type Group = {
 	t: string[] & { w: number }
@@ -143,6 +151,7 @@ export type Bond = {
 	a: AttrOfBond,
 	i: number // Note: index of connected atom
 }
+export type BondType = { c: BondCount, d: BondDir[], a: AttrOfBond }
 
 export type Struct = ChemStruct | AttrStruct
 
@@ -188,6 +197,14 @@ export const GroupAttrs = {
 	'&': 'ref'
 } as const
 
+const coordinateBondValidator: AttrValidator = ((attr, { bondType }) => {
+	const a = attr as AttrOfBond
+	const cc = (a.from ?? a.to) as number
+	const { c } = bondType!
+	if (cc > c)
+		throw Error(`Coordinated bonds (${cc}) mustn't be more than total bonds (${c})`)
+})
+
 export const BondAttrs = {
 	color: { type: 'string' },
 	C: 'color',
@@ -196,7 +213,10 @@ export const BondAttrs = {
 	'~': 'highEnergy',
 	from: [
 		{ type: 'boolean' },
-		{ type: 'integer', min: 1, max: 3 }
+		{
+			type: 'integer', min: 1, max: 3,
+			validate: coordinateBondValidator
+		}
 	],
 	'<': 'from',
 	to: [
@@ -231,13 +251,20 @@ const isAttribute = (k: string, attrSchema: AttrSchema): k is keyof typeof attrS
 	return k in attrSchema
 }
 
+export type AttrToValidate<T extends AttrSchema> = {
+	raw: Attr<T>,
+	validate: (params: AttrValidatorParams) => Attr<T>
+}
+
 export class ChemParser extends Parser<Struct> {
 	constructor(str: string, private defs: AttrStructDefs = {}) {
 		super(str.replace(/\s/g, ''))
 	}
 
-	private doParseAttr<T extends AttrSchema>(attrSchema: T): Attr<T> {
+	private doParseAttr<T extends AttrSchema>(attrSchema: T): AttrToValidate<T> {
 		this.index ++ // Note: skip '{'
+
+		let vf: AttrValidator
 
 		const a: Record<string, string | boolean> = {}
 		let k = ''
@@ -275,18 +302,23 @@ export class ChemParser extends Parser<Struct> {
 				let ss = attrSchema[k]
 				if (typeof ss === 'string') {
 					a[ss] = a[k]
-					ss = attrSchema[ss]
+					ss = attrSchema[ss] as Readonly<AttrSchemaRule>
 				}
-				if (! Array.isArray(ss)) ss = [ ss ]
+				ss
+				if (! Array.isArray(ss)) ss = [ ss as AttrSchemaRule ]
 				const tyNow = typeof a[k]
 				let tyMatched = false
 				typeCheck: for (const s of ss) {
 					const ty = s.type
-					if (tyNow === ty || (tyNow === 'number' && ty === 'integer')) {
+					if (
+						tyNow === ty ||
+						(tyNow === 'string' && a[k] && ! isNaN(+ a[k]) && ty === 'integer')
+					) {
 						switch (ty) {
 							case 'integer':
-								if (! Number.isInteger(ty)) break typeCheck
+								if (! Number.isInteger(+ a[k])) break typeCheck
 						}
+						if (s.validate) vf = s.validate
 						tyMatched = true
 						break
 					}
@@ -299,7 +331,13 @@ export class ChemParser extends Parser<Struct> {
 			else throw Error(`Unknown attribute '${k}'.`)
 		}
 
-		return a as Attr<T>
+		return {
+			raw: a as Attr<T>,
+			validate(params: AttrValidatorParams) {
+				vf?.(this.raw, params)
+				return this.raw
+			}
+		}
 	}
 	
 	private doParseGroup(): Group {
@@ -329,9 +367,12 @@ export class ChemParser extends Parser<Struct> {
 
 		t.w = t.reduce((w, ch) => w + getWidth(ch), 0)
 
-		const a = this.current === '{'
-			? this.doParseAttr(GroupAttrs)
-			: {}
+		let a
+		if (this.current === '{') {
+			a = this.doParseAttr(GroupAttrs)
+			a = a.validate({ group: { t, a: a.raw } })
+		}
+		else a = {}
 
 		return { t, a }
 	}
@@ -355,7 +396,7 @@ export class ChemParser extends Parser<Struct> {
 		isPrefix?: boolean,
 		parsedBonds?: Bond[],
 		dirFrom?: BondDir | null
-	} = {}): { c: BondCount, d: BondDir[], a: AttrOfBond} {
+	} = {}): BondType {
 		let c: BondCount = 1
 		const dirs: BondDir[] = []
 
@@ -393,9 +434,12 @@ export class ChemParser extends Parser<Struct> {
 			throw this.expect('at least one bond direction')
 		}
 
-		const a = this.current === '{'
-			? this.doParseAttr(BondAttrs)
-			: {}
+		let a
+		if (this.current === '{') {
+			a = this.doParseAttr(BondAttrs)
+			a = a.validate({ bondType: { c, d: dirs, a: a.raw } })
+		}
+		else a = {}
 
 		return { c, d: dirs, a }
 	}

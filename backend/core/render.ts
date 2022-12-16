@@ -219,13 +219,16 @@ export function renderSVG(c: ExpandedChem, opt: SvgRendererOption = {}): {
 				attr.push(`bold=""`)
 
 			const wb = getWidth(s)
+			Debug.D('text box width: %s = %.1f', s, wb)
+
 			if (w > 0) w += wb / 2
+			const sub = s.match(/\d/)
 			if (s !== '*' && s !== '.') {
-				if (s.match(/\d/)) attr.push('number=""')
+				if (sub) attr.push('number=""')
 				svg += `<text x="${X(x + w * 2 * hw)}" y="${Y(y)}" ${attr.join(' ')}>${s}</text>`
 			}
 			if (showTextBox) // Note: text box
-				svg += `<rect x="${X(x + (w * 2 - wb) * hw)}" y="${Y(y - hh)}" width="${hw * wb * 2 || 1}" height="${hh * 2}" stroke="red" fill="transparent"></rect>`
+				svg += `<rect x="${X(x + (w * 2 - wb) * hw)}" y="${Y(sub ? y - hh / 2 : y - hh)}" width="${hw * wb * 2 || 1}" height="${hh * 2}" stroke="red" fill="transparent"></rect>`
 
 			w += wb / 2
 		}
@@ -261,10 +264,10 @@ export function renderSVG(c: ExpandedChem, opt: SvgRendererOption = {}): {
 			else if (c === 1) {
 				ln(x1, y1, x2, y2, attr)
 				if (a.to || a.from) {
-					const wh = 6
+					const wh = 3
 					const xwh = wh * (x2 - x1) / u
 					const ywh = wh * (y2 - y1) / u
-					const wv = 4
+					const wv = 2
 					const xwv = wv * (y2 - y1) / u
 					const ywv = wv * (x2 - x1) / u
 					if (a.to) {
