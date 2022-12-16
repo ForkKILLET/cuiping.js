@@ -84,7 +84,7 @@ export function locate(chem: ExpandedChem, {
 
 			const txo = MathEx.cosd(b.d) >= 0 // Note: text offset x of target group
 				? 0
-				: (- T.w + cxo) * 2 * hw
+				: (- T.w + getWidth(T[0])) * 2 * hw
 
 			bonds.push({
 				g1: b.f, g2: b.t.g,
