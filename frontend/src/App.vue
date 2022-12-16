@@ -4,6 +4,9 @@ import { useI18n } from 'vue-i18n'
 import type { Locales } from './i18n/locales'
 import Conf, { SchemasToValues } from './conf';
 import examples from './examples'
+import { version as backVer } from 'cuiping/package.json'
+import { version as compVer } from 'cuiping-component/package.json'
+import { version as frontVer } from '../package.json'
 
 const molecule = ref<string | undefined>()
 
@@ -144,7 +147,10 @@ const buildEnv = import.meta.env.VITE_BUILD_ENV ?? 'local'
         npm: <a href="//www.npmjs.com/package/cuiping">cuiping (backend)</a> |
         <a href="//www.npmjs.com/package/cuiping-component">cuiping-component</a>
         <br />
-        <i class="build">{{ t('info.build', { buildTime, buildEnv }) }}</i>
+        <i class="build">
+            backend @ {{ backVer }} | component @ {{ compVer }} | frontend @ {{ frontVer }} <br />
+            {{ t('info.build', { buildTime, buildEnv }) }}
+        </i>
     </article>
 </template>
 
@@ -251,7 +257,7 @@ button:hover {
 }
 
 a, a:visited {
-    color: gray;
+    color: #159715;
     transition: .5s color;
 }
 
