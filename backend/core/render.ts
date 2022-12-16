@@ -117,9 +117,9 @@ export function getViewport(l: Layout, h: number) {
 		if (y < yMin) yMin = y
 		if (y > yMax) yMax = y
 		// Note: calculate border of text
-		const h0 = g.t.w ? h : 0
-		const x1 = g.x + g.xo - h0
-		const x2 = g.x + g.xo + (g.t.w * 2 - 1) * h0
+		const w0 = g.t.w ? getWidth(g.t[0]) * h : 0
+		const x1 = g.x + g.xo - w0
+		const x2 = g.x + g.xo + (g.t.w * 2 * h) - w0
 		if (x1 < xMin) xMin = x1
 		if (x2 > xMax) xMax = x2
 	}

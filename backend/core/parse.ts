@@ -77,9 +77,6 @@ export abstract class Parser<T> {
 	protected abstract doParse(options?: any): T
 }
 
-type t = AttrMaybeOne<typeof BondAttrs['from']>
-type t2 = AttrMany<typeof BondAttrs['from']>
-
 export type AttrOne<R extends AttrSchemaRule> =
 	R extends { type: 'string' } ? string :
 	R extends { type: 'boolean' } ? boolean :
@@ -202,7 +199,7 @@ const coordinateBondValidator: AttrValidator = ((attr, { bondType }) => {
 	const cc = (a.from ?? a.to) as number
 	const { c } = bondType!
 	if (cc > c)
-		throw Error(`Coordinated bonds (${cc}) mustn't be more than total bonds (${c})`)
+		throw Error(`Coordinated bonds (${cc}) more than total bonds (${c}).`)
 })
 
 export const BondAttrs = {
