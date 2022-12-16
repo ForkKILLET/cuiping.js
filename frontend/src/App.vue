@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { watch, reactive, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
+import type { Locales } from './i18n/locales'
 import Conf, { SchemasToValues } from './conf';
 import examples from './examples'
 
@@ -105,7 +106,7 @@ const buildEnv = import.meta.env.VITE_BUILD_ENV ?? 'local'
 
     <article>
         <h2>{{ t('title.history') }}</h2>
-        <button @click="history.push(molecule ?? '')">{{ t('op.save_current') }}</button>
+        <button @click="history.unshift(molecule ?? '')">{{ t('op.save_current') }}</button>
         <button @click="history.splice(0, history.length)">{{ t('op.clear') }}</button>
         <br />
         <div class="mols">
@@ -127,7 +128,7 @@ const buildEnv = import.meta.env.VITE_BUILD_ENV ?? 'local'
         <h2>{{ t('title.examples') }}</h2>
         <div class="mols">
             <div v-for="[ desc, mol ] in examples">
-                <strong>{{ desc[i18n.locale.value] }}</strong><br />
+                <strong>{{ desc[i18n.locale.value as Locales] }}</strong><br />
                 <code>{{ mol }}</code>
                 <button @click="selectMol(mol)">{{ t('op.select') }}</button>
                 <br />
