@@ -159,7 +159,7 @@ export function renderSVG(c: ExpandedChem, opt: SvgRendererOption = {}): {
 		paddingX = 20,
 		paddingY = 20,
 		displayBonds = true,
-		bondGap: bg = 2,
+		bondGap: bg = 2.5,
 		lineBaseColor = 'black',
 		textBaseColor = 'black',
 		halfFontSize = 8,
@@ -191,7 +191,9 @@ export function renderSVG(c: ExpandedChem, opt: SvgRendererOption = {}): {
 			+ `#${id} text:not([nobasecolor]) {`
 				+ `fill: ${textBaseColor};`
 			+ `}`
-			+ `#${id} path {fill: none;}`
+			+ `#${id} path[tofill] {`
+				+ `fill: ${lineBaseColor};`
+			+ `}`
 			+ `#${id} text[number] {`
 				+ `font-size: ${halfFontSize * 1.5}px;`
 				+ `dominant-baseline: hanging;`
@@ -248,11 +250,14 @@ export function renderSVG(c: ExpandedChem, opt: SvgRendererOption = {}): {
 			const wh = 3
 			const xwh = wh * (x2 - x1) / u
 			const ywh = wh * (y2 - y1) / u
-			const wv = 2
+			const wv = 1
 			const xwv = wv * (y2 - y1) / u
 			const ywv = wv * (x2 - x1) / u
-			ln(x2, y2, x2 - xwh + xwv, y2 - ywh - ywv, attr)
-			ln(x2, y2, x2 - xwh - xwv, y2 - ywh + ywv, attr)
+			svg += `<path d="`
+				+ `M ${X(x2)} ${Y(y2)}`
+				+ `L ${X(x2 - xwh + xwv)} ${Y(y2 - ywh - ywv)}`
+				+ `L ${X(x2 - xwh - xwv)} ${Y(y2 - ywh + ywv)} Z`
+			+ `" ${[...attr, `tofill=""`].join(' ')}></path>`
 		}
 
 		for (let {
