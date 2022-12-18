@@ -235,8 +235,24 @@ export function renderSVG(c: ExpandedChem, opt: SvgRendererOption = {}): {
 	}
 
 	if (displayBonds) {
-		const ln = (x1: number, y1: number, x2: number, y2: number, attr: string[]) => {
+		const ln = (
+			x1: number, y1: number, x2: number, y2: number, attr: string[],
+			to: boolean = false, from: boolean = false
+		) => {
 			svg += `<line x1="${X(x1)}" y1="${Y(y1)}" x2="${X(x2)}" y2="${Y(y2)}" ${attr.join(' ')}></line>`
+			if (to) arrow(x1, y1, x2, y2, attr)
+			if (from) arrow(x2, y2, x1, y1, attr)
+		}
+
+		const arrow = (x1: number, y1: number, x2: number, y2: number, attr: string[]) => {
+			const wh = 3
+			const xwh = wh * (x2 - x1) / u
+			const ywh = wh * (y2 - y1) / u
+			const wv = 2
+			const xwv = wv * (y2 - y1) / u
+			const ywv = wv * (x2 - x1) / u
+			ln(x2, y2, x2 - xwh + xwv, y2 - ywh - ywv, attr)
+			ln(x2, y2, x2 - xwh - xwv, y2 - ywh + ywv, attr)
 		}
 
 		for (let {
@@ -262,36 +278,28 @@ export function renderSVG(c: ExpandedChem, opt: SvgRendererOption = {}): {
 				+ `" ${attr.join(' ')}></path>`
 			}
 			else if (c === 1) {
-				ln(x1, y1, x2, y2, attr)
-				if (a.to || a.from) {
-					const wh = 3
-					const xwh = wh * (x2 - x1) / u
-					const ywh = wh * (y2 - y1) / u
-					const wv = 2
-					const xwv = wv * (y2 - y1) / u
-					const ywv = wv * (x2 - x1) / u
-					if (a.to) {
-						ln(x2, y2, x2 - xwh + xwv, y2 - ywh - ywv, attr)
-						ln(x2, y2, x2 - xwh - xwv, y2 - ywh + ywv, attr)
-					}
-					else if (a.from) {
-						ln(x1, y1, x1 + xwh + xwv, y1 + ywh - ywv, attr)
-						ln(x1, y1, x1 + xwh - xwv, y1 + ywh + ywv, attr)
-					}
-				}
+				ln(x1, y1, x2, y2, attr, !! a.to, !! a.from)
 			}
 			else if (c === 2) {
-				const xg = bg * (y2 - y1) / u
-				const yg = bg * (x2 - x1) / u
-				ln(x1 - xg, y1 + yg, x2 - xg, y2 + yg, attr)
-				ln(x1 + xg, y1 - yg, x2 + xg, y2 - yg, attr)
+				let xg = bg * (y2 - y1) / u
+				let yg = bg * (x2 - x1) / u
+				if (yg < 0) {
+					xg = - xg
+					yg = - yg
+				}
+				ln(x1 + xg, y1 - yg, x2 + xg, y2 - yg, attr, !! a.to, !! a.from)
+				ln(x1 - xg, y1 + yg, x2 - xg, y2 + yg, attr, (a.to ?? 0) > 1, (a.from ?? 0) > 1)
 			}
 			else if (c === 3) {
-				const xg = (bg + 1) * (y2 - y1) / u
-				const yg = (bg + 1) * (x2 - x1) / u
-				ln(x1, y1, x2, y2, attr)
-				ln(x1 - xg, y1 + yg, x2 - xg, y2 + yg, attr)
-				ln(x1 + xg, y1 - yg, x2 + xg, y2 - yg, attr)
+				let xg = (bg + 1) * (y2 - y1) / u
+				let yg = (bg + 1) * (x2 - x1) / u
+				if (yg < 0) {
+					xg = - xg
+					yg = - yg
+				}
+				ln(x1 + xg, y1 - yg, x2 + xg, y2 - yg, attr, !! a.to, !! a.from)
+				ln(x1, y1, x2, y2, attr, (a.to ?? 0) > 1, (a.from ?? 0) > 1)
+				ln(x1 - xg, y1 + yg, x2 - xg, y2 + yg, attr, (a.to ?? 0) > 2, (a.from ?? 0) > 2)
 			}
 		}
 	}

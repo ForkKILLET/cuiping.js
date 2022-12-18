@@ -45,7 +45,7 @@ const schemasRender = {
 	paddingX: { ty: 'number', def: 20 },
 	paddingY: { ty: 'number', def: 20 },
 	displayBonds: { ty: 'boolean', def: true },
-	bondGap: { ty: 'number', min: 0, def: 2 },
+	bondGap: { ty: 'number', min: 0, def: 2.5 },
 	lineBaseColor: { ty: 'color', def: 'black' },
 	textBaseColor: { ty: 'color', def: 'black' },
     halfFontSize: { ty: 'number', min: 0, def: 8 },

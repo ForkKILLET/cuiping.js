@@ -218,7 +218,10 @@ export const BondAttrs = {
 	'<': 'from',
 	to: [
 		{ type: 'boolean' },
-		{ type: 'integer', min: 1, max: 3 }
+		{
+			type: 'integer', min: 1, max: 3,
+			validate: coordinateBondValidator
+		}
 	],
 	'>': 'to'
 } as const
@@ -301,11 +304,11 @@ export class ChemParser extends Parser<Struct> {
 					a[ss] = a[k]
 					ss = attrSchema[ss] as Readonly<AttrSchemaRule>
 				}
-				ss
 				if (! Array.isArray(ss)) ss = [ ss as AttrSchemaRule ]
 				const tyNow = typeof a[k]
 				let tyMatched = false
-				typeCheck: for (const s of ss) {
+				let tyError: string | undefined
+				typeCheck: for (const s of ss as AttrSchemaRule[]) {
 					const ty = s.type
 					if (
 						tyNow === ty ||
@@ -313,7 +316,18 @@ export class ChemParser extends Parser<Struct> {
 					) {
 						switch (ty) {
 							case 'integer':
-								if (! Number.isInteger(+ a[k])) break typeCheck
+								if (! Number.isInteger(+ a[k])) {
+									tyError = 'not integer'
+									break typeCheck
+								}
+								if (s.min !== undefined && + a[k] < s.min) {
+									tyError = `less than min value ${s.min}`
+									break typeCheck
+								}
+								if (s.max !== undefined && + a[k] > s.max) {
+									tyError = `greater than max value ${s.max}`
+									break typeCheck
+								}
 						}
 						if (s.validate) vf = s.validate
 						tyMatched = true
@@ -321,9 +335,9 @@ export class ChemParser extends Parser<Struct> {
 					}
 				}
 				if (! tyMatched)
-					throw this.expect(`Attribute '${k}' to be ${
+					throw this.expect(`attribute '${k}' to be ${
 						ss.map(s => s.type).join(' or ')
-					} type`, tyNow + ' ' + a[k])
+					} type`, a[k] + (tyError ? ': ' + tyError : ''))
 			}
 			else throw Error(`Unknown attribute '${k}'.`)
 		}

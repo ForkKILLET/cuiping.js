@@ -20,7 +20,7 @@ export default {
         },
         conf: {
             useImage: 'Use image',
-            imageScale: 'Image scale (clarity)',
+            imageScale: 'Image scale',
             unitLen: 'Unit length',
             paddingX: 'X padding',
             paddingY: 'Y padding',
@@ -55,7 +55,7 @@ export default {
         },
         conf: {
             useImage: '使用图片',
-            imageScale: '图片缩放 (清晰度)',
+            imageScale: '图片缩放',
             unitLen: '单位长度',
             paddingX: '横向留白',
             paddingY: '纵向留白',
