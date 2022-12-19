@@ -1,4 +1,3 @@
-import { group } from 'node:console'
 import { Debug } from '../utils/debug.js'
 import { MathEx } from '../utils/math.js'
 import { getWidth } from '../utils/measure.js'
@@ -365,7 +364,14 @@ export class ChemParser extends Parser<Struct> {
 	
 	private doParseGroup(): Group {
 		let r = ''
-		while (GroupCharset.includes(this.current)) {
+		let alignShort = false, alignLong = false
+		while (GroupCharset.includes(this.current) || alignShort || alignLong) {
+			if (alignShort) alignShort = false
+			if (this.current === '^' || this.current === '_') {
+				if (this.after[0] === '(') alignLong = true
+				else alignShort = true
+			}
+			if (this.current === ')' && alignLong) alignLong = false
 			r += this.current
 			this.index ++
 		}
@@ -580,10 +586,10 @@ export class GroupTypesetParser extends Parser<GroupTypeset> {
 					else {
 						eat()
 						s = this.current
-						if (align === 'base' && this.current >= '0' && this.current <= '9')
-							align = 'sub'
 						if (alignShort) alignShort = false
 						else if (! alignLong) align = 'base'
+						if (align === 'base' && this.current >= '0' && this.current <= '9')
+							align = 'sub'
 					}
 			}
 			this.index ++

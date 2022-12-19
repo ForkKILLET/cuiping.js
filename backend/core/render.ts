@@ -159,7 +159,7 @@ export function renderSVG(c: ExpandedChem, opt: SvgRendererOption = {}): {
 		paddingX = 20,
 		paddingY = 20,
 		displayBonds = true,
-		bondGap: bg = 2.5,
+		bondGap: bg = 2,
 		lineBaseColor = 'black',
 		textBaseColor = 'black',
 		halfFontSize = 8,
@@ -191,6 +191,7 @@ export function renderSVG(c: ExpandedChem, opt: SvgRendererOption = {}): {
 			+ `#${id} text:not([nobasecolor]) {`
 				+ `fill: ${textBaseColor};`
 			+ `}`
+			+ `#${id} path:not([tofill]) {fill: none;}`
 			+ `#${id} path[tofill] {`
 				+ `fill: ${lineBaseColor};`
 			+ `}`
@@ -256,10 +257,10 @@ export function renderSVG(c: ExpandedChem, opt: SvgRendererOption = {}): {
 		}
 
 		const arrow = (x1: number, y1: number, x2: number, y2: number, attr: string[]) => {
-			const wh = 3
+			const wh = 4
 			const xwh = wh * (x2 - x1) / u
 			const ywh = wh * (y2 - y1) / u
-			const wv = 1
+			const wv = 1.5
 			const xwv = wv * (y2 - y1) / u
 			const ywv = wv * (x2 - x1) / u
 			svg += `<path d="`
