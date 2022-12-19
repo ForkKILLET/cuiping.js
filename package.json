@@ -1,7 +1,9 @@
 {
   "name": "cuiping-workspace",
   "version": "1.0.0",
-  "main": "index.js",
+  "scripts": {
+	"loc": "tokei -e '*.yaml' -e '*.txt' -e '*.md'"
+  },
   "repository": "git@github.com:ForkKILLET/cuiping.js.git",
   "author": "ForkΨKILLET <fork_killet@qq.com>",
   "license": "MIT",
