@@ -430,7 +430,8 @@ export class ChemParser extends Parser<Struct> {
 
 			for (let d of ds) {
 				if (plus180Deg) d = MathEx.stdAng(d + 180)
-				if (! isPrefix || dirs.includes(d)) d = MathEx.stdAng(d + 180)
+				if (! isPrefix) d = MathEx.stdAng(d + 180)
+				if (dirs.includes(d)) d = MathEx.stdAng(d + 180)
 
 				if (this.checkDupBondDir(parsedBonds, dirs, dirFrom, d))
 					throw Error(`Duplicated bond direction (${ds} deg)`)
