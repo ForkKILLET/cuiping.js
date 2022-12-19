@@ -84,7 +84,7 @@ const buildEnv = import.meta.env.VITE_BUILD_ENV ?? 'local'
         <p>
             <textarea
                 v-model="molecule"
-                :placeholder="t('info.enterFormula')"
+                :placeholder="t('info.enterFormula')" spellcheck="false"
             ></textarea>
         </p>
 
