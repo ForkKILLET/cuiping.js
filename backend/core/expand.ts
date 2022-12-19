@@ -46,8 +46,9 @@ export function expand(
 				if (flipY) d = 360 - d
 				d = MathEx.stdAng(d)
 
+				
 				Debug.D(
-					'>'.repeat(depth + 1) + ' '.repeat(8 - depth) +
+					'>'.repeat(depth + 1) + ' '.repeat(8 * ((depth / 8 | 0) + 1) - depth) +
 					'rd %d,\tfx %o,\tfy %o\t-> %d',
 					rotateD, flipX, flipY, d
 				)
