@@ -51,7 +51,7 @@ export function locate(chem: ExpandedChem, {
 		groups.push({ ...c.g, x: x1, y: y1, xo, yo })
 
 		const w = c.g.t.w * 2
-		const cxo = getWidth(c.g.t[0]) // Note: center offset x, depends on center atom
+		const cxo = c.g.t.B[0].w // Note: center offset x, depends on center atom
 
 		c.bonds.forEach(b => {
 			// Note: distance to text border
@@ -61,7 +61,7 @@ export function locate(chem: ExpandedChem, {
 			const k = yr / xr // Note: slope of the line from center to corner
 			const t = MathEx.tand(b.d) // Note: tangent of the bond angle
 
-			const collpased = c.g.t[0] === '.'
+			const collpased = c.g.t.B[0].s === '.'
 
 			const dxo = collpased
 				? 0
@@ -78,13 +78,13 @@ export function locate(chem: ExpandedChem, {
 			const { t: T } = b.t.g
 
 			const x2 = x1 + MathEx.cosd(b.d) * u
-			const cx2 = x1 + MathEx.cosd(b.d) * (u + getWidth(T[0]) * hw)
+			const cx2 = x1 + MathEx.cosd(b.d) * (u + T.B[0].w * hw)
 			const y2 = y1 + MathEx.sind(b.d) * u
 			const cy2 = y1 + MathEx.sind(b.d) * (u + (collpased ? 0 : hh))
 
 			const txo = MathEx.cosd(b.d) >= 0 // Note: text offset x of target group
 				? 0
-				: (- T.w + getWidth(T[0])) * 2 * hw
+				: (- T.w + T.B[0].w) * 2 * hw
 
 			bonds.push({
 				g1: b.f, g2: b.t.g,
@@ -117,7 +117,7 @@ export function getViewport(l: Layout, h: number) {
 		if (y < yMin) yMin = y
 		if (y > yMax) yMax = y
 		// Note: calculate border of text
-		const w0 = g.t.w ? getWidth(g.t[0]) * h : 0
+		const w0 = g.t.w ? g.t.B[0].w * h : 0
 		const x1 = g.x + g.xo - w0
 		const x2 = g.x + g.xo + (g.t.w * 2 * h) - w0
 		if (x1 < xMin) xMin = x1
@@ -194,9 +194,13 @@ export function renderSVG(c: ExpandedChem, opt: SvgRendererOption = {}): {
 			+ `#${id} path[tofill] {`
 				+ `fill: ${lineBaseColor};`
 			+ `}`
-			+ `#${id} text[number] {`
+			+ `#${id} text[box-align=sub] {`
 				+ `font-size: ${halfFontSize * 1.5}px;`
 				+ `dominant-baseline: hanging;`
+			+ `}`
+			+ `#${id} text[box-align=sup] {`
+				+ `font-size: ${halfFontSize * 1.5}px;`
+				+ `dominant-baseline: alphabetic;`
 			+ `}`
 			+ `#${id} text[bold] {font-weight: bold;}`
 			+ `#${id} line:not([nobasecolor]), #${id} path:not([nobasecolor]) {`
@@ -213,26 +217,31 @@ export function renderSVG(c: ExpandedChem, opt: SvgRendererOption = {}): {
 		O.y = yo
 
 		let w = 0
-		for (const s of t) {
+		for (const B of t.B) {
 			const attr: string[] = []
 			if (a.color)
 				attr.push(`nobasecolor=""`, `fill="${a.color}"`)
 			if (a.bold)
 				attr.push(`bold=""`)
 
-			const wb = getWidth(s)
-			Debug.D('text box width: %s = %.1f', s, wb)
-
-			if (w > 0) w += wb / 2
-			const sub = s.match(/\d/)
-			if (s !== '*' && s !== '.') {
-				if (sub) attr.push('number=""')
-				svg += `<text x="${X(x + w * 2 * hw)}" y="${Y(y)}" ${attr.join(' ')}>${s}</text>`
+			if (w > 0) w += B.w / 2
+			if (B.s !== '*' && B.s !== '.') {
+				if (B.a !== 'base') attr.push(`box-align="${B.a}"`)
+				svg += `<text x="${X(x + w * 2 * hw)}" y="${Y(y)}" ${attr.join(' ')}>${B.s}</text>`
 			}
 			if (showTextBox) // Note: text box
-				svg += `<rect x="${X(x + (w * 2 - wb) * hw)}" y="${Y(sub ? y - hh / 2 : y - hh)}" width="${hw * wb * 2 || 1}" height="${hh * 2}" stroke="red" fill="transparent"></rect>`
+				svg += `<rect `
+					+ `x="${X(x + (w * 2 - B.w) * hw)}" `
+					+ `y="${Y(
+						B.a === 'base' ? y - hh : 
+						B.a === 'sub' ? y - hh / 2 :
+						y + hh / 2
+					)}" `
+					+ `width="${hw * B.w * 2 || 1}" height="${hh * 2}"`
+					+ `stroke="red" fill="transparent"`
+				+ `></rect>`
 
-			w += wb / 2
+			w += B.w / 2
 		}
 	}
 

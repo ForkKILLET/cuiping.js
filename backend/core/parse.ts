@@ -23,7 +23,7 @@ export abstract class Parser<T> {
 		return this.str[this.index]
 	}
 	protected get after(): string {
-		return this.str.slice(this.index)
+		return this.str.slice(this.index + 1)
 	}
 
 	getStr(): string {
@@ -135,10 +135,21 @@ export type AttrSchemaRule = Readonly<({
 
 export type AttrSchema = Readonly<Record<string, string | Readonly<MaybeArray<AttrSchemaRule>>>>
 
+export type GroupTypesetAlign = 'base' | 'sub' | 'sup'
+export type GroupTypesetBox = {
+	s: string,
+	w: number,
+	a: GroupTypesetAlign
+}
+export type GroupTypeset = {
+	B: GroupTypesetBox[],
+	w: number
+}
 export type Group = {
-	t: string[] & { w: number }
+	t: GroupTypeset
 	a: AttrOfGroup
 }
+
 export type BondCount = 1 | 2 | 3 
 export type BondDir = number
 export type Bond = {
@@ -164,6 +175,7 @@ export const IdentifierCharset
 	+ '0123456789'
 export const GroupCharset
 	= IdentifierCharset
+	+ '^_'
 	+ '()'
 	+ '*' // Note: willcard
 	+ '.' // Note: collpased carbon
@@ -352,31 +364,22 @@ export class ChemParser extends Parser<Struct> {
 	}
 	
 	private doParseGroup(): Group {
-		let s = ''
+		let r = ''
 		while (GroupCharset.includes(this.current)) {
-			s += this.current
+			r += this.current
 			this.index ++
 		}
 
-		if (! s) throw this.expect('atom group')
-		if (s.includes('*') && s.length > 1)
+		if (! r) throw this.expect('atom group')
+		if (r.includes('*') && r.length > 1)
 			throw Error(`Willcard groups mustn't include any characters except '*'`)
-		if (s.includes('.') && s.length > 1)
+		if (r.includes('.') && r.length > 1)
 			throw Error(`Collpased carbon mustn't include any characters except '.'`)
 
-		const t = Object.assign([] as string[], { w: 0 })
+		const groupTypesetParser = new GroupTypesetParser(r)
+		const t = groupTypesetParser.parse()!
 
-		for (const [ i, ch ] of [...s].entries()) {
-			if (i && (
-				s[i - 1].match(/[A-Z]/) && ch.match(/[a-z]/)
-			)) {
-				t[t.length - 1] += ch
-				continue
-			}
-			t.push(ch)
-		}
-
-		t.w = t.reduce((w, ch) => w + getWidth(ch), 0)
+		Debug.D('group typeset: %s -> %o', r, t)
 
 		let a
 		if (this.current === '{') {
@@ -391,22 +394,18 @@ export class ChemParser extends Parser<Struct> {
 	private checkDupBondDir(
 		parsedBonds: Bond[],
 		currentDirs: BondDir[],
-		dirFrom: BondDir | null,
 		dir: BondDir
 	) {
 		return currentDirs.includes(dir)
 			|| parsedBonds.some(({ d: dirs }) => dirs.includes(dir))
-			|| dir === dirFrom
 	}
 
 	private doParseBondType({
 		isPrefix = false,
 		parsedBonds = [],
-		dirFrom = null
 	}: {
 		isPrefix?: boolean,
 		parsedBonds?: Bond[],
-		dirFrom?: BondDir | null
 	} = {}): BondType {
 		let c: BondCount = 1
 		const dirs: BondDir[] = []
@@ -433,7 +432,7 @@ export class ChemParser extends Parser<Struct> {
 				if (! isPrefix) d = MathEx.stdAng(d + 180)
 				if (dirs.includes(d)) d = MathEx.stdAng(d + 180)
 
-				if (this.checkDupBondDir(parsedBonds, dirs, dirFrom, d))
+				if (this.checkDupBondDir(parsedBonds, dirs, d))
 					throw Error(`Duplicated bond direction (${ds} deg)`)
 
 				dirs.push(d)
@@ -459,39 +458,33 @@ export class ChemParser extends Parser<Struct> {
 	private doParseBond({
 		requirePrefix = false,
 		parsedBonds = [],
-		dirFrom = null,
 	}: {
 		requirePrefix?: boolean,
 		parsedBonds?: Bond[],
-		dirFrom?: BondDir | null,
 	} = {}): Bond | undefined {
 		if (! BondCharset.includes(this.current)) {
 			if (requirePrefix) throw this.expect('prefix-styled bond')
 			if (GroupCharset.includes(this.current)) {
 				const n = this.doParse()
-				const { c, d, a } = this.doParseBondType({ isPrefix: false, parsedBonds, dirFrom })
+				const { c, d, a } = this.doParseBondType({ isPrefix: false, parsedBonds })
 				return { c, d, n, a, i: 0 }
 			}
 			else throw this.expect('bond')
 		}
 		else {
-			const { c, d, a } = this.doParseBondType({ isPrefix: true, parsedBonds, dirFrom })
+			const { c, d, a } = this.doParseBondType({ isPrefix: true, parsedBonds })
 			const n = this.doParse()
 			return { c, d, n, a, i: 0 }
 		}
 	}
 
-	private doParseBonds({
-		dirFrom = null,
-	}: {
-		dirFrom?: BondDir | null,
-	}): Bond[] {
+	private doParseBonds(): Bond[] {
 		const bonds: Bond[] = []
 
 		if (this.current === '[') {
 			this.index ++
 			bondsInBracket: while (true) {
-				bonds.push(this.doParseBond({ parsedBonds: bonds, dirFrom })!)
+				bonds.push(this.doParseBond({ parsedBonds: bonds })!)
 				switch (this.current as string) {
 					case ']':
 						this.index ++
@@ -504,7 +497,7 @@ export class ChemParser extends Parser<Struct> {
 		}
 		if (BondCharset.includes(this.current)) {
 			const bond = this
-				.try(() => this.doParseBond({ parsedBonds: bonds, dirFrom }))
+				.try(() => this.doParseBond({ parsedBonds: bonds }))
 				.except('atom group', null)
 			if (bond) bonds.push(bond)
 		}
@@ -532,19 +525,76 @@ export class ChemParser extends Parser<Struct> {
 		return { S: 'attr', d: def, a }
 	}
 
-	protected doParse({
-		dirFrom = null
-	}: {
-		dirFrom?: BondDir | null
-	} = {}): Struct {
+	protected doParse(): Struct {
 		if (this.current === '$') {
 			return this.doParseAttrStruct()
 		}
 
 		const g = this.doParseGroup()
-		const bonds = this.doParseBonds({ dirFrom })
+		const bonds = this.doParseBonds()
 		return {
 			S: 'chem', g, bonds
+		}
+	}
+}
+
+export class GroupTypesetParser extends Parser<GroupTypeset> {
+	protected doParse(_?: {}): GroupTypeset {
+		const boxes: GroupTypesetBox[] = []
+
+		let align: GroupTypesetAlign = 'base'
+		let alignLong = false
+		let alignShort = false
+		let s = ''
+
+		const eat = () => {
+			if (s) {
+				let w = getWidth(s)
+				if (align !== 'base') w /= 2
+				boxes.push({ s, w, a: align })
+				s = ''
+			}
+		}
+
+		while (this.current) {
+			switch (this.current as string) {
+				case ')':
+					if (alignLong) {
+						alignLong = false
+						break
+					}
+				case '^':
+				case '_':
+					eat()
+					align = this.current === '^' ? 'sup' : 'sub'
+					if (this.after[0] === '(') {
+						alignLong = true
+						this.index ++
+					}
+					else alignShort = true
+					break
+				default:
+					if (s[0] >= 'A' && s[0] <= 'Z' && this.current >= 'a' && this.current <= 'z') {
+						s += this.current
+					}
+					else {
+						eat()
+						s = this.current
+						if (align === 'base' && this.current >= '0' && this.current <= '9')
+							align = 'sub'
+						if (alignShort) alignShort = false
+						else if (! alignLong) align = 'base'
+					}
+			}
+			this.index ++
+		}
+
+		eat()
+
+		if (alignLong) throw Error(`Unclosed ${align}script in group typeset '${this.str}'`)
+
+		return {
+			B: boxes, w: boxes.reduce((w, B) => w + B.w, 0)
 		}
 	}
 }
