@@ -65,7 +65,7 @@ _English document WIP_
 | `halfFontSize`        | 数值   | 半字号
 | `halfTextBoxWidth`    | 数值   | 半字框宽
 | `halfTextBoxHeight`   | 数值   | 半字框高
-| `showTextBox`         | 布尔   | 显示字框
+| `displayTextBox`      | 布尔   | 显示字框
 
 ### 在浏览器中使用 Vue 组件
 

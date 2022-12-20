@@ -31,7 +31,7 @@ export default {
             halfFontSize: 'Half font size',
             halfTextBoxWidth: 'Half text box width',
             halfTextBoxHeight: 'Half text box height',
-            showTextBox: 'Show text box (debug)'
+            displayTextBox: 'Show text box (debug)'
         }
     },
     zh: {
@@ -66,7 +66,7 @@ export default {
             halfFontSize: '半字号',
             halfTextBoxWidth: '半字框宽',
             halfTextBoxHeight: '半字框高',
-            showTextBox: '显示字框 (调试)'
+            displayTextBox: '显示字框 (调试)'
         }
     }
 }

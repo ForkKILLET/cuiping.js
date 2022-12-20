@@ -51,7 +51,7 @@ const schemasRender = {
     halfFontSize: { ty: 'number', min: 0, def: 8 },
     halfTextBoxWidth: { ty: 'number', min: 0, def: 6 },
     halfTextBoxHeight: { ty: 'number', min: 0, def: 8 },
-    showTextBox: { ty: 'boolean', def: false }
+    displayTextBox: { ty: 'boolean', def: false }
 } as const
 
 const confRender = ref<SchemasToValues<typeof schemasRender>>()

@@ -143,7 +143,7 @@ export type SvgRendererOption = {
 	halfFontSize?: number,
 	halfTextBoxWidth?: number,
 	halfTextBoxHeight?: number,
-	showTextBox?: boolean
+	displayTextBox?: boolean
 }
 
 export function renderSVG(c: ExpandedChem, opt: SvgRendererOption = {}): {
@@ -165,7 +165,7 @@ export function renderSVG(c: ExpandedChem, opt: SvgRendererOption = {}): {
 		halfFontSize = 8,
 		halfTextBoxWidth: hw = 8,
 		halfTextBoxHeight: hh = 8,
-		showTextBox = false
+		displayTextBox = false
 	} = opt
 
 	let svg = ''
@@ -230,7 +230,7 @@ export function renderSVG(c: ExpandedChem, opt: SvgRendererOption = {}): {
 				if (B.a !== 'base') attr.push(`box-align="${B.a}"`)
 				svg += `<text x="${X(x + w * 2 * hw)}" y="${Y(y)}" ${attr.join(' ')}>${B.s}</text>`
 			}
-			if (showTextBox) // Note: text box
+			if (displayTextBox) // Note: text box
 				svg += `<rect `
 					+ `x="${X(x + (w * 2 - B.w) * hw)}" `
 					+ `y="${Y(
