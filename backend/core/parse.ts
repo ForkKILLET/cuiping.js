@@ -35,7 +35,7 @@ export abstract class Parser<T> {
 		try {
 			const result = this.doParse()
 			if (this.index !== this.str.length)
-				throw Error(`Unexcepted trailing characters '${this.after}'`)
+				throw Error(`Unexcepted trailing characters '${this.current + this.after}'`)
 			Debug.D('parse: %o', result)
 			return result
 		}
@@ -363,18 +363,61 @@ export class ChemParser extends Parser<Struct> {
 	}
 	
 	private doParseGroup(): Group {
-		let r = ''
+		let r = '', s = ''
+
+		const boxes: GroupTypesetBox[] = []
 		let alignShort = false, alignLong = false
-		while (GroupCharset.includes(this.current) || alignShort || alignLong) {
-			if (alignShort) alignShort = false
-			if (this.current === '^' || this.current === '_') {
-				if (this.after[0] === '(') alignLong = true
+		let align: GroupTypesetAlign = 'base'
+
+		const eatChar = () => {
+			if (! s) return
+			let w = getWidth(s)
+			if (align !== 'base') w /= 2
+			boxes.push({ s, w, a: align })
+		}
+
+		while (
+			this.current &&
+			(GroupCharset.includes(this.current) || alignShort || alignLong)
+		) {
+			const ch = this.current
+
+			if (ch === '^' || ch === '_') {
+				eatChar()
+				s = ''
+
+				align = ch === '^' ? 'sup' : 'sub'
+				if (this.after[0] === '(') {
+					alignLong = true
+					this.index ++
+				}
 				else alignShort = true
 			}
-			if (this.current === ')' && alignLong) alignLong = false
-			r += this.current
+			else if (ch === ')' && alignLong) alignLong = false
+			else {
+				if (! alignShort &&
+					s[0] >= 'A' && s[0] <= 'Z' && ch >= 'a' && ch <= 'z'
+				) s += ch
+				else {
+					eatChar()
+	
+					s = ch
+
+					if (alignShort) alignShort = false
+					else if (! alignLong) {
+						if (ch >= '0' && ch <= '9') align = 'sub'
+						else if (align !== 'base') align = 'base'
+					}
+				}
+			}
+
+			r += ch
 			this.index ++
 		}
+
+		eatChar()
+
+		if (alignLong) throw Error(`Unclosed ${align}script in group typeset '${r}'`)
 
 		if (! r) throw this.expect('atom group')
 		if (r.includes('*') && r.length > 1)
@@ -382,8 +425,10 @@ export class ChemParser extends Parser<Struct> {
 		if (r.includes('.') && r.length > 1)
 			throw Error(`Collpased carbon mustn't include any characters except '.'`)
 
-		const groupTypesetParser = new GroupTypesetParser(r)
-		const t = groupTypesetParser.parse()!
+		const t: GroupTypeset = {
+			B: boxes,
+			w: boxes.reduce((w, B) => w + B.w, 0)
+		}
 
 		Debug.D('group typeset: %s -> %o', r, t)
 
@@ -540,67 +585,6 @@ export class ChemParser extends Parser<Struct> {
 		const bonds = this.doParseBonds()
 		return {
 			S: 'chem', g, bonds
-		}
-	}
-}
-
-export class GroupTypesetParser extends Parser<GroupTypeset> {
-	protected doParse(_?: {}): GroupTypeset {
-		const boxes: GroupTypesetBox[] = []
-
-		let align: GroupTypesetAlign = 'base'
-		let alignLong = false
-		let alignShort = false
-		let s = ''
-
-		const eat = () => {
-			if (s) {
-				let w = getWidth(s)
-				if (align !== 'base') w /= 2
-				boxes.push({ s, w, a: align })
-				s = ''
-			}
-		}
-
-		while (this.current) {
-			switch (this.current as string) {
-				case ')':
-					if (alignLong) {
-						alignLong = false
-						break
-					}
-				case '^':
-				case '_':
-					eat()
-					align = this.current === '^' ? 'sup' : 'sub'
-					if (this.after[0] === '(') {
-						alignLong = true
-						this.index ++
-					}
-					else alignShort = true
-					break
-				default:
-					if (s[0] >= 'A' && s[0] <= 'Z' && this.current >= 'a' && this.current <= 'z') {
-						s += this.current
-					}
-					else {
-						eat()
-						s = this.current
-						if (alignShort) alignShort = false
-						else if (! alignLong) align = 'base'
-						if (align === 'base' && this.current >= '0' && this.current <= '9')
-							align = 'sub'
-					}
-			}
-			this.index ++
-		}
-
-		eat()
-
-		if (alignLong) throw Error(`Unclosed ${align}script in group typeset '${this.str}'`)
-
-		return {
-			B: boxes, w: boxes.reduce((w, B) => w + B.w, 0)
 		}
 	}
 }
