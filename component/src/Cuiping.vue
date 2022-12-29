@@ -1,10 +1,6 @@
 <script setup lang="ts">
 import { computed, ref } from 'vue'
-import {
-    ChemParser,
-    expand,
-    renderSVG, SvgRendererOption
-} from 'cuiping'
+import { render, SvgRendererOption } from 'cuiping'
 
 const props = withDefaults(defineProps<{
     molecule?: string,
@@ -20,21 +16,23 @@ const res = computed(() => {
     if (! props.molecule) return { state: 'empty' as const }
 
     let errMsg: string = ''
-    const parser = new ChemParser(props.molecule)
-    const chem = parser.parse((err) => {
-        errMsg = err.toString()
-        return true
+    
+    const data = render(props.molecule, {
+        onError: err => {
+            errMsg = err.toString()
+        },
+        renderer: 'svg',
+        rendererOptions: props.renderOptions ?? {}
     })
 
-    if (errMsg) return {
-        state: 'error' as const,
-        errMsg
+    if (data) return {
+        state: 'ok' as const,
+        data
     }
 
-    const chemEx = expand(chem!)
-    return {
-        state: 'ok' as const,
-        data: renderSVG(chemEx, props.renderOptions)
+    else return {
+        state: 'error' as const,
+        errMsg
     }
 })
 

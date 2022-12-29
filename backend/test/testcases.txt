@@ -1,7 +1,0 @@
-C
-C[||H,H-,-C[||H,-H]]
-C[H\/]=C[\/H]
-C+H
-C+CH3
-CH3-CH<B>[|Cl<C:green>]-CH3
-{chem, C[--||H]}

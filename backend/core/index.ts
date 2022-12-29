@@ -1,3 +1,7 @@
+import { ChemParser } from './parse'
+import { combine } from './postproc'
+import { renderSVG, SvgRendererOption } from './render'
+
 export {
     GroupAttrs as Attributes,
     BondCharset,
@@ -11,18 +15,19 @@ export type {
     Bond,
     BondCount,
     BondDir,
-    Struct as Chem,
+    Struct,
+    Formula,
     Group
 } from './parse'
 
 export {
-    expand
-} from './expand'
+    combine
+} from './postproc'
 
 export type {
     ExpandedBond,
-    ExpandedChem
-} from './expand'
+    Chem
+} from './postproc'
 
 export {
     getViewport,
@@ -36,3 +41,21 @@ export type {
     LayoutGroup,
     SvgRendererOption
 } from './render'
+
+export function render(molecule: string, options: {
+    onError?: (err: Error) => void,
+    renderer: 'svg',
+    rendererOptions: SvgRendererOption
+}) {
+    try {
+        const parser = new ChemParser(molecule)
+        const formula = parser.parse()
+        const chem = combine(formula)
+        if (options.renderer === 'svg') {
+            return renderSVG(chem, options.rendererOptions)
+        }
+    }
+    catch (error) {
+        options.onError?.(error as Error)
+    }
+}

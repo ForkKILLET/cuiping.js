@@ -1,8 +1,7 @@
 import type { Group, BondCount, AttrOfBond } from './parse.js'
-import type { ExpandedChem } from './expand.js'
+import type { Chem } from './postproc.js'
 import { MathEx } from '../utils/math.js'
 import { Debug } from '../utils/debug.js'
-import { getWidth } from '../utils/measure.js'
 
 export type LayoutBond = {
 	c: BondCount,
@@ -31,7 +30,7 @@ export type Layout = {
 	bonds: LayoutBond[]
 }
 
-export function locate(chem: ExpandedChem, {
+export function locate(chem: Chem, {
 	unitLen: u = 30,
 	halfTextBoxWidth: hw = 8,
 	halfTextBoxHeight: hh = 8
@@ -44,7 +43,7 @@ export function locate(chem: ExpandedChem, {
 	const bonds: LayoutBond[] = []
 
 	const dfs = (
-		c: ExpandedChem,
+		c: Chem,
 		x1: number, y1: number,
 		xo: number, yo: number
 	) => {
@@ -146,12 +145,14 @@ export type SvgRendererOption = {
 	displayTextBox?: boolean
 }
 
-export function renderSVG(c: ExpandedChem, opt: SvgRendererOption = {}): {
+export type SvgResult = {
 	svg: string,
 	id: string,
 	width: number,
 	height: number
-} {
+}
+
+export function renderSVG(c: Chem, opt: SvgRendererOption = {}): SvgResult {
 	const l = locate(c, opt)
 
 	const {
@@ -321,5 +322,8 @@ export function renderSVG(c: ExpandedChem, opt: SvgRendererOption = {}): {
 
 	svg += '</svg>'
 
-	return { svg, id, width, height }
+	const result = { svg, id, width, height }
+	Debug.D('svg: %o', result)
+
+	return result
 }

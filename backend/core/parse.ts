@@ -3,6 +3,206 @@ import { MathEx } from '../utils/math.js'
 import { getWidth } from '../utils/measure.js'
 import type { MaybeArray, TupleToUnion, ValueOf } from '../utils/types'
 
+export const IdentifierCharset
+	= 'abcdefghijklmnopqrstuvwxyz'
+	+ 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'
+	+ '0123456789'
+export const RefNameCharset = IdentifierCharset + '.,'
+export const GroupCharset
+	= IdentifierCharset
+	+ '^_'
+	+ '()'
+	+ '*' // Note: willcard
+	+ '.' // Note: collpased carbon
+export const BondCountCharset = '=#'
+export const BondDirCharset = '-|/\\+'
+export const BondDirModifierCharset = '!'
+export const BondCharset = BondCountCharset + BondDirCharset + BondDirModifierCharset
+
+export type Formula = {
+	structs: Struct[],
+	labels: Record<string, Struct | undefined>
+}
+
+export type StructHead = ChemStructHead | RefStructHead | AttrStructHead
+export type Struct<
+	H extends StructHead = StructHead, C extends StructHead = StructHead
+> = H & {
+	bonds: Bond<C>[]
+	[key: `${string}Visited`]: boolean | undefined
+}
+export type ChemStructHead = {
+	S: 'chem',
+	node: Group
+}
+export type RefStructHead = {
+	S: 'ref',
+	node: Ref
+}
+export type AttrStructHead = {
+	S: 'attr',
+	node: AttrCall
+}
+
+export type Ref = {
+	names: string[]
+}
+
+export type AttrCall = {
+	d: AttrStructDef,
+	a: Attr<any>
+}
+export type ChemDef = {}
+
+export type Group = {
+	t: GroupTypeset
+	a: AttrOfGroup
+}
+export type GroupTypesetAlign = 'base' | 'sub' | 'sup'
+export type GroupTypesetBox = {
+	s: string,
+	w: number,
+	a: GroupTypesetAlign
+}
+export type GroupTypeset = {
+	B: GroupTypesetBox[],
+	w: number
+}
+
+export type BondCount = 1 | 2 | 3 
+export type BondDir = number
+export type Bond<H extends StructHead = StructHead> = {
+	c: BondCount,
+	d: BondDir[],
+	n: Struct<H, H>,
+	a: AttrOfBond,
+	i: number // Note: index of connected atom
+}
+export type BondType = { c: BondCount, d: BondDir[], a: AttrOfBond }
+
+export const BondCountTable: Record<string, BondCount> = {
+	'=': 2,
+	'#': 3
+}
+export const BondDirTable = {
+	'-': [ 0 ],
+	// Note: the y-axis of SVG is top-to-bottom
+	'/': [ 300 ],
+	'|': [ 270 ],
+	'\\': [ 60 ],
+	'+': [ 0, 90, 180, 270 ]
+}
+
+export const GroupAttrs = {
+	color: { type: 'string' },
+	C: 'color',
+	bold: { type: 'boolean' },
+	B: 'bold',
+	ref: { type: 'string' },
+	'&': 'ref'
+} as const
+const coordinateBondValidator: AttrValidator = ((attr, { bondType }) => {
+	const a = attr as AttrOfBond
+	const cc = (a.from ?? a.to) as number
+	const { c } = bondType!
+	if (cc > c)
+		throw Error(`Coordinated bonds (${cc}) more than total bonds (${c}).`)
+})
+export const BondAttrs = {
+	color: { type: 'string' },
+	C: 'color',
+	highEnergy: { type: 'boolean' },
+	HE: 'highEnergy',
+	'~': 'highEnergy',
+	from: [
+		{ type: 'boolean' },
+		{
+			type: 'integer', min: 1, max: 3,
+			validate: coordinateBondValidator
+		}
+	],
+	'<': 'from',
+	to: [
+		{ type: 'boolean' },
+		{
+			type: 'integer', min: 1, max: 3,
+			validate: coordinateBondValidator
+		}
+	],
+	'>': 'to'
+} as const
+export type AttrOfGroup = Attr<typeof GroupAttrs>
+export type AttrOfBond = Attr<typeof BondAttrs>
+
+export type AttrOne<R extends AttrSchemaRule> =
+	R extends { type: 'string' } ? string :
+	R extends { type: 'boolean' } ? boolean :
+	R extends { type: 'integer' } ? number :
+	never
+export type AttrMany<S extends readonly AttrSchemaRule[]> =
+	TupleToUnion<{ 
+		[L in keyof S]: S[L] extends AttrSchemaRule
+			? AttrOne<S[L]>
+			: never
+	}>
+export type AttrMaybeOne<S extends Readonly<ValueOf<AttrSchema>>> =
+	S extends readonly AttrSchemaRule[] ? TupleToUnion<{ 
+		[L in keyof S]: S[L] extends AttrSchemaRule
+			? AttrOne<S[L]>
+			: never
+	}> :
+	S extends AttrSchemaRule ? AttrOne<S> :
+	never
+export type Attr<S extends AttrSchema> = {
+	[K in keyof S]?:
+		S[K] extends keyof S
+			? S[S[K]] extends MaybeArray<AttrSchemaRule>
+				? AttrMaybeOne<S[S[K]]>
+				: never
+			: S[K] extends Readonly<MaybeArray<AttrSchemaRule>>
+				? AttrMaybeOne<S[K]>
+				: never
+}
+export type AttrValidatorParams = {
+	group?: Group,
+	bondType?: BondType
+}
+export type AttrValidator =
+	((raw: Attr<any>, params: AttrValidatorParams) => void)
+export type AttrSchemaRule = Readonly<({
+	type: 'boolean'
+} | {
+	type: 'integer',
+	min?: number,
+	max?: number
+} | {
+	type: 'string'
+}) & {
+	validate?: AttrValidator
+}>
+export type AttrSchema = Readonly<Record<string, string | Readonly<MaybeArray<AttrSchemaRule>>>>
+
+
+export type AttrStructDef = {
+	type: 'chem',
+	attr: AttrSchema,
+	chem: ChemDef
+} | {
+	type: 'void',
+	attr: AttrSchema
+}
+
+export type AttrStructDefs = Record<string, AttrStructDef>
+
+const isAttribute = (k: string, attrSchema: AttrSchema): k is keyof typeof attrSchema => {
+	return k in attrSchema
+}
+
+export type AttrToValidate<T extends AttrSchema> = {
+	raw: Attr<T>,
+	validate: (params: AttrValidatorParams) => Attr<T>
+}
+
 export abstract class Parser<T> {
 	constructor(protected str: string) {}
 
@@ -29,22 +229,13 @@ export abstract class Parser<T> {
 		return this.str
 	}
 
-	parse(onError?: (err: Error) => boolean): T | undefined {
+	parse(): T | never {
 		if (this.used) throw Error('Parser is already used.')
 		this.used = true
-		try {
-			const result = this.doParse()
-			if (this.index !== this.str.length)
-				throw Error(`Unexcepted trailing characters '${this.current + this.after}'`)
-			Debug.D('parse: %o', result)
-			return result
-		}
-		catch (err) {
-			if (onError) {
-				if (! onError(err as Error)) throw err
-			}
-			else throw err
-		}
+		const result = this.doParse()
+		if (this.index !== this.str.length)
+			throw Error(`Unexcepted trailing characters '${this.current + this.after}'`)
+		return result
 	}
 
 	protected try<R>(fn: () => R) {
@@ -76,198 +267,7 @@ export abstract class Parser<T> {
 	protected abstract doParse(options?: any): T
 }
 
-export type AttrOne<R extends AttrSchemaRule> =
-	R extends { type: 'string' } ? string :
-	R extends { type: 'boolean' } ? boolean :
-	R extends { type: 'integer' } ? number :
-	never
-
-export type AttrMany<S extends readonly AttrSchemaRule[]> =
-	TupleToUnion<{ 
-		[L in keyof S]: S[L] extends AttrSchemaRule
-			? AttrOne<S[L]>
-			: never
-	}>
-
-export type AttrMaybeOne<S extends Readonly<ValueOf<AttrSchema>>> =
-	S extends readonly AttrSchemaRule[] ? TupleToUnion<{ 
-		[L in keyof S]: S[L] extends AttrSchemaRule
-			? AttrOne<S[L]>
-			: never
-	}> :
-	S extends AttrSchemaRule ? AttrOne<S> :
-	never
-
-export type Attr<S extends AttrSchema> = {
-	[K in keyof S]?:
-		S[K] extends keyof S
-			? S[S[K]] extends MaybeArray<AttrSchemaRule>
-				? AttrMaybeOne<S[S[K]]>
-				: never
-			: S[K] extends Readonly<MaybeArray<AttrSchemaRule>>
-				? AttrMaybeOne<S[K]>
-				: never
-}
-
-export type AttrOfGroup = Attr<typeof GroupAttrs>
-export type AttrOfBond = Attr<typeof BondAttrs>
-
-export type AttrValidatorParams = {
-	group?: Group,
-	bondType?: BondType
-}
-
-export type AttrValidator =
-	((raw: Attr<any>, params: AttrValidatorParams) => void)
-
-export type AttrSchemaRule = Readonly<({
-	type: 'boolean'
-} | {
-	type: 'integer',
-	min?: number,
-	max?: number
-} | {
-	type: 'string'
-}) & {
-	validate?: AttrValidator
-}>
-
-export type AttrSchema = Readonly<Record<string, string | Readonly<MaybeArray<AttrSchemaRule>>>>
-
-export type GroupTypesetAlign = 'base' | 'sub' | 'sup'
-export type GroupTypesetBox = {
-	s: string,
-	w: number,
-	a: GroupTypesetAlign
-}
-export type GroupTypeset = {
-	B: GroupTypesetBox[],
-	w: number
-}
-export type Group = {
-	t: GroupTypeset
-	a: AttrOfGroup
-}
-
-export type BondCount = 1 | 2 | 3 
-export type BondDir = number
-export type Bond = {
-	c: BondCount,
-	d: BondDir[],
-	n: Struct,
-	a: AttrOfBond,
-	i: number // Note: index of connected atom
-}
-export type BondType = { c: BondCount, d: BondDir[], a: AttrOfBond }
-
-export type Struct = ChemStruct | AttrStruct
-
-export type ChemStruct = {
-	S: 'chem',
-	g: Group,
-	bonds: Bond[]
-}
-
-export const IdentifierCharset
-	= 'abcdefghijklmnopqrstuvwxyz'
-	+ 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'
-	+ '0123456789'
-export const GroupCharset
-	= IdentifierCharset
-	+ '^_'
-	+ '()'
-	+ '*' // Note: willcard
-	+ '.' // Note: collpased carbon
-export const BondCountCharset = '=#'
-export const BondDirCharset = '-|/\\+'
-export const BondDirModifierCharset = '!'
-export const BondCharset = BondCountCharset + BondDirCharset + BondDirModifierCharset
-
-export const BondCountTable: Record<string, BondCount> = {
-	'=': 2,
-	'#': 3
-}
-export const BondDirTable = {
-	'-': [ 0 ],
-	// Note: the y-axis of SVG is top-to-bottom
-	'/': [ 300 ],
-	'|': [ 270 ],
-	'\\': [ 60 ],
-	'+': [ 0, 90, 180, 270 ]
-}
-
-export const GroupAttrs = {
-	color: { type: 'string' },
-	C: 'color',
-	bold: { type: 'boolean' },
-	B: 'bold',
-	ref: { type: 'integer' },
-	'&': 'ref'
-} as const
-
-const coordinateBondValidator: AttrValidator = ((attr, { bondType }) => {
-	const a = attr as AttrOfBond
-	const cc = (a.from ?? a.to) as number
-	const { c } = bondType!
-	if (cc > c)
-		throw Error(`Coordinated bonds (${cc}) more than total bonds (${c}).`)
-})
-
-export const BondAttrs = {
-	color: { type: 'string' },
-	C: 'color',
-	highEnergy: { type: 'boolean' },
-	HE: 'highEnergy',
-	'~': 'highEnergy',
-	from: [
-		{ type: 'boolean' },
-		{
-			type: 'integer', min: 1, max: 3,
-			validate: coordinateBondValidator
-		}
-	],
-	'<': 'from',
-	to: [
-		{ type: 'boolean' },
-		{
-			type: 'integer', min: 1, max: 3,
-			validate: coordinateBondValidator
-		}
-	],
-	'>': 'to'
-} as const
-
-export type AttrStruct = {
-	S: 'attr',
-	d: AttrStructDef,
-	a: Attr<any>
-}
-
-export type ChemDef = {
-
-}
-
-export type AttrStructDef = {
-	type: 'chem',
-	attr: AttrSchema,
-	chem: ChemDef
-} | {
-	type: 'void',
-	attr: AttrSchema
-}
-
-export type AttrStructDefs = Record<string, AttrStructDef>
-
-const isAttribute = (k: string, attrSchema: AttrSchema): k is keyof typeof attrSchema => {
-	return k in attrSchema
-}
-
-export type AttrToValidate<T extends AttrSchema> = {
-	raw: Attr<T>,
-	validate: (params: AttrValidatorParams) => Attr<T>
-}
-
-export class ChemParser extends Parser<Struct> {
+export class ChemParser extends Parser<Formula> {
 	constructor(str: string, private defs: AttrStructDefs = {}) {
 		super(str.replace(/\s/g, ''))
 	}
@@ -362,6 +362,8 @@ export class ChemParser extends Parser<Struct> {
 		}
 	}
 	
+	private structRefTasks: string[] = []
+
 	private doParseGroup(): Group {
 		let r = '', s = ''
 
@@ -439,7 +441,11 @@ export class ChemParser extends Parser<Struct> {
 		}
 		else a = {}
 
-		return { t, a }
+		const group = { t, a }
+
+		if (a.ref) this.structRefTasks.push(a.ref)
+
+		return group
 	}
 
 	private checkDupBondDir(
@@ -516,7 +522,7 @@ export class ChemParser extends Parser<Struct> {
 		if (! BondCharset.includes(this.current)) {
 			if (requirePrefix) throw this.expect('prefix-styled bond')
 			if (GroupCharset.includes(this.current)) {
-				const n = this.doParse()
+				const n = this.doParseStruct()
 				const { c, d, a } = this.doParseBondType({ isPrefix: false, parsedBonds })
 				return { c, d, n, a, i: 0 }
 			}
@@ -524,7 +530,7 @@ export class ChemParser extends Parser<Struct> {
 		}
 		else {
 			const { c, d, a } = this.doParseBondType({ isPrefix: true, parsedBonds })
-			const n = this.doParse()
+			const n = this.doParseStruct()
 			return { c, d, n, a, i: 0 }
 		}
 	}
@@ -555,7 +561,7 @@ export class ChemParser extends Parser<Struct> {
 		return bonds
 	}
 
-	private doParseAttrStruct(): AttrStruct {
+	private doParseAttrCall(): AttrCall {
 		this.index ++ // Note: skip '$'
 
 		let name = ''
@@ -573,18 +579,77 @@ export class ChemParser extends Parser<Struct> {
 			? this.doParseAttr({ ...GroupAttrs, ...def.attr })
 			: {}
 
-		return { S: 'attr', d: def, a }
+		return { d: def, a }
 	}
 
-	protected doParse(): Struct {
-		if (this.current === '$') {
-			return this.doParseAttrStruct()
-		}
+	private labels: Record<string, Struct> = {}
 
-		const g = this.doParseGroup()
-		const bonds = this.doParseBonds()
-		return {
-			S: 'chem', g, bonds
+	private doParseRef(): Ref {
+		this.index ++ // Note: skip '&'
+
+		const names: string[] = []
+		let s = ''
+		// Todo: ref range
+		while (RefNameCharset.includes(this.current)) {
+			switch (this.current) {
+				case ',':
+					names.push(s)
+					s = ''
+					break
+				default:
+					s += this.current
+			}
+			this.index ++
 		}
+		names.push(s)
+
+		return { names }
+	}
+	
+	private doParseStructHead(): StructHead {
+		switch (this.current) {
+			case '&':
+				return {
+					S: 'ref',
+					node: this.doParseRef()
+				}
+			case '$':
+				return {
+					S: 'attr',
+					node: this.doParseAttrCall()
+				}
+			default:
+				return {
+					S: 'chem',
+					node: this.doParseGroup()
+				}
+		}
+	}
+
+	protected doParseStruct(): Struct {
+		const head = this.doParseStructHead()
+		const struct: Struct = { ...head, bonds: this.doParseBonds() }
+		if (this.structRefTasks.length) {
+			const refName = this.structRefTasks.pop()!
+			this.labels[refName] = struct
+		}
+		return struct
+	}
+
+	protected doParse(): Formula {
+		const structs: Struct[] = []
+		while (true) {
+			structs.push(this.doParseStruct())
+			if (this.current === ';') {
+				this.index ++
+				continue
+			}
+			else break
+		}
+		const formula = {
+			structs, labels: this.labels
+		}
+		Debug.D('formula: %o', formula)
+		return formula
 	}
 }

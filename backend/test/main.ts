@@ -1,23 +1,24 @@
 import { Debug } from '../utils/debug.js'
 import { ChemParser } from '../core/parse.js'
-import { expand } from '../core/expand.js'
+import { combine } from '../core/postproc.js'
 import { renderSVG } from '../core/render.js'
 
 export function testChem(input: string) {
 	const parser = new ChemParser(input)
 
-	const chem = parser.parse((err) => {
-		Debug.E(
-			Debug.on ? (err as Error).stack : err
-		)
-		return true
-	})
-	if (chem) Debug.O(chem)
-	else return
+	try {
+		const formula = parser.parse()
+		if (! Debug.on) Debug.O(formula)
 
-	const chemEx = expand(chem, 0)
-	Debug.O(chemEx)
+		const chem = combine(formula)
+		if (! Debug.on) Debug.O(chem)
 
-	const svg = renderSVG(chemEx)
-	Debug.O(svg)
+		const svg = renderSVG(chem)
+		if (! Debug.on) Debug.O(svg)
+	}
+	catch (err) {
+		if (err instanceof Error) {
+			Debug.E(Debug.on ? err.stack : err.message)
+		}
+	}
 }
