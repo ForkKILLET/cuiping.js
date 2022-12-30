@@ -11,7 +11,8 @@ export default [
     [ { zh: '2-氯丙烷 (附样式)', en: '2-chloropropane (with style)' }, 'CH3-CH{B}[|Cl{C:green}]-CH3' ],
     [ { zh: 'ATP', en: 'ATP' }, 'A-Pi-{~,C:red}Pi-{~,C:red}Pi' ],
     [ { zh: '铵根离子', en: 'ammonium ion' }, 'NH4^+' ],
-    [ { zh: '一氧化碳 (配位键)', en: 'carbon oxide (coordinated bond)' }, 'C#{<}O' ]
+    [ { zh: '一氧化碳 (配位键)', en: 'carbon oxide (coordinated bond)' }, 'C#{<}O' ],
+    [ { zh: '氯化铝 (使用引用)', en: 'aluminium chloride (using ref)' }, String.raw`Al{&:1}[Cl\/]/Cl\{>}&2; Al{&:2}[/\Cl]!/Cl!\{>}&1` ]
 ] as [
     { [k in Locales]: string }, string
 ][]
