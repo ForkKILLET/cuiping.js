@@ -20,6 +20,7 @@ const res = computed(() => {
     const data = render(props.molecule, {
         onError: err => {
             errMsg = err.toString()
+            console.warn(err)
         },
         renderer: 'svg',
         rendererOptions: props.renderOptions ?? {}

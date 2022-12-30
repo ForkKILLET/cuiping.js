@@ -33,10 +33,11 @@ export function combine(formula: Formula): Chem {
 		}
 
 		struct.bonds = bonds
+		if (struct.connectVisited) return struct
 		struct.connectVisited = true
 		
 		struct.bonds.forEach(bond => {
-			if (! bond.n.connectVisited) bond.n = connect(bond.n)
+			bond.n = connect(bond.n)
 		})
 
 		return struct
@@ -45,14 +46,15 @@ export function combine(formula: Formula): Chem {
 	let [ first ] = formula.structs
 	first = connect(first)
 
-	const chems = new Map<DerefedStruct, Chem>()
+	const willcardGroup = () => ({ g: { t: { B: [ { s: '*', w: 1, a: 'base' as const } ], w: 1 }, a: {} }, bonds: [] })
 
 	function expand(
 		struct: DerefedStruct,
 		rotateD: number = 0, flipX: boolean = false, flipY: boolean = false,
 		depth: number = 0
 	): Chem {
-		struct.bonds
+		struct.expandVisited = true
+
 		if (struct.S === 'chem') {
 			const bonds: ExpandedBond[] = []
 			struct.bonds.forEach(b => {
@@ -80,18 +82,15 @@ export function combine(formula: Formula): Chem {
 					if (flipY) d = 360 - d
 					d = MathEx.stdAng(d)
 
-					
 					Debug.D(
 						'>'.repeat(depth + 1) + ' '.repeat(8 * ((depth / 8 | 0) + 1) - depth) +
 						'rd %d,\tfx %o,\tfy %o\t-> %d',
 						rotateD, flipX, flipY, d
 					)
 
-					let t = chems.get(b.n)
-					if (! t) {
-						t = expand(b.n, rD, fX, fY, depth + 1)
-						chems.set(b.n, t)
-					}
+					const t = b.n.expandVisited
+						? willcardGroup()
+						: expand({ ...b.n }, rD, fX, fY, depth + 1)
 
 					bonds.push({
 						c: b.c,

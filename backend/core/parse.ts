@@ -362,8 +362,6 @@ export class ChemParser extends Parser<Formula> {
 		}
 	}
 	
-	private structRefTasks: string[] = []
-
 	private doParseGroup(): Group {
 		let r = '', s = ''
 
@@ -442,8 +440,6 @@ export class ChemParser extends Parser<Formula> {
 		else a = {}
 
 		const group = { t, a }
-
-		if (a.ref) this.structRefTasks.push(a.ref)
 
 		return group
 	}
@@ -629,9 +625,8 @@ export class ChemParser extends Parser<Formula> {
 	protected doParseStruct(): Struct {
 		const head = this.doParseStructHead()
 		const struct: Struct = { ...head, bonds: this.doParseBonds() }
-		if (this.structRefTasks.length) {
-			const refName = this.structRefTasks.pop()!
-			this.labels[refName] = struct
+		if (head.S === 'chem' && head.node.a.ref) {
+			this.labels[head.node.a.ref] = struct
 		}
 		return struct
 	}
