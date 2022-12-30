@@ -21,7 +21,8 @@ export const BondCharset = BondCountCharset + BondDirCharset + BondDirModifierCh
 
 export type Formula = {
 	structs: Struct[],
-	labels: Record<string, Struct | undefined>
+	structNums: number,
+	labels: Record<string, [Struct, number] | undefined>
 }
 
 export type StructHead = ChemStructHead | RefStructHead | AttrStructHead
@@ -578,7 +579,7 @@ export class ChemParser extends Parser<Formula> {
 		return { d: def, a }
 	}
 
-	private labels: Record<string, Struct> = {}
+	private labels: Record<string, [Struct, number]> = {}
 
 	private doParseRef(): Ref {
 		this.index ++ // Note: skip '&'
@@ -626,10 +627,12 @@ export class ChemParser extends Parser<Formula> {
 		const head = this.doParseStructHead()
 		const struct: Struct = { ...head, bonds: this.doParseBonds() }
 		if (head.S === 'chem' && head.node.a.ref) {
-			this.labels[head.node.a.ref] = struct
+			this.labels[head.node.a.ref] = [struct, this.structId]
 		}
 		return struct
 	}
+
+	private structId = 0
 
 	protected doParse(): Formula {
 		const structs: Struct[] = []
@@ -637,12 +640,13 @@ export class ChemParser extends Parser<Formula> {
 			structs.push(this.doParseStruct())
 			if (this.current === ';') {
 				this.index ++
+				this.structId ++
 				continue
 			}
 			else break
 		}
 		const formula = {
-			structs, labels: this.labels
+			structs, labels: this.labels, structNums: this.structId + 1
 		}
 		Debug.D('formula: %o', formula)
 		return formula

@@ -21,15 +21,17 @@ export type Chem = {
 export type DerefedStruct = Struct<ChemStructHead | AttrStructHead, ChemStructHead | AttrStructHead>
 
 export function combine(formula: Formula): Chem {
-	function connect(struct: Struct) {
+	function connect(struct: Struct, structsConnection: Record<number, boolean>) {
 		const bonds = struct.bonds
 
 		while (struct.S === 'ref') {
 			const refName = struct.node.names[0]
 			const target = formula.labels[refName]
 			if (! target) throw Error(`Unknown ref &${refName}`)
-			struct = target
-			bonds.push(...target.bonds)
+			const [targetStruct, structId] = target
+			structsConnection[structId] = true
+			struct = targetStruct
+			bonds.push(...targetStruct.bonds)
 		}
 
 		struct.bonds = bonds
@@ -37,14 +39,11 @@ export function combine(formula: Formula): Chem {
 		struct.connectVisited = true
 		
 		struct.bonds.forEach(bond => {
-			bond.n = connect(bond.n)
+			bond.n = connect(bond.n, structsConnection)
 		})
 
 		return struct
 	}
-
-	let [ first ] = formula.structs
-	first = connect(first)
 
 	const willcardGroup = () => ({ g: { t: { B: [ { s: '*', w: 1, a: 'base' as const } ], w: 1 }, a: {} }, bonds: [] })
 
@@ -112,6 +111,13 @@ export function combine(formula: Formula): Chem {
 		}
 		throw Error('Not implemented')
 	}
+	
+	for (const [ structId, mainTree ] of formula.structs.entries()) {
+		const structsConnection = { [structId]: true }
+		const graph = connect(mainTree, structsConnection)
+		if (Object.keys(structsConnection).length < formula.structNums) continue
+		return expand(graph as DerefedStruct)
+	}
 
-	return expand(first as DerefedStruct)
+	throw 'Structures aren\'t connected.'
 }
