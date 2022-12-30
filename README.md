@@ -33,21 +33,20 @@ _English document WIP_
 2. 在 TypeScript 中使用
 
     ```typescript
-    import { ChemParser, expand, renderSVG } from 'cuiping'
+    import { render } from 'cuiping'
 
-    const molecule = getMolecule() // 假定从用户输入获取「Cuiping 式」
+    const molecule = getMolecule()      // 假定从用户输入获取「Cuiping 式」
 
-    const parser = new ChemParser(molecule) // 获得 ChemParser 实例
-    const chem = parser.parse((err) => { // 开始解析并处理解析错误
-        showError(err) // 假定将错误信息反馈给用户
-        return true // 返回 true 则不再抛出解析错误
+    const data = render(molecule, {
+        onError: err => {
+            console.warn(err)           // 处理错误
+        },
+        renderer: 'svg',                // 目前仅支持 SVG 渲染模式
+        rendererOptions: { /*...*/ }    // 渲染配置，见下文
     })
 
-    if (chem) { // 如无出错，将获得 Chem 对象
-        const chemEx = expand(chem!) // 展开 Chem 中的简写等
-        const svg = renderSVG(chemEx, { // 渲染 SVG
-            // 渲染配置对象，见下文
-        })
+    if (data) {                         // 如未出错将得到 SVG 渲染结果
+        showSvg(data.svg)               // 向用户展示 SVG
     }
     ```
 
