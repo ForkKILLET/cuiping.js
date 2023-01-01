@@ -61,7 +61,6 @@ function copyFormula() {
         })
 }
 
-
 const imgBase64 = computed(() => 'data:image/svg+xml;base64,'
     + btoa(res.value.data!.svg
         .replace(/[\u00A0-\u2666]/g, c => `&#${c.charCodeAt(0)};`) ?? ''
