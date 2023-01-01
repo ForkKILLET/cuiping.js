@@ -1,6 +1,6 @@
 {
   "name": "cuiping-component",
-  "version": "1.1.3",
+  "version": "1.1.4",
   "description": "The vue component of Cuiping.js",
   "main": "dist/cuiping-component.umd.js",
   "module": "dist/cuiping-component.es.js",
