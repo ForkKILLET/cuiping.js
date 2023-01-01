@@ -143,7 +143,7 @@ const imageReverseScale = computed(() => `scale(${ 1 / props.imageScale })`)
     background-color: #dadada;
 }
 
-.root:hover .toolbar {
+.root.ok:hover .toolbar {
     display: block;
 }
 
