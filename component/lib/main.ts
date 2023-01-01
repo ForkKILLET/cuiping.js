@@ -1,5 +1,5 @@
-import { App } from 'vue'
-import Cuiping from './Cuiping.vue'
+import type { App } from 'vue'
+import Cuiping from './components/Cuiping.vue'
 import { Debug } from 'cuiping/utils/debug'
 
 Debug.on = !! localStorage.getItem('cuipingDebug')
@@ -9,3 +9,5 @@ export default {
         Vue.component('Cuiping', Cuiping)
     }
 }
+
+export { Cuiping }
