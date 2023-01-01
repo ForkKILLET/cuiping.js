@@ -156,7 +156,7 @@ export function renderSVG(c: Chem, opt: SvgRendererOption = {}): SvgResult {
 	const l = locate(c, opt)
 
 	const {
-		unitLen: u = 30,
+		unitLen: u = 20,
 		paddingX = 20,
 		paddingY = 20,
 		displayBonds = true,
@@ -164,7 +164,7 @@ export function renderSVG(c: Chem, opt: SvgRendererOption = {}): SvgResult {
 		lineBaseColor = 'black',
 		textBaseColor = 'black',
 		halfFontSize = 8,
-		halfTextBoxWidth: hw = 8,
+		halfTextBoxWidth: hw = 6,
 		halfTextBoxHeight: hh = 8,
 		displayTextBox = false
 	} = opt
