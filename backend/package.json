@@ -3,11 +3,12 @@
 	"version": "1.5.1",
 	"description": "rendering chemistry strutures to SVG",
 	"type": "module",
-	"main": "./core/index.ts",
+	"main": "./dist/core/index.js",
+	"types": "./dist/core/index.d.ts",
 	"scripts": {
 		"build": "tsc",
-		"dev": "node --experimental-specifier-resolution=node --loader ts-node/esm test/loop.ts",
-		"build:run": "tsc && node dist/test/loop.js"
+		"build:run": "pnpm build && node dist/test/loop.js",
+		"prepublish": "pnpm build"
 	},
 	"author": "ForkΨKILLET <fork_killet@qq.com>",
 	"license": "MIT",

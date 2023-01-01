@@ -1,6 +1,6 @@
-import { ChemParser } from './parse'
-import { combine } from './postproc'
-import { renderSVG, SvgRendererOption } from './render'
+import { ChemParser } from './parse.js'
+import { combine } from './postproc.js'
+import { renderSVG, SvgRendererOption } from './render.js'
 
 export {
     GroupAttrs as Attributes,
@@ -9,7 +9,7 @@ export {
     BondDirTable,
     ChemParser,
     Parser
-} from './parse'
+} from './parse.js'
 
 export type {
     Bond,
@@ -18,29 +18,29 @@ export type {
     Struct,
     Formula,
     Group
-} from './parse'
+} from './parse.js'
 
 export {
     combine
-} from './postproc'
+} from './postproc.js'
 
 export type {
     ExpandedBond,
     Chem
-} from './postproc'
+} from './postproc.js'
 
 export {
     getViewport,
     locate,
     renderSVG,
-} from './render'
+} from './render.js'
 
 export type {
     Layout,
     LayoutBond,
     LayoutGroup,
     SvgRendererOption
-} from './render'
+} from './render.js'
 
 export function render(molecule: string, options: {
     onError?: (err: Error) => void,
