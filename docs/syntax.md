@@ -21,8 +21,9 @@
 - 「属性组」书写在 `{}` 内
 - 「属性组」中有至少一条「属性」，多条「属性」用 `,` 隔开
 
-「属性」分为字符串类型和布尔（开关）类型
-- 字符串类型的「属性」，需包含「属性名」和「属性值」，用 `:` 隔开
+「属性」分为字符串类型、整数类型和布尔（开关）类型
+- 整数或字符串类型的「属性」，需包含「属性名」和「属性值」，用 `:` 隔开
+- 整数类型的「属性」的「属性值」，需要是一个整数
 - 布尔类型的「属性」，仅包含「属性名」
 - [支持的「属性」列表](#属性列表)
 
@@ -94,18 +95,22 @@
 ## 范式
 
 ```
-cuiping         = <chem>
-chem            = <group> (<bonds>)? (<bond>)?
+cuiping         = <struct> (; <struct>)*
+struct          = <chem struct> | <ref struct>
+bond list       = (<bonds>)? | (<bond>)?
+chem struct     = <group> <bond list>
+ref struct      = & <identifier> <bond list>
 bonds           = [ <bond> (, <bond>)* ]
 bond            = <pre bond> | <post bond>
-pre bond        = <bond dir> <cuiping>
-post bond       = <cuiping> <bond dir>
-bond dir        = (<bond count> <bond dir> | <bond count> | <bond dir>)
-                | <bond modifier> ((bond count)? (bond dir)?)
-bond count      = '=' | #
-bond dir        = (+ | - | / | \ | '|')+
-bond modifier   = !
-group           = group ((<identifier>)+ | <group typeset>)
-group typeset   = (^ | _)(<char> | '(' (<char>)+ ')')
-identifier      = (<letter> | <number> | '(' | ')')+ | . | '*'
+pre bond        = <bond type> <struct>
+post bond       = <struct> <bond type>
+bond type       = (<bond count> <bond dir> | <bond count> | <bond dir>)
+                | (<bond modifier> (<bond count>)? (<bond dir>)?)
+bond count      = '=' | '#'
+bond dir        = ('+' | '-' | '/' | '\' | '|')+
+bond modifier   = '!'
+group           = <group> ((<group char>)+ | <group typeset>)
+group typeset   = ('^' | '_')(<any char> | '(' (<any char>)+ ')')
+identifier      = <any letter> | <any number>
+group char      = <identifier> | '(' | ')' | '.' | '*'
 ```
