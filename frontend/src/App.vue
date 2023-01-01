@@ -1,9 +1,15 @@
 <script setup lang="ts">
 import { watch, reactive, ref } from 'vue'
+
 import { useI18n } from 'vue-i18n'
 import type { Locales } from './i18n/locales'
+
+import { Cuiping } from 'cuiping-component'
+import 'cuiping-component/dist/style.css'
+
 import Conf, { SchemasToValues } from './conf';
 import examples from './examples'
+
 import { version as backVer } from 'cuiping/package.json'
 import { version as compVer } from 'cuiping-component/package.json'
 import { version as frontVer } from '../package.json'
