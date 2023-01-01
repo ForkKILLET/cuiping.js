@@ -1,28 +1,27 @@
 # Cuiping.js
 
-_English document WIP_
+English | [简体中文](./README.zh-Hans.md)
 
 <p align="center"><img width="200" alt="logo" src="./docs/logo.svg" /></p>
 
-## 简介
+## Brief
 
-在浏览器中渲染 SVG 格式的化学结构式，使用便于用户输入而精准的[「Cuiping 式」语法](./docs/syntax.md)。
+Render the chemical formula of SVG format in the browser, and use the accurate ["Cuiping formula" syntax](./docs/syntax.md).
 
-## 体验
+## Experience
 
-你可以在 [icelava.top](https://icelava.top/cuiping.js/) 体验 Demo：
+You can experience the demo at [icelava.top](https://icelava.top/cuiping.js/):
+- Try to input "Cuiping formula" and view rendered results in real time.
+- Save the formulas you tried to browser.
+- Modify the rendering configuration at any time.
+- Check some preset examples and edit them.
+- Hover over the rendering result to copy "Cuiping formula" or download SVG images.
 
-- 尝试输入「Cuiping 式」并实时查看渲染结果
-- 将尝试保存到浏览器中
-- 随时更改渲染配置
-- 查看准备好的一些示例，并编辑它们
-- 将鼠标悬停在渲染结果上，可以复制「Cuiping 式」和下载 SVG 图片。
+## Usage
 
-## 使用
+### Only use back-end (including parsing and rendering)
 
-### 仅使用后端（包含解析、展开和渲染）
-
-1. 使用你熟悉的包管理器安装 Cuiping.js 核心包 `cuiping`
+1. Use your familiar package manager to install the core package `cuiping`.
 
     ```shell
     $ pnpm i cuiping
@@ -30,59 +29,59 @@ _English document WIP_
     $ npm i cuiping
     ```
 
-2. 在 TypeScript 中使用
+2. Use TypeScript.
 
     ```typescript
     import { render } from 'cuiping'
 
-    const molecule = getMolecule()      // 假定从用户输入获取「Cuiping 式」
+    const molecule = getMolecule()      // Assume to obtain "Cuiping formula" from user input.
 
     const data = render(molecule, {
         onError: err => {
-            console.warn(err)           // 处理错误
+            console.warn(err)           // Handling errors.
         },
-        renderer: 'svg',                // 目前仅支持 SVG 渲染模式
-        rendererOptions: { /*...*/ }    // 渲染配置，见下文
+        renderer: 'svg',                // Only SVG rendering mode is supported currently.
+        rendererOptions: { /*...*/ }    // Render configuration, see below.
     })
 
-    if (data) {                         // 如未出错将得到 SVG 渲染结果
-        showSvg(data.svg)               // 向用户展示 SVG
+    if (data) {                         // SVG rendering results will be obtained if there is no error.
+        showSvg(data.svg)               // Show SVG to the user.
     }
     ```
 
-### 渲染配置
+### Rendering configuration
 
-| 选项                  | 类型   | 描述
-| :-------------------- | :----- | :--- 
-| `unitLen`             | 数值   | 单位长度
-| `paddingX`            | 数值   | 横向留白
-| `paddingY`            | 数值   | 纵向留白
-| `displayBonds`        | 布尔   | 显示键
-| `bondGap`             | 数值   | 键间距
-| `lineBaseColor`       | 字符串 | 线基色
-| `textBaseColor`       | 字符串 | 文字基色
-| `halfFontSize`        | 数值   | 半字号
-| `halfTextBoxWidth`    | 数值   | 半字框宽
-| `halfTextBoxHeight`   | 数值   | 半字框高
-| `displayTextBox`      | 布尔   | 显示字框
+| Options             | Type    | Description
+|:--------------------|:--------|:-----------
+| `unitLen`           | int     | Unit length
+| `paddingX`          | int     | X padding
+| `paddingY`          | int     | Y padding
+| `displayBonds`      | boolean | Whether to display bonds
+| `bondGap`           | int     | Gap between double/triple bonds
+| `lineBaseColor`     | string  | Base color of lines
+| `textBaseColor`     | string  | Base color of text
+| `halfFontSize`      | int     | Half font size
+| `halfTextBoxWidth`  | int     | Half width of text boxes
+| `halfTextBoxHeight` | int     | Half height of text boxes
+| `displayTextBox`    | boolean | Whether to show text boxes
 
-### 在浏览器中使用 Vue 组件
+### Using the Vue component in the browser
 
-1. 使用你熟悉的包管理器安装 Cuiping.js 组件包 `cuiping-component`
+1. Use your familiar package manager to install the component package `cuiping-component`.
     ```shell
     $ pnpm i cuiping-component
     $ yarn add cuiping-component
     $ npm i cuiping-component
     ```
 
-2. 在 TypeScript 或 JavaScript 引入并加载插件到 Vue App
+2. Import and load plugins into Vue App in TypeScript or JavaScript.
     ```typescript
     // main
 
     import CuipingVue from 'cuiping-component/src'
-    // JS 中，使用以下引入方式 (dist)
-    // import CuipingVue from 'cuiping'
-    import 'cuiping-component/dist/style.css' // 记得引入样式
+    // In JS, use the following import method (dist).
+    // import CuipingVue from 'cuiping'.
+    import 'cuiping-component/dist/style.css' // remember to import the style.
 
     import App from './App.vue'
 
@@ -91,7 +90,7 @@ _English document WIP_
         .mount('#app')
     ```
 
-3. 使用组件（可以参考 [Demo 页面](./frontend/src/App.vue)）
+3. Use the component (You may refer to our [Demo page](./frontend/src/App.vue)).
     ```vue
     <!-- App.vue -->
 
@@ -100,24 +99,23 @@ _English document WIP_
     </template>
     ```
 
-## 贡献
+## Contribution
 
-
-1. 欢迎 PR！本项目目前没有配置 linter，保持代码风格相近即可
-2. 本项目的开发计划可以在 [Notion](https://humdrum-zinc-834.notion.site/2b432da8fd0c4fe0adcbb6b459307a89?v=2a44c1c6a88141d7b89429eea437289d) 上查看
-3. 构建本项目的流程：
-    1. 用你熟悉的方式克隆代码仓库
+1. Welcome PR! At present, the project doen't have any linters configured. Just keep the code style similar.
+2. The development plan of this project can be found on [Notion](https://humdrum-zinc-834.notion.site/2b432da8fd0c4fe0adcbb6b459307a89?v=2a44c1c6a88141d7b89429eea437289d).
+3. The process of building this project:
+    1. Clone the code repository in your familiar way.
         ```shell
         $ git clone https://github.com/ForkKILLET/Cuiping.js
         $ gh repo clone ForkKILLET/Cuiping.js
         ```
-    2. 使用 pnpm 安装依赖。
+    2. Use pnpm to install dependencies.
         ```shell
         $ pnpm i
         ```
-4. 提交你的更改，提交信息请使用 ng style，可参考 `git log`
-5. 编码快乐！
+4. Submit your changes. Please use ng style for submitting information. You may refer to `git log`.
+5. Happy coding!
 
-## 许可证
+## License
 
-本项目使用 [GPL-v3.0](./LICENSE) 协议开源。
+This project is open source under [GPL-v3.0](./LICENSE) license.
