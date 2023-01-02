@@ -6,16 +6,16 @@ English | [简体中文](./README.zh-Hans.md)
 
 ## Brief
 
-Render the chemical formula of SVG format in the browser, and use the accurate ["Cuiping formula" syntax](./docs/syntax.md).
+Render the chemical formula of SVG format in the browser, using the accurate [_Cuiping formula_ syntax](./docs/syntax.md).
 
 ## Experience
 
 You can experience the demo at [icelava.top](https://icelava.top/cuiping.js/):
-- Try to input "Cuiping formula" and view rendered results in real time.
+- Try to input _Cuiping formula_ and view rendered results in real time.
 - Save the formulas you tried to browser.
 - Modify the rendering configuration at any time.
 - Check some preset examples and edit them.
-- Hover over the rendering result to copy "Cuiping formula" or download SVG images.
+- Hover over the rendering result to copy _Cuiping formula_ or download SVG images.
 
 ## Usage
 
@@ -34,7 +34,7 @@ You can experience the demo at [icelava.top](https://icelava.top/cuiping.js/):
     ```typescript
     import { render } from 'cuiping'
 
-    const molecule = getMolecule()      // Assume to obtain "Cuiping formula" from user input.
+    const molecule = getMolecule()      // Assume to obtain Cuiping formula from user input.
 
     const data = render(molecule, {
         onError: err => {
@@ -74,25 +74,14 @@ You can experience the demo at [icelava.top](https://icelava.top/cuiping.js/):
     $ npm i cuiping-component
     ```
 
-2. Import and load plugins into Vue App in TypeScript or JavaScript.
-    ```typescript
-    // main
-
-    import CuipingVue from 'cuiping-component/src'
-    // In JS, use the following import method (dist).
-    // import CuipingVue from 'cuiping'.
-    import 'cuiping-component/dist/style.css' // remember to import the style.
-
-    import App from './App.vue'
-
-    createApp(App)
-        .use(CuipingVue)
-        .mount('#app')
-    ```
-
-3. Use the component (You may refer to our [Demo page](./frontend/src/App.vue)).
+2. Import and use the component (You may refer to our [Demo page](./frontend/src/App.vue)).
     ```vue
     <!-- App.vue -->
+
+    <script lang="ts">
+    import { Cuiping } from 'cuiping-component'
+    import 'cuiping-component/dist/style.css' /* Don't forget the style */
+    </script>
 
     <template>
         <Cuiping :molecule="..." :render-options="..." />
