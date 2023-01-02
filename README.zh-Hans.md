@@ -75,25 +75,14 @@
     $ npm i cuiping-component
     ```
 
-2. 在 TypeScript 或 JavaScript 引入并加载插件到 Vue App
-    ```typescript
-    // main
-
-    import CuipingVue from 'cuiping-component/src'
-    // JS 中，使用以下引入方式 (dist)
-    // import CuipingVue from 'cuiping'
-    import 'cuiping-component/dist/style.css' // 记得引入样式
-
-    import App from './App.vue'
-
-    createApp(App)
-        .use(CuipingVue)
-        .mount('#app')
-    ```
-
-3. 使用组件（可以参考 [Demo 页面](./frontend/src/App.vue)）
+2. 引入并使用组件（可以参考 [Demo 页面](./frontend/src/App.vue)）
     ```vue
     <!-- App.vue -->
+
+    <script lang="ts">
+    import { Cuiping } from 'cuiping-component'
+    import 'cuiping-component/dist/style.css' /* 别忘了样式 */
+    </script>
 
     <template>
         <Cuiping :molecule="..." :render-options="..." />
