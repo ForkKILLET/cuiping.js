@@ -10,7 +10,7 @@ export const IdentifierCharset
 export const RefNameCharset = IdentifierCharset + '.,'
 export const GroupCharset
 	= IdentifierCharset
-	+ '^_'
+	+ '^_`'
 	+ '()'
 	+ '*' // Note: willcard
 	+ '.' // Note: collpased carbon
@@ -60,6 +60,11 @@ export type Group = {
 	a: AttrOfGroup
 }
 export type GroupTypesetAlign = 'base' | 'sub' | 'sup'
+export const GroupTypesetAlignTable = {
+	'^': 'sup',
+	'_': 'sub',
+	'`': 'base'
+} as const
 export type GroupTypesetBox = {
 	s: string,
 	w: number,
@@ -369,6 +374,7 @@ export class ChemParser extends Parser<Formula> {
 		const boxes: GroupTypesetBox[] = []
 		let alignShort = false, alignLong = false
 		let align: GroupTypesetAlign = 'base'
+		let hasNonDigit = false
 
 		const eatChar = () => {
 			if (! s) return
@@ -383,11 +389,11 @@ export class ChemParser extends Parser<Formula> {
 		) {
 			const ch = this.current
 
-			if (ch === '^' || ch === '_') {
+			if (ch === '^' || ch === '_' || ch === '`') {
 				eatChar()
 				s = ''
 
-				align = ch === '^' ? 'sup' : 'sub'
+				align = GroupTypesetAlignTable[ch]
 				if (this.after[0] === '(') {
 					alignLong = true
 					this.index ++
@@ -396,17 +402,21 @@ export class ChemParser extends Parser<Formula> {
 			}
 			else if (ch === ')' && alignLong) alignLong = false
 			else {
+				if (ch < '0' || ch > '9') {
+					hasNonDigit = true
+					if ((ch < 'a' || ch > 'z') && (ch < 'A' || ch > 'Z')) hasNonDigit = false
+				}
+
 				if (! alignShort &&
 					s[0] >= 'A' && s[0] <= 'Z' && ch >= 'a' && ch <= 'z'
 				) s += ch
 				else {
 					eatChar()
-	
 					s = ch
 
 					if (alignShort) alignShort = false
 					else if (! alignLong) {
-						if (ch >= '0' && ch <= '9') align = 'sub'
+						if (ch >= '0' && ch <= '9' && hasNonDigit) align = 'sub'
 						else if (align !== 'base') align = 'base'
 					}
 				}
@@ -421,10 +431,6 @@ export class ChemParser extends Parser<Formula> {
 		if (alignLong) throw Error(`Unclosed ${align}script in group typeset '${r}'`)
 
 		if (! r) throw this.expect('atom group')
-		if (r.includes('*') && r.length > 1)
-			throw Error(`Willcard groups mustn't include any characters except '*'`)
-		if (r.includes('.') && r.length > 1)
-			throw Error(`Collpased carbon mustn't include any characters except '.'`)
 
 		const t: GroupTypeset = {
 			B: boxes,
