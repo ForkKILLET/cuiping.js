@@ -2,7 +2,8 @@
   "name": "cuiping-workspace",
   "version": "1.0.0",
   "scripts": {
-	"loc": "tokei -e '*.yaml' -e '*.txt' -e '*.md'"
+	"loc": "tokei -e '*.yaml' -e '*.txt' -e '*.md'",
+	"build": "pnpm -F cuiping build && pnpm -F cuiping-component build && pnpm -F cuiping-frontend build"
   },
   "repository": "git@github.com:ForkKILLET/cuiping.js.git",
   "author": "ForkΨKILLET <fork_killet@qq.com>",
