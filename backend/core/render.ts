@@ -76,10 +76,13 @@ export function locate(chem: Chem, {
 
 			const { t: T } = b.t.g
 
-			const x2 = x1 + MathEx.cosd(b.d) * u
-			const cx2 = x1 + MathEx.cosd(b.d) * (u + T.B[0].w * hw)
-			const y2 = y1 + MathEx.sind(b.d) * u
-			const cy2 = y1 + MathEx.sind(b.d) * (u + (collpased ? 0 : hh))
+			const L = b.a.length ?? 1
+			const Lu = L * u
+
+			const x2 = x1 + MathEx.cosd(b.d) * Lu
+			const cx2 = x1 + MathEx.cosd(b.d) * (Lu + T.B[0].w * hw)
+			const y2 = y1 + MathEx.sind(b.d) * Lu
+			const cy2 = y1 + MathEx.sind(b.d) * (Lu + (collpased ? 0 : hh))
 
 			const txo = MathEx.cosd(b.d) >= 0 // Note: text offset x of target group
 				? 0
@@ -227,7 +230,7 @@ export function renderSVG(c: Chem, opt: SvgRendererOption = {}): SvgResult {
 				attr.push(`bold=""`)
 
 			if (w > 0) w += B.w / 2
-			if (B.s !== '*' && B.s !== '.') {
+			if (B.s !== '?' && B.s !== '.') {
 				if (B.a !== 'base') attr.push(`box-align="${B.a}"`)
 				svg += `<text x="${X(x + w * 2 * hw)}" y="${Y(y)}" ${attr.join(' ')}>${B.s}</text>`
 			}
