@@ -45,7 +45,7 @@ export function combine(formula: Formula): Chem {
 		return struct
 	}
 
-	const willcardGroup = () => ({ g: { t: { B: [ { s: '*', w: 1, a: 'base' as const } ], w: 1 }, a: {} }, bonds: [] })
+	const willcardGroup = () => ({ g: { t: { B: [ { s: '?', w: 1, a: 'base' as const } ], w: 1 }, a: {} }, bonds: [] })
 
 	function expand(
 		struct: DerefedStruct,

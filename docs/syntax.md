@@ -7,7 +7,7 @@
 「化学结构」由一个「原子团」开始。「原子团」可以：
 - 包含大小写字母，大写字母后的小写字母会与之合并在一个字框内（使元素符号更自然）
 - 包含数字，数字会被渲染为下标形式
-- 是一个单独的「通配符 `*`」，不渲染（用于表示取代基）
+- 是一个单独的「通配符 `?`」，不渲染（用于表示取代基）
 - 是一个单独的「塌缩碳原子 `.`」，不渲染，与之相连的键不会留白（类似键线式）
 
 「原子团」可以包含「原子团内排版」：
@@ -108,9 +108,9 @@ bond type       = (<bond count> <bond dir> | <bond count> | <bond dir>)
                 | (<bond modifier> (<bond count>)? (<bond dir>)?)
 bond count      = '=' | '#'
 bond dir        = ('+' | '-' | '/' | '\' | '|')+
-bond modifier   = '!'
+bond modifier   = '!' | '*'
 group           = <group> ((<group char>)+ | <group typeset>)
 group typeset   = ('^' | '_')(<any char> | '(' (<any char>)+ ')')
 identifier      = <any letter> | <any number>
-group char      = <identifier> | '(' | ')' | '.' | '*'
+group char      = <identifier> | '(' | ')' | '.' | '?'
 ```

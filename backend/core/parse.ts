@@ -12,11 +12,11 @@ export const GroupCharset
 	= IdentifierCharset
 	+ '^_`'
 	+ '()'
-	+ '*' // Note: willcard
+	+ '?' // Note: willcard
 	+ '.' // Note: collpased carbon
 export const BondCountCharset = '=#'
 export const BondDirCharset = '-|/\\+'
-export const BondDirModifierCharset = '!'
+export const BondDirModifierCharset = '!*'
 export const BondCharset = BondCountCharset + BondDirCharset + BondDirModifierCharset
 
 export type Formula = {
@@ -135,7 +135,9 @@ export const BondAttrs = {
 			validate: coordinateBondValidator
 		}
 	],
-	'>': 'to'
+	'>': 'to',
+	length: { type: 'float', min: 0 },
+	L: 'length'
 } as const
 export type AttrOfGroup = Attr<typeof GroupAttrs>
 export type AttrOfBond = Attr<typeof BondAttrs>
@@ -144,6 +146,7 @@ export type AttrOne<R extends AttrSchemaRule> =
 	R extends { type: 'string' } ? string :
 	R extends { type: 'boolean' } ? boolean :
 	R extends { type: 'integer' } ? number :
+	R extends { type: 'float' } ? number :
 	never
 export type AttrMany<S extends readonly AttrSchemaRule[]> =
 	TupleToUnion<{ 
@@ -160,7 +163,7 @@ export type AttrMaybeOne<S extends Readonly<ValueOf<AttrSchema>>> =
 	S extends AttrSchemaRule ? AttrOne<S> :
 	never
 export type Attr<S extends AttrSchema> = {
-	[K in keyof S]?:
+	-readonly [K in keyof S]?:
 		S[K] extends keyof S
 			? S[S[K]] extends MaybeArray<AttrSchemaRule>
 				? AttrMaybeOne<S[S[K]]>
@@ -169,6 +172,7 @@ export type Attr<S extends AttrSchema> = {
 				? AttrMaybeOne<S[K]>
 				: never
 }
+
 export type AttrValidatorParams = {
 	group?: Group,
 	bondType?: BondType
@@ -182,12 +186,15 @@ export type AttrSchemaRule = Readonly<({
 	min?: number,
 	max?: number
 } | {
+	type: 'float',
+	min?: number,
+	max?: number
+} | {
 	type: 'string'
 }) & {
 	validate?: AttrValidator
 }>
-export type AttrSchema = Readonly<Record<string, string | Readonly<MaybeArray<AttrSchemaRule>>>>
-
+export type AttrSchema = Record<string, string | Readonly<MaybeArray<AttrSchemaRule>>>
 
 export type AttrStructDef = {
 	type: 'chem',
@@ -329,11 +336,12 @@ export class ChemParser extends Parser<Formula> {
 					const ty = s.type
 					if (
 						tyNow === ty ||
-						(tyNow === 'string' && a[k] && ! isNaN(+ a[k]) && ty === 'integer')
+						(tyNow === 'string' && a[k] && ! isNaN(+ a[k]) && (ty === 'integer' || ty === 'float'))
 					) {
 						switch (ty) {
 							case 'integer':
-								if (! Number.isInteger(+ a[k])) {
+							case 'float':
+								if (ty === 'integer' && ! Number.isInteger(+ a[k])) {
 									tyError = 'not integer'
 									break typeCheck
 								}
@@ -473,13 +481,16 @@ export class ChemParser extends Parser<Formula> {
 		const plus180Deg = this.current === '!'
 		if (plus180Deg) this.index ++
 
+		const zeroWidth = this.current === '*'
+		if (zeroWidth) this.index ++
+
 		if (BondCountCharset.includes(this.current)) {
 			c = BondCountTable[this.current as keyof typeof BondCountTable]
 			this.index ++
 		}
 
 		const noImplictDir = ! BondDirCharset.includes(this.current)
-		const auto0Deg = noImplictDir && c > 1
+		const auto0Deg = noImplictDir && (c > 1 || zeroWidth)
 		const auto180Deg = noImplictDir && plus180Deg
 
 		while (BondDirCharset.includes(this.current) || auto0Deg || auto180Deg) {
@@ -511,6 +522,8 @@ export class ChemParser extends Parser<Formula> {
 			a = a.validate({ bondType: { c, d: dirs, a: a.raw } })
 		}
 		else a = {}
+		
+		if (zeroWidth) a.length = 0
 
 		return { c, d: dirs, a }
 	}
