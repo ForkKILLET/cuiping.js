@@ -107,4 +107,4 @@ You can experience the demo at [icelava.top](https://icelava.top/cuiping.js/):
 
 ## License
 
-This project is open source under [GPL-v3.0](./LICENSE) license.
+This project is open source under [MIT](./LICENSE.md) license.
