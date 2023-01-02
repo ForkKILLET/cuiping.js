@@ -49,15 +49,18 @@ function downloadSvg() {
     URL.revokeObjectURL(url)
 }
 
-const isCopying = ref<boolean>(false)
+const copyState = ref<'Copying...' | 'Copied' | 'Cuiping'>('Cuiping')
 
 function copyFormula() {
-    if (isCopying.value) return
-    isCopying.value = true
+    if (copyState.value !== 'Cuiping') return
+    copyState.value = 'Copying...'
     if (props.molecule) navigator.clipboard
         .writeText(props.molecule)
         .finally(() => {
-            isCopying.value = false
+            copyState.value = 'Copied'
+            setTimeout(() => {
+                copyState.value = 'Cuiping'
+            }, 500)
         })
 }
 
@@ -98,7 +101,7 @@ const imageReverseScale = computed(() => `scale(${ 1 / props.imageScale })`)
             <div class="toolbar-inner">
                 <button @click="downloadSvg">SVG</button>
                 <button @click="copyFormula">
-                    {{ isCopying ? 'Copying...' : 'Cuiping' }}
+                    {{ copyState }}
                 </button>
             </div>
         </div>
