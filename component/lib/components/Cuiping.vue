@@ -71,7 +71,20 @@ const imgBase64 = computed(() => 'data:image/svg+xml;base64,'
 )
 
 const imgWidth = computed(() => res.value.data!.width * props.imageScale)
-const imageReverseScale = computed(() => `scale(${ 1 / props.imageScale })`)
+
+const scale = ref(1)
+function zoomIn() {
+    if (scale.value > 2)
+        scale.value -= 0.5
+    else if (scale.value > 1)
+        scale.value -= 0.25
+}
+function zoomOut() {
+    if (scale.value < 2)
+        scale.value += 0.25
+    else if (scale.value < 4)
+        scale.value += 0.5
+}
 </script>
 
 <template>
@@ -81,17 +94,14 @@ const imageReverseScale = computed(() => `scale(${ 1 / props.imageScale })`)
             class="container"
             :style="{
                 width: res.data.width + 'px',
-                height: res.data.height + 'px'
+                height: res.data.height + 'px',
+                transform: `scale(${scale})`
             }"
         >
             <img
                 v-if="useImage"
                 :src="imgBase64"
                 :width="imgWidth"
-                :style="{
-                    transform: imageReverseScale,
-                    transformOrigin: 'left top'
-                }"
             />
             <div v-else v-html="res.data.svg"></div>
         </div>
@@ -99,6 +109,9 @@ const imageReverseScale = computed(() => `scale(${ 1 / props.imageScale })`)
         <p v-else>...</p>
         <div class="toolbar">
             <div class="toolbar-inner">
+                <button @click="zoomOut">+</button>
+                <button @click="scale = 1">{{ scale * 100 }}%</button>
+                <button @click="zoomIn">-</button>
                 <button @click="downloadSvg">SVG</button>
                 <button @click="copyFormula">
                     {{ copyState }}
