@@ -673,9 +673,16 @@ export class ChemParser extends Parser<Formula> {
 			treeId: this.treeId
 		}
 		struct.children = this.doParseBonds({ self: struct })
+		if (Debug.on) struct.toString = () => `[${head.S}] ` + (
+			head.S === 'chem' ? head.node.t.B.map(x => x.s).join('') :
+			head.S === 'ref' ? '&' + head.node.names.join(',') :
+			''
+		)
+
 		if (head.S === 'chem' && head.node.a.ref) {
 			this.labels[head.node.a.ref] = struct
 		}
+
 		return struct
 	}
 

@@ -1,6 +1,6 @@
 import type {
 	Formula, Struct,
-	AttrOfBond, Bond, BondCount, BondDir, Group, ChemStructHead, AttrStructHead, StructHead
+	AttrOfBond, Bond, BondCount, BondDir, Group, ChemStructHead, AttrStructHead, StructHead, RefStructHead
 } from './parse.js'
 import { MathEx } from '../utils/math.js'
 import { Debug } from '../utils/debug.js'
@@ -22,11 +22,20 @@ type ChemOnlyStruct = Struct<ChemStructHead, ChemStructHead, ChemStructHead>
 
 export function combine(formula: Formula): Chem {
 	let totalStruct = 0
+	let visitedStruct = 0
+
+	function deref(struct: Struct): ChemOnlyStruct {
+		if (struct.S === 'ref') {
+			const refName = struct.node.names[0]
+			struct = formula.labels[refName]!
+		}
+		return struct as ChemOnlyStruct
+	}
 
 	function toGraph(struct: Struct): ChemOnlyStruct {
 		const { children, parents } = struct
 
-		while (struct.S === 'ref') {
+		if (struct.S === 'ref') {
 			const refName = struct.node.names[0]
 			const target = formula.labels[refName]
 			if (! target) throw Error(`Unknown ref &${refName}`)
@@ -34,13 +43,21 @@ export function combine(formula: Formula): Chem {
 			// Note: Self -> Ref, Self children -> Ref children, Self parent -> Ref parent
 			struct = target
 			struct.children.push(...children)
-			struct.parents.unshift(...parents)
+			struct.parents.push(...parents)
 		}
+
+		children.forEach(child => {
+			if (child.n.S === 'ref' && deref(child.n) === struct)
+				throw Error(`Self-loop on ref &${child.n.node.names[0]}`)
+			child.n.parents.forEach(parent => parent.n = deref(parent.n))
+		})
 
 		if (struct.S === 'attr') throw Error('Not implemented')
 
-		if (! struct.toGraphVisited) totalStruct ++
-		struct.toGraphVisited = true
+		if (! struct.toGraphVisited) {
+			totalStruct ++
+			struct.toGraphVisited = true
+		}
 
 		struct.children.forEach(bond => {
 			if (! bond.n.toGraphVisited) {
@@ -51,10 +68,10 @@ export function combine(formula: Formula): Chem {
 		return struct as ChemOnlyStruct
 	}
 
-	let visitedStruct = 0
-
 	function invert(struct: ChemOnlyStruct): ChemOnlyStruct {
-		struct.parents.slice(1).forEach(bond => {
+		struct.parents.forEach(bond => {
+			if (bond.n.toTreeVisited) return
+			bond.n.parentVisited = true
 			invert(bond.n)
 			struct.children.push(bond)
 		})
@@ -70,8 +87,13 @@ export function combine(formula: Formula): Chem {
 
 		invert(struct)
 
-		struct.children.forEach(bond => {
+		const childrenToDelete: number[] = []
+		struct.children.forEach((bond, i) => {
 			if (bond.n.toTreeVisited) {
+				if (bond.n.parentVisited) {
+					childrenToDelete.unshift(i)
+					return
+				}
 				bond.n = {
 					S: 'chem',
 					node: { t: { B: [ { s: '?', w: 1, a: 'base' as const } ], w: 1 }, a: {} },
@@ -82,14 +104,27 @@ export function combine(formula: Formula): Chem {
 			}
 			else bond.n = toTree(bond.n)
 		})
+		childrenToDelete.forEach(i => struct.children.splice(i, 1))
 
 		return struct
 	}
 
-	const roots = formula.structs.map(toGraph)
-	const one = toTree(roots[0])
+	function toRoot(struct: ChemOnlyStruct): ChemOnlyStruct {
+		if (! struct.toRootVisited) {
+			struct.toRootVisited = true
+		}
+		else return struct
+		return struct.parents.length
+			? toRoot(struct.parents[0].n)
+			: struct
+	}
 
-	if (visitedStruct !== totalStruct)
+	const roots = formula.structs.map(toGraph)
+	const one = toTree(toRoot(roots[0]))
+
+	Debug.D('one tree: %o', one)
+
+	if (visitedStruct < totalStruct)
 		throw Error(`Structs aren't connected. (nodes ${visitedStruct} / ${totalStruct})`)
 
 	function expand(
