@@ -60,7 +60,7 @@ function copyFormula() {
             copyState.value = 'Copied'
             setTimeout(() => {
                 copyState.value = 'Cuiping'
-            }, 500)
+            }, 700)
         })
 }
 
@@ -107,15 +107,17 @@ function zoomOut() {
         </div>
         <p v-else-if="res.state === 'error'">{{ res.errMsg }}</p>
         <p v-else>...</p>
-        <div class="toolbar">
-            <div class="toolbar-inner">
-                <button @click="zoomOut">+</button>
-                <button @click="scale = 1">{{ scale * 100 }}%</button>
-                <button @click="zoomIn">-</button>
-                <button @click="downloadSvg">SVG</button>
-                <button @click="copyFormula">
-                    {{ copyState }}
-                </button>
+        <div class="toolbar-outer">
+            <div class="toolbar">
+                <div class="toolbar-inner">
+                    <button @click="zoomOut">+</button>
+                    <button @click="scale = 1">{{ scale * 100 }}%</button>
+                    <button @click="zoomIn">-</button>
+                    <button @click="downloadSvg">SVG</button>
+                    <button @click="copyFormula">
+                        {{ copyState }}
+                    </button>
+                </div>
             </div>
         </div>
     </div>
@@ -126,23 +128,33 @@ function zoomOut() {
     color: red;
 }
 
-.toolbar {
+.toolbar-outer {
     position: absolute;
     z-index: 1;
-    display: none;
-    top: 0;
+    top: -8px;
     left: 100%;
     height: 100%;
+    width: min-content;
+    box-sizing: border-box;
+}
+
+.toolbar {
     user-select: none;
+    overflow: hidden;
+    width: 0px;
+    padding: 8px;
+    box-sizing: border-box;
+    transition: .2s width ease-in-out;
 }
 
 .toolbar-inner {
     display: inline-flex;
-    margin: 0 .5em;
+    margin: 0 16px;
     background-color: white;
-    border-radius: .4em;
-    box-shadow: 0 0 2px 2px #dadada;
+    border-radius: 1em;
+    box-shadow: 0 0 8px 0 #aaa;
     overflow: hidden;
+    height: 2em;
 }
 
 .toolbar button {
@@ -151,15 +163,25 @@ function zoomOut() {
     outline: none;
     color: #1f1a1a;
     font-size: .8em;
-    transition: .5s background-color;
+    transition: .3s background-color;
+    min-width: 2em;
+    cursor: pointer;
+}
+
+.toolbar button:first-child {
+    padding-left: .8em;
+}
+
+.toolbar button:last-child {
+    padding-right: .8em;
 }
 
 .toolbar button:hover {
-    background-color: #dadada;
+    background-color: #eee;
 }
 
 .root.ok:hover .toolbar {
-    display: block;
+    width: 100%;
 }
 
 .root {
