@@ -4,7 +4,7 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "vue-tsc && VITE_BUILD_TIME=\"$(date -R)\" VITE_BUILD_ENV=\"$(uname -sr)\" vite build",
+    "build": "vue-tsc && VITE_BUILD_TIME=\"$(date -R)\" VITE_BUILD_ENV=\"$(uname -sr)\" VITE_LAST_COMMIT=\"$(git log -1 HEAD --oneline --no-color --no-decorate)\" vite build",
     "preview": "vite preview"
   },
   "dependencies": {

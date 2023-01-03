@@ -71,8 +71,9 @@ function toggleConf() {
     )
 }
 
-const buildTime = import.meta.env.VITE_BUILD_TIME ?? 'dev'
+const buildTime = import.meta.env.VITE_BUILD_TIME ?? 'now'
 const buildEnv = import.meta.env.VITE_BUILD_ENV ?? 'local'
+const [ lastCommitHash, lastCommitMessage ] = import.meta.env.VITE_LAST_COMMIT?.split(/(?<! .*) /) ?? []
 </script>
 
 <template>
@@ -96,7 +97,9 @@ const buildEnv = import.meta.env.VITE_BUILD_ENV ?? 'local'
 
         <p v-html="
             t('info.structure', {
-                formula: `<code>\`${molecule?.replace(/./g, (ch) => `&#x${ch.charCodeAt(0).toString(16)};`) ?? ''}\`</code>`
+                formula: `<code>\`${
+                    molecule?.replace(/./g, (ch) => `&#x${ch.charCodeAt(0).toString(16)};`) ?? ''
+                }\`</code>`
             })
         "></p>
         <Cuiping
@@ -155,7 +158,11 @@ const buildEnv = import.meta.env.VITE_BUILD_ENV ?? 'local'
         <br />
         <i class="build">
             backend @ {{ backVer }} | component @ {{ compVer }} | frontend @ {{ frontVer }} <br />
-            {{ t('info.build', { buildTime, buildEnv }) }}
+            {{ t('info.build', { buildTime, buildEnv }) }} <br />
+            <span
+                v-if="lastCommitHash"
+                v-html="t('info.lastCommit', { message: lastCommitMessage, hash: lastCommitHash })"
+            ></span>
         </i>
     </article>
 </template>
@@ -262,12 +269,12 @@ button:hover {
     color: #1cd91c;
 }
 
-a, a:visited {
+:deep(a), :deep(a:visited) {
     color: #159715;
     transition: .5s color;
 }
 
-a:hover, a:active {
+:deep(a:hover), :deep(a:active) {
     color: #1cd91c;
 }
 

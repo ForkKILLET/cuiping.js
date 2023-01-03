@@ -16,7 +16,8 @@ export default {
             noHistory: 'No history yet.',
             enterFormula: 'Enter Cuiping formula',
             structure: 'The structure of {formula} is',
-            build: 'build by Vite at {buildTime} on {buildEnv}'
+            build: 'build by Vite at {buildTime} on {buildEnv}',
+            lastCommit: 'last commit: <a href="https://github.com/ForkKILLET/cuiping.js/commit/{hash}">{hash}</a> {message}'
         },
         conf: {
             useImage: 'Use image',
@@ -51,7 +52,8 @@ export default {
             noHistory: '暂无历史',
             enterFormula: '输入 Cuiping 式',
             structure: '{formula} 的结构是：',
-            build: '使用 Vite 构建于 {buildTime}，在 {buildEnv} 上'
+            build: '使用 Vite 构建于 {buildTime}，在 {buildEnv} 上',
+            lastCommit: '最新提交：<a href="https://github.com/ForkKILLET/cuiping.js/commit/{hash}">{hash}</a> {message}'
         },
         conf: {
             useImage: '使用图片',
