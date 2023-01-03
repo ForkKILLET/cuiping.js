@@ -70,16 +70,16 @@ You can experience the demo at [icelava.top](https://icelava.top/cuiping.js/):
 
 | Options             | Type    | Description
 |:--------------------|:--------|:-----------
-| `unitLen`           | int     | Unit length
-| `paddingX`          | int     | X padding
-| `paddingY`          | int     | Y padding
+| `unitLen`           | integer | Unit length
+| `paddingX`          | integer | X padding
+| `paddingY`          | integer | Y padding
 | `displayBonds`      | boolean | Whether to display bonds
-| `bondGap`           | int     | Gap between double/triple bonds
+| `bondGap`           | integer | Gap between double/triple bonds
 | `lineBaseColor`     | string  | Base color of lines
 | `textBaseColor`     | string  | Base color of text
-| `halfFontSize`      | int     | Half font size
-| `halfTextBoxWidth`  | int     | Half width of text boxes
-| `halfTextBoxHeight` | int     | Half height of text boxes
+| `halfFontSize`      | integer | Half font size
+| `halfTextBoxWidth`  | integer | Half width of text boxes
+| `halfTextBoxHeight` | integer | Half height of text boxes
 | `displayTextBox`    | boolean | Whether to show text boxes
 
 ### Using the Vue component in the browser
