@@ -2,7 +2,7 @@
 
 [English](./README.md) | 简体中文
 
-**Table of Contents**
+**目录**
 
 - [简介](#简介)
 - [体验](#体验)
