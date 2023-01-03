@@ -6,7 +6,7 @@
 
 ## 简介
 
-在浏览器中渲染 SVG 格式的化学结构式，使用便于用户输入而精准的[「Cuiping 式」语法](./docs/syntax.md)。
+在浏览器中渲染 SVG 格式的化学结构式，使用便于用户输入而精准的[「Cuiping 式」语法](./docs/syntax.zh-Hans.md)。
 
 ## 体验
 
