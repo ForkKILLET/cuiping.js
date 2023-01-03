@@ -11,11 +11,11 @@ Render the chemical formula of SVG format in the browser, using the accurate [_C
 ## Experience
 
 You can experience the demo at [icelava.top](https://icelava.top/cuiping.js/):
-- Try to input _Cuiping formula_ and view rendered results in real time.
-- Save the formulas you tried to browser.
-- Modify the rendering configuration at any time.
-- Check some preset examples and edit them.
-- Hover over the rendering result to copy _Cuiping formula_ or download SVG images.
+- Try to input _Cuiping formula_ and view rendered results in real time
+- Save the formulas you tried to browser
+- Modify the rendering configuration at any time
+- Check some preset examples and edit them
+- Hover over the rendering result to copy _Cuiping formula_ or download SVG images
 
 ## Usage
 
@@ -94,15 +94,54 @@ You can experience the demo at [icelava.top](https://icelava.top/cuiping.js/):
 2. The development plan of this project can be found on [Notion](https://humdrum-zinc-834.notion.site/2b432da8fd0c4fe0adcbb6b459307a89?v=2a44c1c6a88141d7b89429eea437289d).
 3. The process of building this project:
     1. Clone the code repository in your familiar way.
-        ```shell
-        $ git clone https://github.com/ForkKILLET/Cuiping.js
-        $ gh repo clone ForkKILLET/Cuiping.js
-        ```
+       ```shell
+       $ git clone https://github.com/ForkKILLET/Cuiping.js
+       $ gh repo clone ForkKILLET/Cuiping.js
+       ```
     2. Use pnpm to install dependencies.
-        ```shell
-        $ pnpm i
-        ```
-4. Submit your changes. Please use ng style for submitting information. You may refer to `git log`.
+       ```shell
+       $ pnpm i
+       ```
+    3. Start the main building job.
+       ```shell
+       $ pnpm build
+       ```
+       Or start package-level building job separately, using workspace.
+       ```shell
+       $ pnpm -F {cuiping,cuiping-component,cuiping-frontend}
+       ```
+       Or `cd` into package directories and start package-level building job.
+       ```shell
+       $ cd {backend,component,frontend}
+       $ pnpm build
+       ```
+4. Test the project.
+    1. Test the backend only.
+       ```shell
+       $ cd backend
+       $ pnpm build:run
+       ```
+       You may set environment variable to enable debug.
+       ```shell
+       $ DEBUG=1 pnpm build:run
+       ```
+    2. Test all functions in the frontend. (recommended)  
+       Development mode:
+       ```shell
+       $ cd frontend
+       $ pnpm dev
+       ```
+       Production mode:
+       ```shell
+       $ cd frontend
+       $ pnpm build
+       $ pnpm preview
+       ```
+    3. You may set `cuipingDebug` in `localStorage` to enable debug.
+       ```javascript
+       localStorage.cuipingDebug = 1
+       ```
+4. Commit your changes. Please use ng style for commit message. You may refer to `git log`.
 5. Happy coding!
 
 ## License

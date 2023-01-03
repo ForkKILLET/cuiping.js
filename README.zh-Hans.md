@@ -16,7 +16,7 @@
 - 将尝试保存到浏览器中
 - 随时更改渲染配置
 - 查看准备好的一些示例，并编辑它们
-- 将鼠标悬停在渲染结果上，可以复制「Cuiping 式」和下载 SVG 图片。
+- 将鼠标悬停在渲染结果上，可以复制「Cuiping 式」和下载 SVG 图片
 
 ## 使用
 
@@ -96,16 +96,55 @@
 2. 本项目的开发计划可以在 [Notion](https://humdrum-zinc-834.notion.site/2b432da8fd0c4fe0adcbb6b459307a89?v=2a44c1c6a88141d7b89429eea437289d) 上查看
 3. 构建本项目的流程：
     1. 用你熟悉的方式克隆代码仓库
-        ```shell
-        $ git clone https://github.com/ForkKILLET/Cuiping.js
-        $ gh repo clone ForkKILLET/Cuiping.js
-        ```
+       ```shell
+       $ git clone https://github.com/ForkKILLET/Cuiping.js
+       $ gh repo clone ForkKILLET/Cuiping.js
+       ```
     2. 使用 pnpm 安装依赖。
-        ```shell
-        $ pnpm i
-        ```
-4. 提交你的更改，提交信息请使用 ng style，可参考 `git log`
-5. 编码快乐！
+       ```shell
+       $ pnpm i
+       ```
+    3. 启动主构建任务。
+       ```shell
+       $ pnpm build
+       ```
+       或者分别启动各个包的构建任务，用 workspace 功能。
+       ```shell
+       $ pnpm -F {cuiping,cuiping-component,cuiping-frontend}
+       ```
+       或者 `cd` 进各个包对应目录，然后启动各个包的构建任务。
+       ```shell
+       $ cd {backend,component,frontend}
+       $ pnpm build
+       ```
+4. 测试本项目。
+    1. 仅测试后端。
+       ```shell
+       $ cd backend
+       $ pnpm build:run
+       ```
+       设置环境变量以启动调试。
+       ```shell
+       $ DEBUG=1 pnpm build:run
+       ```
+    2. 在前端中测试所有功能（推荐）  
+       开发模式：
+       ```shell
+       $ cd frontend
+       $ pnpm dev
+       ```
+       生产模式：
+       ```shell
+       $ cd frontend
+       $ pnpm build
+       $ pnpm preview
+       ```
+    3. 设置 `localStorage` 中的 `cuipingDebug` 以启用调试。
+       ```javascript
+       localStorage.cuipingDebug = 1
+       ```
+5. 提交你的更改，提交信息请使用 ng style，可参考 `git log`
+6. 编码快乐！
 
 ## 许可证
 
