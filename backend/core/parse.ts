@@ -405,13 +405,13 @@ export class ChemParser extends Parser<Formula> {
 				s = ''
 
 				align = GroupTypesetAlignTable[ch]
-				if (this.after[0] === '(') {
+				if (this.after[0] === '{') {
 					alignLong = true
 					this.index ++
 				}
 				else alignShort = true
 			}
-			else if (ch === ')' && alignLong) alignLong = false
+			else if (ch === '}' && alignLong) alignLong = false
 			else {
 				if (ch < '0' || ch > '9') {
 					hasNonDigit = true

@@ -112,7 +112,7 @@ bond count      = '=' | '#'
 bond dir        = ('+' | '-' | '/' | '\' | '|')+
 bond modifier   = '!' | '*'
 group           = <group> ((<group char>)+ | <group typeset>)
-group typeset   = ('^' | '_')(<any char> | '(' (<any char>)+ ')')
+group typeset   = ('^' | '_')(<any char> | '{' (<any char>)+ '}')
 identifier      = <any letter> | <any number>
 group char      = <identifier> | '(' | ')' | '.' | '?'
 ```
