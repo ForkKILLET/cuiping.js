@@ -556,13 +556,10 @@ export class ChemParser extends Parser<Formula> {
 			bond = { c, d, a, i: 0, n }
 		}
 
-		const pa = bond.a
-		; [pa.to, pa.from] = [pa.from, pa.to]
-
 		bond.n.parents.push({
 			c: bond.c,
 			d: bond.d.map(d => MathEx.stdAng(d + 180)),
-			a: pa,
+			a: bond.a,
 			i: 0,
 			n: self
 		})
