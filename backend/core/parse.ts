@@ -21,15 +21,18 @@ export const BondCharset = BondCountCharset + BondDirCharset + BondDirModifierCh
 
 export type Formula = {
 	structs: Struct[],
-	structNums: number,
-	labels: Record<string, [Struct, number] | undefined>
+	labels: Record<string, Struct | undefined>
 }
 
 export type StructHead = ChemStructHead | RefStructHead | AttrStructHead
 export type Struct<
-	H extends StructHead = StructHead, C extends StructHead = StructHead
+	H extends StructHead = StructHead,
+	C extends StructHead = StructHead,
+	P extends StructHead = StructHead
 > = H & {
-	bonds: Bond<C>[]
+	children: Bond<C>[],
+	parents: Bond<P>[],
+	treeId: number,
 	[key: `${string}Visited`]: boolean | undefined
 }
 export type ChemStructHead = {
@@ -80,7 +83,7 @@ export type BondDir = number
 export type Bond<H extends StructHead = StructHead> = {
 	c: BondCount,
 	d: BondDir[],
-	n: Struct<H, H>,
+	n: Struct<H, H, H>,
 	a: AttrOfBond,
 	i: number // Note: index of connected atom
 }
@@ -474,7 +477,7 @@ export class ChemParser extends Parser<Formula> {
 	}: {
 		isPrefix?: boolean,
 		parsedBonds?: Bond[],
-	} = {}): BondType {
+	}): BondType {
 		let c: BondCount = 1
 		const dirs: BondDir[] = []
 
@@ -531,33 +534,52 @@ export class ChemParser extends Parser<Formula> {
 	private doParseBond({
 		requirePrefix = false,
 		parsedBonds = [],
+		self
 	}: {
 		requirePrefix?: boolean,
 		parsedBonds?: Bond[],
-	} = {}): Bond | undefined {
+		self: Struct
+	}): Bond | undefined {
+		let bond: Bond
 		if (! BondCharset.includes(this.current)) {
 			if (requirePrefix) throw this.expect('prefix-styled bond')
 			if (GroupCharset.includes(this.current)) {
 				const n = this.doParseStruct()
 				const { c, d, a } = this.doParseBondType({ isPrefix: false, parsedBonds })
-				return { c, d, n, a, i: 0 }
+				bond = { c, d, a, i: 0, n }
 			}
 			else throw this.expect('bond')
 		}
 		else {
 			const { c, d, a } = this.doParseBondType({ isPrefix: true, parsedBonds })
 			const n = this.doParseStruct()
-			return { c, d, n, a, i: 0 }
+			bond = { c, d, a, i: 0, n }
 		}
+
+		const pa = bond.a
+		; [pa.to, pa.from] = [pa.from, pa.to]
+
+		bond.n.parents.push({
+			c: bond.c,
+			d: bond.d.map(d => MathEx.stdAng(d + 180)),
+			a: pa,
+			i: 0,
+			n: self
+		})
+		return bond
 	}
 
-	private doParseBonds(): Bond[] {
+	private doParseBonds({
+		self
+	} : {
+		self: Struct
+	}): Bond[] {
 		const bonds: Bond[] = []
 
 		if (this.current === '[') {
 			this.index ++
 			bondsInBracket: while (true) {
-				bonds.push(this.doParseBond({ parsedBonds: bonds })!)
+				bonds.push(this.doParseBond({ parsedBonds: bonds, self })!)
 				switch (this.current as string) {
 					case ']':
 						this.index ++
@@ -570,7 +592,7 @@ export class ChemParser extends Parser<Formula> {
 		}
 		if (BondCharset.includes(this.current)) {
 			const bond = this
-				.try(() => this.doParseBond({ parsedBonds: bonds }))
+				.try(() => this.doParseBond({ parsedBonds: bonds, self }))
 				.except('atom group', null)
 			if (bond) bonds.push(bond)
 		}
@@ -598,7 +620,7 @@ export class ChemParser extends Parser<Formula> {
 		return { d: def, a }
 	}
 
-	private labels: Record<string, [Struct, number]> = {}
+	private labels: Record<string, Struct> = {}
 
 	private doParseRef(): Ref {
 		this.index ++ // Note: skip '&'
@@ -644,14 +666,20 @@ export class ChemParser extends Parser<Formula> {
 
 	protected doParseStruct(): Struct {
 		const head = this.doParseStructHead()
-		const struct: Struct = { ...head, bonds: this.doParseBonds() }
+		const struct: Struct = {
+			...head,
+			children: null as unknown as Struct['children'],
+			parents: [],
+			treeId: this.treeId
+		}
+		struct.children = this.doParseBonds({ self: struct })
 		if (head.S === 'chem' && head.node.a.ref) {
-			this.labels[head.node.a.ref] = [struct, this.structId]
+			this.labels[head.node.a.ref] = struct
 		}
 		return struct
 	}
 
-	private structId = 0
+	private treeId = 0
 
 	protected doParse(): Formula {
 		const structs: Struct[] = []
@@ -659,13 +687,13 @@ export class ChemParser extends Parser<Formula> {
 			structs.push(this.doParseStruct())
 			if (this.current === ';') {
 				this.index ++
-				this.structId ++
+				this.treeId ++
 				continue
 			}
 			else break
 		}
 		const formula = {
-			structs, labels: this.labels, structNums: this.structId + 1
+			structs, labels: this.labels
 		}
 		Debug.D('formula: %o', formula)
 		return formula

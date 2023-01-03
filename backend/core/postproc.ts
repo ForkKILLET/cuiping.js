@@ -1,6 +1,6 @@
 import type {
 	Formula, Struct,
-	AttrOfBond, BondCount, BondDir, Group, ChemStructHead, AttrStructHead, StructHead
+	AttrOfBond, Bond, BondCount, BondDir, Group, ChemStructHead, AttrStructHead, StructHead
 } from './parse.js'
 import { MathEx } from '../utils/math.js'
 import { Debug } from '../utils/debug.js'
@@ -18,45 +18,88 @@ export type Chem = {
 	bonds: ExpandedBond[]
 }
 
-export type DerefedStruct = Struct<ChemStructHead | AttrStructHead, ChemStructHead | AttrStructHead>
+type ChemOnlyStruct = Struct<ChemStructHead, ChemStructHead, ChemStructHead>
 
 export function combine(formula: Formula): Chem {
-	function connect(struct: Struct, structsConnection: Record<number, boolean>) {
-		const bonds = struct.bonds
+	let totalStruct = 0
+
+	function toGraph(struct: Struct): ChemOnlyStruct {
+		const { children, parents } = struct
 
 		while (struct.S === 'ref') {
 			const refName = struct.node.names[0]
 			const target = formula.labels[refName]
 			if (! target) throw Error(`Unknown ref &${refName}`)
-			const [targetStruct, structId] = target
-			structsConnection[structId] = true
-			struct = targetStruct
-			bonds.push(...targetStruct.bonds)
+
+			// Note: Self -> Ref, Self children -> Ref children, Self parent -> Ref parent
+			struct = target
+			struct.children.push(...children)
+			struct.parents.unshift(...parents)
 		}
 
-		struct.bonds = bonds
-		if (struct.connectVisited) return struct
-		struct.connectVisited = true
-		
-		struct.bonds.forEach(bond => {
-			bond.n = connect(bond.n, structsConnection)
+		if (struct.S === 'attr') throw Error('Not implemented')
+
+		if (! struct.toGraphVisited) totalStruct ++
+		struct.toGraphVisited = true
+
+		struct.children.forEach(bond => {
+			if (! bond.n.toGraphVisited) {
+				bond.n = toGraph(bond.n)
+			}
+		})
+
+		return struct as ChemOnlyStruct
+	}
+
+	let visitedStruct = 0
+
+	function invert(struct: ChemOnlyStruct): ChemOnlyStruct {
+		struct.parents.slice(1).forEach(bond => {
+			invert(bond.n)
+			struct.children.push(bond)
+		})
+		struct.parents = []
+		return struct
+	}
+	
+	function toTree(struct: ChemOnlyStruct): ChemOnlyStruct {
+		if (! struct.toTreeVisited) {
+			struct.toTreeVisited = true
+			visitedStruct ++
+		}
+
+		invert(struct)
+
+		struct.children.forEach(bond => {
+			if (bond.n.toTreeVisited) {
+				bond.n = {
+					S: 'chem',
+					node: { t: { B: [ { s: '?', w: 1, a: 'base' as const } ], w: 1 }, a: {} },
+					children: [],
+					parents: [],
+					treeId: bond.n.treeId
+				}
+			}
+			else bond.n = toTree(bond.n)
 		})
 
 		return struct
 	}
 
-	const willcardGroup = () => ({ g: { t: { B: [ { s: '?', w: 1, a: 'base' as const } ], w: 1 }, a: {} }, bonds: [] })
+	const roots = formula.structs.map(toGraph)
+	const one = toTree(roots[0])
+
+	if (visitedStruct !== totalStruct)
+		throw Error(`Structs aren't connected. (nodes ${visitedStruct} / ${totalStruct})`)
 
 	function expand(
-		struct: DerefedStruct,
+		struct: Struct<ChemStructHead, ChemStructHead>,
 		rotateD: number = 0, flipX: boolean = false, flipY: boolean = false,
 		depth: number = 0
 	): Chem {
-		struct.expandVisited = true
-
 		if (struct.S === 'chem') {
 			const bonds: ExpandedBond[] = []
-			struct.bonds.forEach(b => {
+			struct.children.forEach(b => {
 				const [ d0 ] = b.d
  
 				// Note: expand bond dirs
@@ -87,9 +130,7 @@ export function combine(formula: Formula): Chem {
 						rotateD, flipX, flipY, d
 					)
 
-					const t = b.n.expandVisited
-						? willcardGroup()
-						: expand({ ...b.n }, rD, fX, fY, depth + 1)
+					const t = expand({ ...b.n }, rD, fX, fY, depth + 1)
 
 					bonds.push({
 						c: b.c,
@@ -112,12 +153,5 @@ export function combine(formula: Formula): Chem {
 		throw Error('Not implemented')
 	}
 	
-	for (const [ structId, mainTree ] of formula.structs.entries()) {
-		const structsConnection = { [structId]: true }
-		const graph = connect(mainTree, structsConnection)
-		if (Object.keys(structsConnection).length < formula.structNums) continue
-		return expand(graph as DerefedStruct)
-	}
-
-	throw 'Structures aren\'t connected.'
+	return expand(one)
 }

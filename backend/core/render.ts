@@ -31,7 +31,7 @@ export type Layout = {
 }
 
 export function locate(chem: Chem, {
-	unitLen: u = 30,
+	unitLen: u = 20,
 	halfTextBoxWidth: hw = 8,
 	halfTextBoxHeight: hh = 8
 }: {
