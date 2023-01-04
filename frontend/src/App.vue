@@ -7,8 +7,11 @@ import type { Locales } from './i18n/locales'
 import { Cuiping } from 'cuiping-component'
 import 'cuiping-component/dist/style.css'
 
-import Conf, { SchemasToValues } from './conf';
+import { Conf, SchemasToValues, storageRef, storageReactive } from './conf';
 import examples from './examples'
+
+import * as originalMonaco from 'monaco-editor'
+import { getMonacoForCuiping } from 'cuiping-monaco'
 
 import { version as backVer } from 'cuiping/package.json'
 import { version as compVer } from 'cuiping-component/package.json'
@@ -16,15 +19,10 @@ import { version as frontVer } from '../package.json'
 
 const molecule = ref<string | undefined>()
 
-const history = reactive<string[]>(
-    JSON.parse(localStorage.getItem('cuipingHistory') ?? '[]')
-)
-watch(history, () => {
-    localStorage.setItem('cuipingHistory', JSON.stringify(history))
-})
+const history = storageReactive<string[]>('history', [])
 
 function selectMol(mol: string) {
-    molecule.value = mol
+    updateMolecule(mol)
     window.scrollTo({
         left: 0,
         top: 0,
@@ -39,41 +37,87 @@ function setLocale(locale: string) {
     localStorage.setItem('cuipingLocale', i18n.locale.value = locale)
 }
 
-const schemasComp = {
-    useImage: { ty: 'boolean', def: false },
-    imageScale: { ty: 'number', min: 0, def: 1 }
+const schemasOther = {
+    useEditor: { ty: 'boolean' }
 } as const
 
-const confComp = ref<SchemasToValues<typeof schemasComp>>()
+const confOther = storageReactive<SchemasToValues<typeof schemasOther>>('confOther', {
+    useEditor: true
+})
+
+const schemasComp = {
+    useImage: { ty: 'boolean' },
+    imageScale: { ty: 'number', min: 0 }
+} as const
+
+const confComp = storageReactive<SchemasToValues<typeof schemasComp>>('confComp', {
+    useImage: false,
+    imageScale: 1
+})
 
 const schemasRender = {
-	unitLen: { ty: 'number', min: 0, def: 20 },
-	paddingX: { ty: 'number', def: 20 },
-	paddingY: { ty: 'number', def: 20 },
-	displayBonds: { ty: 'boolean', def: true },
-	bondGap: { ty: 'number', min: 0, def: 2 },
-	lineBaseColor: { ty: 'color', def: 'black' },
-	textBaseColor: { ty: 'color', def: 'black' },
-    halfFontSize: { ty: 'number', min: 0, def: 8 },
-    halfTextBoxWidth: { ty: 'number', min: 0, def: 6 },
-    halfTextBoxHeight: { ty: 'number', min: 0, def: 8 },
-    displayTextBox: { ty: 'boolean', def: false }
+	unitLen: { ty: 'number', min: 0 },
+	paddingX: { ty: 'number' },
+	paddingY: { ty: 'number' },
+	displayBonds: { ty: 'boolean' },
+	bondGap: { ty: 'number', min: 0 },
+	lineBaseColor: { ty: 'color' },
+	textBaseColor: { ty: 'color' },
+    halfFontSize: { ty: 'number', min: 0 },
+    halfTextBoxWidth: { ty: 'number', min: 0 },
+    halfTextBoxHeight: { ty: 'number', min: 0 },
+    displayTextBox: { ty: 'boolean' }
 } as const
 
-const confRender = ref<SchemasToValues<typeof schemasRender>>()
+const confRender = storageReactive<SchemasToValues<typeof schemasRender>>('confRender', {
+    unitLen: 20,
+    paddingX: 20,
+    paddingY: 20,
+    displayBonds: true,
+    bondGap: 2,
+    lineBaseColor: 'black',
+    textBaseColor: 'black',
+    halfFontSize: 8,
+    halfTextBoxWidth: 6,
+    halfTextBoxHeight: 8,
+    displayTextBox: false
+})
 
-const confFolden = ref<boolean>(
-    JSON.parse(localStorage.getItem('cuipingConfFolden') ?? '"false"')
-)
-function toggleConf() {
-    localStorage.setItem('cuipingConfFolden',
-        JSON.stringify(confFolden.value = ! confFolden.value)
-    )
-}
+const confFolden = storageRef<boolean>('confFolden', false)
 
 const buildTime = import.meta.env.VITE_BUILD_TIME ?? 'now'
 const buildEnv = import.meta.env.VITE_BUILD_ENV ?? 'local'
 const [ lastCommitHash, lastCommitMessage ] = import.meta.env.VITE_LAST_COMMIT?.split(/(?<! .*) /) ?? []
+
+const monacoContainer = ref<HTMLDivElement>()
+
+let monaco: typeof originalMonaco
+let monacoEditor: originalMonaco.editor.IStandaloneCodeEditor
+
+const updatingMolecule = ref<boolean>(false)
+function updateMolecule(value: string) {
+    molecule.value = value
+    if (monacoContainer.value && monacoEditor) {
+        updatingMolecule.value = true
+        monacoEditor.setValue(value)
+    }
+}
+
+
+watch(monacoContainer, () => {
+    if (monacoContainer.value && ! updatingMolecule.value) {
+        monaco = getMonacoForCuiping(originalMonaco)
+        monacoEditor = monaco.editor.create(monacoContainer.value, {
+            theme: 'cuipingFormulaDefaultTheme',
+            value: molecule.value,
+            language: 'cuipingFormula',
+            automaticLayout: true
+        })
+        monacoEditor.getModel()?.onDidChangeContent(() => {
+            if (! updatingMolecule.value) molecule.value = monacoEditor.getValue()
+        })
+    }
+}, { immediate: true })
 </script>
 
 <template>
@@ -88,7 +132,10 @@ const [ lastCommitHash, lastCommitMessage ] = import.meta.env.VITE_LAST_COMMIT?.
             >{{ locale }}</span>
         </span>
 
-        <p>
+        <div v-if="confOther?.useEditor"
+            ref="monacoContainer" class="monaco-container"
+        ></div>
+        <p v-else>
             <textarea
                 v-model="molecule"
                 :placeholder="t('info.enterFormula')" spellcheck="false"
@@ -108,8 +155,11 @@ const [ lastCommitHash, lastCommitMessage ] = import.meta.env.VITE_LAST_COMMIT?.
         />
 
         <div class="confs" :class="{ folden: confFolden }">
-            <p>{{ t('title.conf') }}&emsp;<span class="folder" @click="toggleConf">&Delta;</span></p>
+            <p>{{ t('title.conf') }}&emsp;
+                <span class="folder" @click="confFolden = ! confFolden">&Delta;</span>
+            </p>
             <div>
+                <Conf :schemas="schemasOther" v-model="confOther" />
                 <Conf :schemas="schemasComp" v-model="confComp" />
                 <Conf :schemas="schemasRender" v-model="confRender" />
             </div>
@@ -315,5 +365,12 @@ button:hover {
 
 .build {
     color: gray;
+}
+
+.monaco-container {
+    height: 20vh;
+    width: 80vw;
+    text-align: left;
+    margin: auto;
 }
 </style>

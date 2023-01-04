@@ -9,16 +9,13 @@ type Values = Record<string, any>
 
 const props = defineProps<{
     schemas: Schemas,
-    modelValue?: Values
+    modelValue: Values
 }>()
 const emit = defineEmits<{
     (e: 'update:modelValue', values: Values): void
 }>()
 
-const defaultValues: Values = {}
-for (const k in props.schemas)
-    defaultValues[k] = props.schemas[k].def
-const values: Values = reactive(defaultValues)
+const values: Values = reactive(props.modelValue)
 
 function update() {
     emit('update:modelValue', values)

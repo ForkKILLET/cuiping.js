@@ -11,6 +11,9 @@
     "@types/node": "^18.11.18",
     "cuiping": "workspace:^1.5.0",
     "cuiping-component": "workspace:^1.2.0",
+    "cuiping-monaco": "workspace:^0.1.0",
+    "monaco-editor": "^0.34.1",
+    "vite-plugin-monaco-editor": "^1.1.0",
     "vue": "^3.2.45",
     "vue-i18n": "^9.2.2"
   },

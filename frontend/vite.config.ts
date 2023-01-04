@@ -1,5 +1,6 @@
 import { defineConfig, Alias } from 'vite'
 import vue from '@vitejs/plugin-vue'
+import monacoEditor from 'vite-plugin-monaco-editor'
 
 export default defineConfig(({ command }) => {
 	const alias: Alias[] = [
@@ -19,7 +20,9 @@ export default defineConfig(({ command }) => {
 
 	return {
 		plugins: [
-			vue()
+			vue(),
+			// @ts-ignore
+			monacoEditor.default({ languageWorkers: [] })
 		],
 		base: './',
 		resolve: {

@@ -20,6 +20,7 @@ export default {
             lastCommit: 'last commit: <a href="https://github.com/ForkKILLET/cuiping.js/commit/{hash}">{hash}</a> {message}'
         },
         conf: {
+            useEditor: 'Use Monaco Editor',
             useImage: 'Use image',
             imageScale: 'Image scale',
             unitLen: 'Unit length',
@@ -56,6 +57,7 @@ export default {
             lastCommit: '最新提交：<a href="https://github.com/ForkKILLET/cuiping.js/commit/{hash}">{hash}</a> {message}'
         },
         conf: {
+            useEditor: '使用 Monaco 编辑器',
             useImage: '使用图片',
             imageScale: '图片缩放',
             unitLen: '单位长度',
