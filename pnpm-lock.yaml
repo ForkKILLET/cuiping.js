@@ -70,8 +70,10 @@ importers:
 
   monaco:
     specifiers:
+      cuiping: workspace:^1.7.0
       monaco-editor: ^0.34.1
     dependencies:
+      cuiping: link:../backend
       monaco-editor: 0.34.1
 
 packages:
