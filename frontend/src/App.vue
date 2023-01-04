@@ -371,6 +371,9 @@ button:hover {
 .monaco-container {
     height: 20vh;
     width: 80vw;
+    max-width: 50em;
+    resize: both;
+    overflow: hidden;
     text-align: left;
     margin: auto;
 }
