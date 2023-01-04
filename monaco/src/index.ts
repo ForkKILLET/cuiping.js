@@ -22,14 +22,14 @@ export const getMonacoForCuiping = (monaco: typeof Monaco) => {
                 [ /}/, 'attrs', '@pop' ]
             ],
             'attr-with-value': [
-                [ /[^,:]+?(?=:)/, 'attr.key' ],
+                [ /[^,:}]+?(?=:)/, 'attr.key' ],
                 [ /:/, 'attr.colon' ],
                 [ /[^,}]+?(?=[,}])/, 'attr.value' ],
                 [ /,/, 'attrs.comma', '@pop' ],
                 [ /(?=})/, 'attr.dlmt', '@pop' ]
             ],
             'attr-without-value': [
-                [ /[^,}]+?(?=[,}])/, 'attr.key' ],
+                [ /[^,:}]+?(?=[,}])/, 'attr.key' ],
                 [ /,/, 'attrs.comma', '@pop' ],
                 [ /(?=})/, 'attr.dlmt', '@pop' ]
             ],
