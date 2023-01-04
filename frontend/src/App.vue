@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { watch, reactive, ref } from 'vue'
+import { watch, ref } from 'vue'
 
 import { useI18n } from 'vue-i18n'
 import type { Locales } from './i18n/locales'
@@ -115,6 +115,7 @@ watch(monacoContainer, () => {
         })
         monacoEditor.getModel()?.onDidChangeContent(() => {
             if (! updatingMolecule.value) molecule.value = monacoEditor.getValue()
+            else updatingMolecule.value = false
         })
     }
 }, { immediate: true })
