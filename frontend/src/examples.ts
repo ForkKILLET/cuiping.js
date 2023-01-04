@@ -13,7 +13,9 @@ export default [
     [ { zh: 'ATP', en: 'ATP' }, 'A-Pi-{~,C:red}Pi-{~,C:red}Pi' ],
     [ { zh: '铵根离子', en: 'ammonium ion' }, 'NH4^+' ],
     [ { zh: '一氧化碳 (配位键)', en: 'carbon oxide (coordinated bond)' }, 'C#{<}O' ],
-    [ { zh: '氯化铝 (使用引用)', en: 'aluminium chloride (using ref)' }, String.raw`Al{&:1}[Cl\/]/Cl\{>}&2; Al{&:2}[/\Cl]!/Cl!\{>}&1` ]
+    [ { zh: '氯化铝 (使用引用)', en: 'aluminium chloride (using ref)' },
+        String.raw`Al{&:1}[Cl\/]/Cl\{>}&2;` + '\n' + String.raw`Al{&:2}[/\Cl]!/Cl!\{>}&1`
+    ]
 ] as [
     { [k in Locales]: string }, string
 ][]

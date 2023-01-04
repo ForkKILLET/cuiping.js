@@ -146,7 +146,10 @@ watch(monacoContainer, () => {
         <p v-html="
             t('info.structure', {
                 formula: `<code>\`${
-                    molecule?.replace(/./g, (ch) => `&#x${ch.charCodeAt(0).toString(16)};`) ?? ''
+                    molecule
+                        ?.replace(/./g, (ch) => `&#x${ch.charCodeAt(0).toString(16)};`)
+                        ?.replace(/\n/, '<br />')
+                        ?? ''
                 }\`</code>`
             })
         "></p>
