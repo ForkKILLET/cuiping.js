@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, ref, watch } from 'vue'
+import { computed, ref, toRefs, watch } from 'vue'
 import { render, SvgRendererOption } from 'cuiping'
 import { Canvg } from 'canvg'
 
@@ -82,7 +82,7 @@ function zoomOut() {
 const canvas = ref<HTMLCanvasElement>()
 let canvg: Canvg
 
-watch(canvas, async () => {
+watch([ canvas, toRefs(props).imageScale ], async () => {
     if (canvas.value && props.useImage && props.molecule && res.value.state === 'ok') {
         const svg = res.value.data.svg
             .replace(/width="([\d\.]+)"/, (_, w) => `width="${w * props.imageScale}"`)
@@ -104,13 +104,18 @@ const imgSrc = computed(() => canvas.value?.toDataURL())
             class="container"
             :style="{
                 width: res.data.width + 'px',
-                height: res.data.height + 'px'
+                height: res.data.height + 'px',
+                transform: `scale(${scale})`,
+                transformOrigin: 'left top'
             }"
         >
-            <div v-if="useImage" :style="{
-                transform: useImage ? `scale(${1 / imageScale})` : undefined,
-                transformOrigin: 'left top'
-            }">
+            <div
+                v-if="useImage"
+                :style="{
+                    transform: useImage ? `scale(${1 / imageScale})` : undefined,
+                    transformOrigin: 'left top'
+                }"
+            >
                 <canvas ref="canvas"></canvas>
                 <img :src="imgSrc" />
             </div>
