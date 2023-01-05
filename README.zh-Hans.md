@@ -1,5 +1,9 @@
 # Cuiping.js
 
+![npm:cuiping](https://img.shields.io/npm/v/cuiping?label=cuiping&logo=npm)
+![npm:cuiping-component](https://img.shields.io/npm/v/cuiping-component?label=cuiping-component&logo=npm)
+![npm:cuiping-monaco](https://img.shields.io/npm/v/cuiping-monaco?label=cuiping-monaco&logo=npm)
+
 [English](./README.md) | 简体中文
 
 **目录**
