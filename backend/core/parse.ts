@@ -299,17 +299,15 @@ export class ChemParser extends Parser<Formula> {
 		attr: while (this.current) {
 			switch (this.current as string) {
 				case '}':
-					if (! readingValue) {
-						if (! k) throw Error('Attributes mustn\'t be empty.')
-						a[k] = true
-					}
+					if (! readingValue) if (k) a[k] = true
 					break attr
 				case ':':
 					readingValue = true
 					a[k] = ''
 					break
 				case ',':
-					if (! readingValue) a[k] = true
+					if (! readingValue) if (k) a[k] = true
+					else throw this.expect('Attribute key')
 					k = ''
 					readingValue = false
 					break
@@ -575,15 +573,12 @@ export class ChemParser extends Parser<Formula> {
 
 		if (this.current === '[') {
 			this.index ++
-			bondsInBracket: while (true) {
+			while (true) {
 				bonds.push(this.doParseBond({ parsedBonds: bonds, self })!)
-				switch (this.current as string) {
-					case ']':
-						this.index ++
-						break bondsInBracket
-					case ',':
-						this.index ++
-						continue
+				if (this.current as string === ',') this.index ++
+				if (this.current as string === ']') {
+					this.index ++
+					break
 				}
 			}
 		}
@@ -691,6 +686,7 @@ export class ChemParser extends Parser<Formula> {
 			structs.push(this.doParseStruct())
 			if (this.current === ';') {
 				this.index ++
+				if (! this.current) break // Note: allow dangling semicolon
 				this.treeId ++
 				continue
 			}
