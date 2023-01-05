@@ -24,7 +24,7 @@ A *Group* can include *In-group Typesetting*:
 A *Group* can be followed by an *Attributes Set*:
 
 - An *Attributes Set* should be wrapped by `{}`
-- An *Attributes Set* must include at least one *Attribute*. *Attributes* are split by `,`
+- An *Attributes Set* must include at least one *Attribute*. *Attributes* are split by `,` (Dangling `,` is allowed)
 
 *Attributes* can be divided into string type, integer type, float type, and boolean (switch) type
 
@@ -37,7 +37,7 @@ A *Group* can be followed by an *Attributes Set*:
 
 A *Group* can be followed by *Bonds* (if the *Group* is followed by an *Attributes Set*, the *Bonds* should follow the *Attributes Set*):
 
-- Followed by more than one *Bond*, together these *Bonds* are called *Bonds Set*, they should be wrapped by `[]` and split by `,`
+- Followed by more than one *Bond*, together these *Bonds* are called *Bonds Set*, they should be wrapped by `[]` and split by `,` (Dangling `,` is allowed)
 - Followed by a single *Bond*
 - The single *Bond* and the *Bonds Set* can co-exist, in this case, the single *Bond* should follow the *Bonds Set*
 
@@ -61,7 +61,9 @@ Rules of expressing a *Bond*:
 
 *Bond Modifier*:
 
+- *Bond Modifier `*`* sets the length (`length` *Attribute*) of the *Bond* to 0
 - *Bond Modifier `!`* can make all the following *Bond Directions* add a deflection of 180° (to express opposite *Bonds* outsides the *Bonds Set*)
+- *Bond Modifier `~`* acts on all *Bond Directions* of `/` and `\` in the following *Bond Directions*. It can make their angle with x-axis change from 60° to 30°
 
 Shorthand rules for *Bond Directions*:
 
@@ -81,9 +83,9 @@ Overlapping more than one *Bond Direction* is allowed to express connecting to t
 
 *Referencing* can be used to separate complicated *Chemical Structures* into parts to express
 
-- A *Chemical Structure* can be named by using attribute `ref`, a named *Chemical Structure* is referenceable
+- A *Chemical Structure* can be named by using *Attribute* `ref`, a named *Chemical Structure* is referenceable
 - A sign `&` followed by a referenced name is a *Referencing*, as well as a *Group*, it can be followed by *Bonds*
-- Using `;` to separate different *Chemical Structures*. Ultimately, these *Chemical Structures* must be fully connected by *Referencing*
+- Using `;` to separate different *Chemical Structures*. (Dangling `;` is allowed) Ultimately, these *Chemical Structures* must be fully connected by *Referencing*
 - A *Referencing* cannot be connected to itself by a *Bond* (i.e., self-loops are not allowed)
 
 ## Attributes List
