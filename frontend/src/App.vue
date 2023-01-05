@@ -209,8 +209,10 @@ watch(monacoContainer, () => {
         <h2>{{ t('title.about') }}</h2>
         GitHub: <a href="//github.com/ForkKILLET/cuiping.js">ForkKILLET/cuiping.js</a> <br />
         npm: <a href="//www.npmjs.com/package/cuiping">cuiping (backend)</a> |
-        <a href="//www.npmjs.com/package/cuiping-component">cuiping-component</a>
+        <a href="//www.npmjs.com/package/cuiping-component">cuiping-component</a> |
+        <a href="//www.npmjs.com/package/cuiping-monaco">cuiping-monaco</a>
         <br />
+
         <i class="build">
             cuiping @ {{ backVer }} | cuiping-component @ {{ compVer }} | cuiping-frontend @ {{ frontVer }} | cuiping-monaco @ {{ monacoVer }}<br />
             {{ t('info.build', { buildTime, buildEnv }) }} <br />
