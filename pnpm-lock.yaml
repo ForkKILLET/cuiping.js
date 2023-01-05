@@ -72,9 +72,12 @@ importers:
     specifiers:
       cuiping: workspace:^1.7.0
       monaco-editor: ^0.34.1
+      typescript: ^4.9.4
     dependencies:
       cuiping: link:../backend
       monaco-editor: 0.34.1
+    devDependencies:
+      typescript: 4.9.4
 
 packages:
 

@@ -15,6 +15,7 @@ import { getMonacoForCuiping } from 'cuiping-monaco'
 
 import { version as backVer } from 'cuiping/package.json'
 import { version as compVer } from 'cuiping-component/package.json'
+import { version as monacoVer } from 'cuiping-monaco/package.json'
 import { version as frontVer } from '../package.json'
 
 const molecule = ref<string | undefined>()
@@ -211,7 +212,7 @@ watch(monacoContainer, () => {
         <a href="//www.npmjs.com/package/cuiping-component">cuiping-component</a>
         <br />
         <i class="build">
-            backend @ {{ backVer }} | component @ {{ compVer }} | frontend @ {{ frontVer }} <br />
+            cuiping @ {{ backVer }} | cuiping-component @ {{ compVer }} | cuiping-frontend @ {{ frontVer }} | cuiping-monaco @ {{ monacoVer }}<br />
             {{ t('info.build', { buildTime, buildEnv }) }} <br />
             <span
                 v-if="lastCommitHash"

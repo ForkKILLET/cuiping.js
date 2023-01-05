@@ -16,6 +16,9 @@ export default defineConfig(({ command }) => {
 	}, {
 		find: /cuiping$/,
 		replacement: 'cuiping/core/index.ts'
+	}, {
+		find: /cuiping-monaco$/,
+		replacement: 'cuiping-monaco/src/index.ts'
 	})
 
 	return {

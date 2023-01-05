@@ -1,9 +1,12 @@
 {
   "name": "cuiping-monaco",
   "version": "0.1.0",
-  "description": "",
-  "main": "src/index.ts",
+  "description": "Monaco Editor extension for Cuiping formula",
+  "main": "./dist/index.js",
+	"types": "./dist/index.d.ts",
   "scripts": {
+    "build": "tsc",
+    "prepublish": "tsc",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [],
@@ -12,5 +15,8 @@
   "dependencies": {
     "cuiping": "workspace:^1.7.0",
     "monaco-editor": "^0.34.1"
+  },
+  "devDependencies": {
+    "typescript": "^4.9.4"
   }
 }
