@@ -80,9 +80,10 @@ function zoomOut() {
 }
 
 const canvas = ref<HTMLCanvasElement>()
+const canvasDataUrl = ref<string>()
 let canvg: Canvg
 
-watch([ canvas, toRefs(props).imageScale ], async () => {
+watch([ canvas, props ], async () => {
     if (canvas.value && props.useImage && props.molecule && res.value.state === 'ok') {
         const svg = res.value.data.svg
             .replace(/width="([\d\.]+)"/, (_, w) => `width="${w * props.imageScale}"`)
@@ -91,10 +92,9 @@ watch([ canvas, toRefs(props).imageScale ], async () => {
         const ctx = canvas.value.getContext('2d')!
         canvg = Canvg.fromString(ctx, svg)
         canvg.start()
+        canvasDataUrl.value = canvas.value.toDataURL()
     }
 })
-
-const imgSrc = computed(() => canvas.value?.toDataURL())
 </script>
 
 <template>
@@ -117,7 +117,7 @@ const imgSrc = computed(() => canvas.value?.toDataURL())
                 }"
             >
                 <canvas ref="canvas"></canvas>
-                <img :src="imgSrc" />
+                <img :src="canvasDataUrl" />
             </div>
             <div v-else v-html="res.data.svg"></div>
         </div>
