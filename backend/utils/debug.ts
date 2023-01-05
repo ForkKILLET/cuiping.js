@@ -10,7 +10,7 @@ export const Debug: {
 	on: false,
 	errStyle: s => s,
 	D: (...p) => {
-		if (Debug.on) console.log(...p)
+		if (Debug.on) console.debug(...p)
 	},
 	E: (s, ...p) => {
 		console.error(Debug.errStyle(s), ...p)
