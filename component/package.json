@@ -4,7 +4,7 @@
   "type": "module",
   "files": [
     "dist",
-	"lib"
+    "lib"
   ],
   "main": "./dist/cuiping-component.umd.cjs",
   "module": "./dist/cuiping-component.js",
@@ -15,8 +15,8 @@
       "require": "./dist/cuiping-component.umd.js"
     },
     "./dist/style.css": "./dist/style.css",
-	"./lib/main.ts": "./lib/main.ts",
-	"./package.json": "./package.json"
+    "./lib/main.ts": "./lib/main.ts",
+    "./package.json": "./package.json"
   },
   "scripts": {
     "dev": "vite",
@@ -24,6 +24,7 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "canvg": "^4.0.1",
     "cuiping": "workspace:^1.7.0",
     "vue": "^3.2.45"
   },

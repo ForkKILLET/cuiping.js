@@ -1,6 +1,7 @@
 <script setup lang="ts">
-import { computed, ref } from 'vue'
+import { computed, ref, watch } from 'vue'
 import { render, SvgRendererOption } from 'cuiping'
+import { Canvg } from 'canvg'
 
 const props = withDefaults(defineProps<{
     molecule?: string,
@@ -64,14 +65,6 @@ function copyFormula() {
         })
 }
 
-const imgBase64 = computed(() => 'data:image/svg+xml;base64,'
-    + btoa(res.value.data!.svg
-        .replace(/[\u00A0-\u2666]/g, c => `&#${c.charCodeAt(0)};`) ?? ''
-    )
-)
-
-const imgWidth = computed(() => res.value.data!.width * props.imageScale)
-
 const scale = ref(1)
 function zoomIn() {
     if (scale.value > 2)
@@ -85,6 +78,23 @@ function zoomOut() {
     else if (scale.value < 4)
         scale.value += 0.5
 }
+
+const canvas = ref<HTMLCanvasElement>()
+let canvg: Canvg
+
+watch(canvas, async () => {
+    if (canvas.value && props.useImage && props.molecule && res.value.state === 'ok') {
+        const svg = res.value.data.svg
+            .replace(/width="([\d\.]+)"/, (_, w) => `width="${w * props.imageScale}"`)
+            .replace(/height="([\d\.]+)"/, (_, h) => `height="${h * props.imageScale}"`)
+        if (canvg) canvg.stop()
+        const ctx = canvas.value.getContext('2d')!
+        canvg = Canvg.fromString(ctx, svg)
+        canvg.start()
+    }
+})
+
+const imgSrc = computed(() => canvas.value?.toDataURL())
 </script>
 
 <template>
@@ -94,15 +104,16 @@ function zoomOut() {
             class="container"
             :style="{
                 width: res.data.width + 'px',
-                height: res.data.height + 'px',
-                transform: `scale(${scale})`
+                height: res.data.height + 'px'
             }"
         >
-            <img
-                v-if="useImage"
-                :src="imgBase64"
-                :width="imgWidth"
-            />
+            <div v-if="useImage" :style="{
+                transform: useImage ? `scale(${1 / imageScale})` : undefined,
+                transformOrigin: 'left top'
+            }">
+                <canvas ref="canvas"></canvas>
+                <img :src="imgSrc" />
+            </div>
             <div v-else v-html="res.data.svg"></div>
         </div>
         <p v-else-if="res.state === 'error'">{{ res.errMsg }}</p>
@@ -195,5 +206,10 @@ function zoomOut() {
 
 img, :deep(svg) {
     display: block;
+}
+
+canvas {
+    visibility: hidden;
+    position: absolute;
 }
 </style>

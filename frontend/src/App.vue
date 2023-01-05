@@ -104,7 +104,6 @@ function updateMolecule(value: string) {
     }
 }
 
-
 watch(monacoContainer, () => {
     if (monacoContainer.value && ! updatingMolecule.value) {
         monaco = getMonacoForCuiping(originalMonaco)
