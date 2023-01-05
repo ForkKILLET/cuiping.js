@@ -9,11 +9,13 @@ importers:
     specifiers:
       '@types/node': ^18.11.10
       chalk: ^5.1.2
+      entities: ^4.4.0
       eslint: ^8.28.0
       ts-node: ^10.9.1
       typescript: ^4.8.4
     dependencies:
       chalk: 5.1.2
+      entities: 4.4.0
     devDependencies:
       '@types/node': registry.npmmirror.com/@types/node/18.11.10
       eslint: 8.28.0
@@ -554,6 +556,11 @@ packages:
     dependencies:
       esutils: 2.0.3
     dev: true
+
+  /entities/4.4.0:
+    resolution: {integrity: sha512-oYp7156SP8LkeGD0GF85ad1X9Ai79WtRsZ2gxJqtBuzH+98YUV6jkHEKlZkMbcrjJjIVJNIDP/3WL9wQkoPbWA==}
+    engines: {node: '>=0.12'}
+    dev: false
 
   /esbuild-android-64/0.15.18:
     resolution: {integrity: sha512-wnpt3OXRhcjfIDSZu9bnzT4/TNTDsOUvip0foZOUBG7QbSt//w3QV4FInVJxNhKc/ErhUxc5z4QjHtMi7/TbgA==}

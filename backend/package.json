@@ -1,6 +1,6 @@
 {
 	"name": "cuiping",
-	"version": "1.8.0",
+	"version": "1.8.1",
 	"description": "rendering chemistry strutures to SVG",
 	"type": "module",
 	"main": "./dist/core/index.js",
@@ -13,7 +13,8 @@
 	"author": "ForkΨKILLET <fork_killet@qq.com>",
 	"license": "MIT",
 	"dependencies": {
-		"chalk": "^5.1.2"
+		"chalk": "^5.1.2",
+		"entities": "^4.4.0"
 	},
 	"devDependencies": {
 		"@types/node": "^18.11.10",

@@ -1,3 +1,4 @@
+import { encodeXML } from 'entities'
 import type { Group, BondCount, AttrOfBond } from './parse.js'
 import type { Chem } from './postproc.js'
 import { MathEx } from '../utils/math.js'
@@ -232,7 +233,9 @@ export function renderSVG(c: Chem, opt: SvgRendererOption = {}): SvgResult {
 			if (w > 0) w += B.w / 2
 			if (B.s !== '?' && B.s !== '.') {
 				if (B.a !== 'base') attr.push(`box-align="${B.a}"`)
-				svg += `<text x="${X(x + w * 2 * hw)}" y="${Y(y)}" ${attr.join(' ')}>${B.s}</text>`
+				svg += `<text x="${X(x + w * 2 * hw)}" y="${Y(y)}" ${attr.join(' ')}>`
+						+ encodeXML(B.s)
+					+ `</text>`
 			}
 			if (displayTextBox) // Note: text box
 				svg += `<rect `
