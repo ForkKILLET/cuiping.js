@@ -10,9 +10,9 @@ export const getMonacoForCuiping = (monaco: typeof Monaco) => {
                 [ /\[/, 'bonds', '@bonds' ],
                 [ /&\w*/, 'ref' ],
                 [ /\{/, 'attrs', '@attrs' ],
-                [ /[+\-|\/\\!*=#]/, 'bond.type' ],
+                [ /[+\-|\/\\*!~=#]/, 'bond.type' ],
                 [ /\s+/, 'space' ],
-                [ /(?=([\^_`](.|\([^)]*?\))|[^[\]{+\-|\/\\!*=#;]+)+)/, 'group.dlmt', '@group' ],
+                [ /(?=([\^_`](.|\([^)]*?\))|[^[\]{+\-|\/\\*!~=#;]+)+)/, 'group.dlmt', '@group' ],
                 [ /;/, 'semicolon' ]
             ],
             bonds: [
@@ -39,8 +39,8 @@ export const getMonacoForCuiping = (monaco: typeof Monaco) => {
             group: [
                 [ /[\^_`]{/, 'group.typeset', '@group-typeset-multiple' ],
                 [ /[\^_`]/, 'group.typeset', '@group-typeset' ],
-                [ /[^[\]{+\-|\/\\!*=#;\^_`]+/, 'group.content' ],
-                [ /(?=[[\]{+\-|\/\\!*=#;])/, 'group.dlmt', '@pop' ]
+                [ /[^[\]{+\-|\/\\*!~=#;\^_`]+/, 'group.content' ],
+                [ /(?=[[\]{+\-|\/\\*!~=#;])/, 'group.dlmt', '@pop' ]
             ],
             'group-typeset-multiple': [
                 [ /[^}]+/, 'group.content.typeset' ],
@@ -115,7 +115,7 @@ export const getMonacoForCuiping = (monaco: typeof Monaco) => {
             const res = before.match(/(.)\s*{([^}]*,)*[^}]+$/)
             if (res) {
                 if (res[1].match(/[\^_`]/)) return noSuggestions
-                if (res[1].match(/[+\-|\/\\!*=#]/)) return {
+                if (res[1].match(/[+\-|\/\\*!~=#]/)) return {
                     suggestions: attrSuggestions(BondAttrs, range)
                 }
                 return {
@@ -137,7 +137,7 @@ export const getMonacoForCuiping = (monaco: typeof Monaco) => {
             { token: 'group.typeset', foreground: 'FF9933' },
             { token: 'group.content.typeset', foreground: 'AAAAAA', fontStyle: 'italic' },
             { token: 'attrs', foreground: '0000FF' },
-            { token: 'attr.key', foreground: '#3CCDFF' },
+            { token: 'attr.key', foreground: '3CCDFF' },
             { token: 'attr.colon', foreground: '0000FF' }
         ],
         colors: {

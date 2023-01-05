@@ -1,7 +1,8 @@
 import { Debug } from '../utils/debug.js'
 import { MathEx } from '../utils/math.js'
 import { getWidth } from '../utils/measure.js'
-import type { MaybeArray, TupleToUnion, ValueOf } from '../utils/types'
+import type { AllCharsInString, MaybeArray, TupleToUnion, ValueOf } from '../utils/types'
+import { inCharset } from '../utils/types'
 
 export const IdentifierCharset
 	= 'abcdefghijklmnopqrstuvwxyz'
@@ -16,8 +17,8 @@ export const GroupCharset
 	+ '.' // Note: collpased carbon
 export const BondCountCharset = '=#'
 export const BondDirCharset = '-|/\\+'
-export const BondDirModifierCharset = '!*'
-export const BondCharset = BondCountCharset + BondDirCharset + BondDirModifierCharset
+export const BondModifiersCharset = '*!~'
+export const BondCharset = BondCountCharset + BondDirCharset + BondModifiersCharset
 
 export type Formula = {
 	structs: Struct[],
@@ -88,8 +89,15 @@ export type Bond<H extends StructHead = StructHead> = {
 	i: number // Note: index of connected atom
 }
 export type BondType = { c: BondCount, d: BondDir[], a: AttrOfBond }
+export type BondModifiers = {
+	zeroWidth?: boolean,
+	add180Deg?: boolean,
+	use30Deg?: boolean
+}
 
-export const BondCountTable: Record<string, BondCount> = {
+export const BondCountTable: Record<
+	AllCharsInString<typeof BondCountCharset>, BondCount
+> = {
 	'=': 2,
 	'#': 3
 }
@@ -100,6 +108,14 @@ export const BondDirTable = {
 	'|': [ 270 ],
 	'\\': [ 60 ],
 	'+': [ 0, 90, 180, 270 ]
+}
+
+export const BondModifiersTable: Record<
+	AllCharsInString<typeof BondModifiersCharset>, keyof BondModifiers
+> = {
+	'*': 'zeroWidth',
+	'!': 'add180Deg',
+	'~': 'use30Deg'
 }
 
 export const GroupAttrs = {
@@ -394,7 +410,7 @@ export class ChemParser extends Parser<Formula> {
 
 		while (
 			this.current &&
-			(GroupCharset.includes(this.current) || alignShort || alignLong)
+			(inCharset(this.current, GroupCharset) || alignShort || alignLong)
 		) {
 			const ch = this.current
 
@@ -469,6 +485,17 @@ export class ChemParser extends Parser<Formula> {
 			|| parsedBonds.some(({ d: dirs }) => dirs.includes(dir))
 	}
 
+	private doParseBondModifiers(): BondModifiers {
+		const modifiers: BondModifiers = {}
+		while (inCharset(this.current, BondModifiersCharset)) {
+			const modifierName = BondModifiersTable[this.current]
+			if (modifiers[modifierName]) throw Error(`Duplicated bond modifier ${this.current}`)
+			modifiers[modifierName] = true
+			this.index ++
+		}
+		return modifiers
+	}
+
 	private doParseBondType({
 		isPrefix = false,
 		parsedBonds = [],
@@ -479,28 +506,28 @@ export class ChemParser extends Parser<Formula> {
 		let c: BondCount = 1
 		const dirs: BondDir[] = []
 
-		const plus180Deg = this.current === '!'
-		if (plus180Deg) this.index ++
+		const preModifiers = this.doParseBondModifiers()
 
-		const zeroWidth = this.current === '*'
-		if (zeroWidth) this.index ++
-
-		if (BondCountCharset.includes(this.current)) {
+		if (inCharset(this.current, BondCountCharset)) {
 			c = BondCountTable[this.current as keyof typeof BondCountTable]
 			this.index ++
 		}
 
-		const noImplictDir = ! BondDirCharset.includes(this.current)
-		const auto0Deg = noImplictDir && (c > 1 || zeroWidth)
-		const auto180Deg = noImplictDir && plus180Deg
+		const noImplictDir = ! inCharset(this.current, BondDirCharset)
+		const auto0Deg = noImplictDir && (c > 1 || preModifiers.zeroWidth)
+		const auto180Deg = noImplictDir && preModifiers.add180Deg
 
-		while (BondDirCharset.includes(this.current) || auto0Deg || auto180Deg) {
+		while (inCharset(this.current, BondDirCharset) || auto0Deg || auto180Deg) {
 			const ds = []
 			if (auto0Deg || auto180Deg) ds.push(0)
 			else ds.push(...BondDirTable[this.current as keyof typeof BondDirTable])
 
 			for (let d of ds) {
-				if (plus180Deg) d = MathEx.stdAng(d + 180)
+				if (preModifiers.use30Deg) {
+					if (d === 60) d = 30
+					else if (d === 300) d = 330
+				}
+				if (preModifiers.add180Deg) d = MathEx.stdAng(d + 180)
 				if (! isPrefix) d = MathEx.stdAng(d + 180)
 				if (dirs.includes(d)) d = MathEx.stdAng(d + 180)
 
@@ -524,7 +551,7 @@ export class ChemParser extends Parser<Formula> {
 		}
 		else a = {}
 		
-		if (zeroWidth) a.length = 0
+		if (preModifiers.zeroWidth) a.length = 0
 
 		return { c, d: dirs, a }
 	}
@@ -539,9 +566,9 @@ export class ChemParser extends Parser<Formula> {
 		self: Struct
 	}): Bond | undefined {
 		let bond: Bond
-		if (! BondCharset.includes(this.current)) {
+		if (! inCharset(this.current, BondCharset)) {
 			if (requirePrefix) throw this.expect('prefix-styled bond')
-			if (GroupCharset.includes(this.current)) {
+			if (inCharset(this.current, GroupCharset)) {
 				const n = this.doParseStruct()
 				const { c, d, a } = this.doParseBondType({ isPrefix: false, parsedBonds })
 				bond = { c, d, a, i: 0, n }
@@ -582,7 +609,7 @@ export class ChemParser extends Parser<Formula> {
 				}
 			}
 		}
-		if (BondCharset.includes(this.current)) {
+		if (inCharset(this.current, BondCharset)) {
 			const bond = this
 				.try(() => this.doParseBond({ parsedBonds: bonds, self }))
 				.except('atom group', null)
@@ -595,7 +622,7 @@ export class ChemParser extends Parser<Formula> {
 		this.index ++ // Note: skip '$'
 
 		let name = ''
-		while (IdentifierCharset.includes(this.current)) {
+		while (inCharset(this.current, IdentifierCharset)) {
 			name += this.current
 			this.index ++
 		}
@@ -620,7 +647,7 @@ export class ChemParser extends Parser<Formula> {
 		const names: string[] = []
 		let s = ''
 		// Todo: ref range
-		while (RefNameCharset.includes(this.current)) {
+		while (inCharset(this.current, RefNameCharset)) {
 			switch (this.current) {
 				case ',':
 					names.push(s)
