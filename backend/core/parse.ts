@@ -1,9 +1,11 @@
+import { IncomingMessage } from 'http'
 import { Debug } from '../utils/debug.js'
 import { MathEx } from '../utils/math.js'
 import { getWidth } from '../utils/measure.js'
 import type { AllCharsInString, MaybeArray, TupleToUnion, ValueOf } from '../utils/types'
 import { inCharset } from '../utils/types'
 
+export const SpaceCharset = ' \t\t\n'
 export const IdentifierCharset
 	= 'abcdefghijklmnopqrstuvwxyz'
 	+ 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'
@@ -14,7 +16,8 @@ export const GroupCharset
 	+ '^_`'
 	+ '()'
 	+ '?' // Note: willcard
-	+ '.' // Note: collpased carbon
+	+ '.' // Note: collpased carbonA
+export const AttrEndCharset = ',}'
 export const BondCountCharset = '=#'
 export const BondDirCharset = '-|/\\+'
 export const BondModifiersCharset = '*!~'
@@ -298,16 +301,21 @@ export abstract class Parser<T> {
 		}
 	}
 
+	protected maybeSpace() {
+		while (inCharset(this.current, SpaceCharset)) this.index ++
+	}
+
 	protected abstract doParse(options?: any): T
 }
 
 export class ChemParser extends Parser<Formula> {
 	constructor(str: string, private defs: AttrStructDefs = {}) {
-		super(str.replace(/\s/g, ''))
+		super(str)
 	}
 
 	private doParseAttr<T extends AttrSchema>(attrSchema: T): AttrToValidate<T> {
 		this.index ++ // Note: skip '{'
+		this.maybeSpace()
 
 		let vf: AttrValidator
 
@@ -315,15 +323,24 @@ export class ChemParser extends Parser<Formula> {
 		let k = ''
 		let readingValue = false
 		attr: while (this.current) {
+			if (inCharset(this.current, SpaceCharset)) {
+				this.maybeSpace()
+				if (readingValue && ! inCharset(this.current, AttrEndCharset))
+					throw Error('Attr value mustn\'t contain white spaces.')
+			}
 			switch (this.current as string) {
 				case '}':
 					if (! readingValue) if (k) a[k] = true
 					break attr
 				case ':':
+					this.index ++
+					this.maybeSpace()
 					readingValue = true
 					a[k] = ''
 					break
 				case ',':
+					this.index ++
+					this.maybeSpace()
 					if (! readingValue) if (k) a[k] = true
 					else throw this.expect('Attribute key')
 					k = ''
@@ -332,11 +349,12 @@ export class ChemParser extends Parser<Formula> {
 				default:
 					if (readingValue) a[k] += this.current
 					else k += this.current
+					this.index ++
 			}
-			this.index ++
 		}
 		if (! this.current) throw this.expect(`delimiter '}' of attributes`)
 		this.index ++
+		this.maybeSpace()
 
 		Debug.D('attr: %o', a)
 
@@ -461,6 +479,7 @@ export class ChemParser extends Parser<Formula> {
 		}
 
 		eatChar()
+		this.maybeSpace()
 
 		if (alignLong) throw Error(`Unclosed ${align}script in group typeset '${r}'`)
 
@@ -564,9 +583,9 @@ export class ChemParser extends Parser<Formula> {
 			if (auto0Deg || auto30Deg || auto180Deg) break
 			this.index ++
 		}
-		if (! dirs.length) {
-			throw this.expect('at least one bond direction')
-		}
+		this.maybeSpace()
+
+		if (! dirs.length) throw this.expect('at least one bond direction')
 
 		let a
 		if (this.current === '{') {
@@ -592,6 +611,7 @@ export class ChemParser extends Parser<Formula> {
 		dirFrom: BondDir | null
 	}): Bond | undefined {
 		let bond: Bond
+
 		if (! inCharset(this.current, BondCharset)) {
 			if (requirePrefix) throw this.expect('prefix-styled bond')
 			if (inCharset(this.current, GroupCharset)) {
@@ -606,6 +626,7 @@ export class ChemParser extends Parser<Formula> {
 			const n = this.doParseStruct({ dirFrom: d[0] }) // Note: use the first direction
 			bond = { c, d, a, i: 0, n }
 		}
+		this.maybeSpace()
 
 		bond.n.parents.push({
 			c: bond.c,
@@ -628,9 +649,11 @@ export class ChemParser extends Parser<Formula> {
 
 		if (this.current === '[') {
 			this.index ++
+			this.maybeSpace()
 			while (true) {
 				bonds.push(this.doParseBond({ parsedBonds: bonds, self, dirFrom })!)
 				if (this.current as string === ',') this.index ++
+				this.maybeSpace()
 				if (this.current as string === ']') {
 					this.index ++
 					break
@@ -717,6 +740,8 @@ export class ChemParser extends Parser<Formula> {
 		dirFrom: BondDir | null
 	}): Struct {
 		const head = this.doParseStructHead()
+		this.maybeSpace()
+
 		const struct: Struct = {
 			...head,
 			children: null as unknown as Struct['children'],
@@ -745,6 +770,7 @@ export class ChemParser extends Parser<Formula> {
 			structs.push(this.doParseStruct({ dirFrom: null }))
 			if (this.current === ';') {
 				this.index ++
+				this.maybeSpace()
 				if (! this.current) break // Note: allow dangling semicolon
 				this.treeId ++
 				continue
