@@ -209,14 +209,40 @@ export function renderSVG(c: Chem, opt: SvgRendererOption = {}): SvgResult {
 				+ `dominant-baseline: alphabetic;`
 			+ `}`
 			+ `#${id} text[bold] {font-weight: bold;}`
-			+ `#${id} line:not([nobasecolor]), #${id} path:not([nobasecolor]) {`
+			+ `#${id} line:not([nobasecolor]):not([debug]), #${id} path:not([nobasecolor]) {`
 				+ `stroke: ${lineBaseColor};`
+			+ `}`
+			+ `#${id} [debug] {`
+				+ `stroke: red;`
+				+ `fill: none;`
 			+ `}`
 		+ `</style>`
 
 	const O = { x: 0, y: 0 }
 	const X = (x: number) => x + vp.xOffset + paddingX + O.x
 	const Y = (y: number) => y + vp.yOffset + paddingY + O.y
+	const ln = (
+		x1: number, y1: number, x2: number, y2: number, attr: string[],
+		to: boolean = false, from: boolean = false
+	) => {
+		svg += `<line x1="${X(x1)}" y1="${Y(y1)}" x2="${X(x2)}" y2="${Y(y2)}" ${attr.join(' ')}></line>`
+		if (to) arrow(x1, y1, x2, y2, attr)
+		if (from) arrow(x2, y2, x1, y1, attr)
+	}
+
+	const arrow = (x1: number, y1: number, x2: number, y2: number, attr: string[]) => {
+		const wh = 4
+		const xwh = wh * (x2 - x1) / u
+		const ywh = wh * (y2 - y1) / u
+		const wv = 1.5
+		const xwv = wv * (y2 - y1) / u
+		const ywv = wv * (x2 - x1) / u
+		svg += `<path d="`
+			+ `M ${X(x2)} ${Y(y2)}`
+			+ `L ${X(x2 - xwh + xwv)} ${Y(y2 - ywh - ywv)}`
+			+ `L ${X(x2 - xwh - xwv)} ${Y(y2 - ywh + ywv)} Z`
+		+ `" ${[...attr, `tofill=""`].join(' ')}></path>`
+	}
 
 	for (const { x, y, xo, yo, t, a } of l.groups) {
 		O.x = xo
@@ -237,46 +263,30 @@ export function renderSVG(c: Chem, opt: SvgRendererOption = {}): SvgResult {
 						+ encodeXML(B.s)
 					+ `</text>`
 			}
-			if (displayTextBox) // Note: text box
-				svg += `<rect `
-					+ `x="${X(x + (w * 2 - B.w) * hw)}" `
-					+ `y="${Y(
-						B.a === 'base' ? y - hh : 
-						B.a === 'sub' ? y - hh / 4 :
-						y - hh * 3 / 2
-					)}" `
-					+ `width="${hw * B.w * 2 || 1}" height="${hh * 2}" `
-					+ `stroke="red" fill="transparent"`
-				+ `></rect>`
+			if (displayTextBox) {
+				if (B.s === '.') {
+					ln(x - 3, y - 3, x + 3, y + 3, [ `debug=""` ])
+					ln(x - 3, y + 3, x + 3, y - 3, [ `debug=""` ])
+				}
+				else {
+					svg += `<rect `
+						+ `x="${X(x + (w * 2 - B.w) * hw)}" `
+						+ `y="${Y(
+							B.a === 'base' ? y - hh : 
+							B.a === 'sub' ? y - hh / 4 :
+							y - hh * 3 / 2
+						)}" `
+						+ `width="${hw * B.w * 2}" height="${hh * 2}" `
+						+ `debug=""`
+					+ `></rect>`
+				}
+			}
 
 			w += B.w / 2
 		}
 	}
 
 	if (displayBonds) {
-		const ln = (
-			x1: number, y1: number, x2: number, y2: number, attr: string[],
-			to: boolean = false, from: boolean = false
-		) => {
-			svg += `<line x1="${X(x1)}" y1="${Y(y1)}" x2="${X(x2)}" y2="${Y(y2)}" ${attr.join(' ')}></line>`
-			if (to) arrow(x1, y1, x2, y2, attr)
-			if (from) arrow(x2, y2, x1, y1, attr)
-		}
-
-		const arrow = (x1: number, y1: number, x2: number, y2: number, attr: string[]) => {
-			const wh = 4
-			const xwh = wh * (x2 - x1) / u
-			const ywh = wh * (y2 - y1) / u
-			const wv = 1.5
-			const xwv = wv * (y2 - y1) / u
-			const ywv = wv * (x2 - x1) / u
-			svg += `<path d="`
-				+ `M ${X(x2)} ${Y(y2)}`
-				+ `L ${X(x2 - xwh + xwv)} ${Y(y2 - ywh - ywv)}`
-				+ `L ${X(x2 - xwh - xwv)} ${Y(y2 - ywh + ywv)} Z`
-			+ `" ${[...attr, `tofill=""`].join(' ')}></path>`
-		}
-
 		for (let {
 			x1, y1, x2, y2, xo, yo, c, a
 		} of l.bonds) {
