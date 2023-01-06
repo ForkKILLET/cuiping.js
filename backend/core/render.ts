@@ -61,21 +61,22 @@ export function locate(chem: Chem, {
 			const k = yr / xr // Note: slope of the line from center to corner
 			const t = MathEx.tand(b.d) // Note: tangent of the bond angle
 
-			const collpased = c.g.t.B[0].s === '.'
+			const cd = c.g.t.B[0].s === '.' // Note: collasped
 
-			const dxo = collpased
+			const dxo = cd
 				? 0
 				: hw * (Math.abs(t) > Math.abs(k)
 					? yr / t // Note: yr / dxo = tan d
 					: xr)
 
-			const dyo = collpased
+			const dyo = cd
 				? 0
 				: hh * (Math.abs(t) > Math.abs(k)
 					? yr
 					: xr * t) // Note: dyo / xr = tan d
 
 			const { t: T } = b.t.g
+			const Cd = T.B[0].s === '.' // Note: target collapsed
 
 			const L = b.a.length ?? 1
 			const Lu = L * u
@@ -83,11 +84,12 @@ export function locate(chem: Chem, {
 			const x2 = x1 + MathEx.cosd(b.d) * Lu
 			const cx2 = x1 + MathEx.cosd(b.d) * (Lu + T.B[0].w * hw)
 			const y2 = y1 + MathEx.sind(b.d) * Lu
-			const cy2 = y1 + MathEx.sind(b.d) * (Lu + (collpased ? 0 : hh))
+			const cy2 = y1 + MathEx.sind(b.d) * (Lu + (cd ? 0 : hh))
 
 			const txo = MathEx.cosd(b.d) >= 0 // Note: text offset x of target group
 				? 0
 				: (- T.w + T.B[0].w) * 2 * hw
+			const tyo = (Cd !== cd) ? (Cd ? - 1 : + 1) * (MathEx.sind(b.d) * hh) : 0
 
 			bonds.push({
 				g1: b.f, g2: b.t.g,
@@ -99,7 +101,7 @@ export function locate(chem: Chem, {
 				b.t,
 				cx2, cy2,
 				xo + dxo + txo,
-				yo + dyo,
+				yo + dyo + tyo
 			)
 		})
 	}
