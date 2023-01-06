@@ -9,6 +9,7 @@ export default [
     [ { zh: '2-氯-1,3-丁二烯 (仅碳链)', en: 'chloroprene (carbon chain only)' }, 'C=C[|Cl]-C=C' ],
     [ { zh: '乙酸', en: 'acetic acid' }, 'C[H-,||H]-C[=|O]-O-H' ],
     [ { zh: '2-氯丙烷 (附样式)', en: '2-chloropropane (with style)' }, 'CH3-CH{B}[|Cl{C:green}]-CH3' ],
+    [ { zh: '2-氯丁烷 (键线式)', en: '2-chlorobutane (skeletal formula)' }, '.~.[|Cl]~.~.' ],
 	[ { zh: '新戊烷', en: 'neopentane' }, 'C+{L:2}C[||H,-H]' ],
     [ { zh: 'ATP', en: 'ATP' }, 'A-Pi-{~,C:red}Pi-{~,C:red}Pi' ],
     [ { zh: '铵根离子', en: 'ammonium ion' }, 'NH4^+' ],
