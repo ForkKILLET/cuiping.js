@@ -141,7 +141,10 @@ watch([ canvas, props ], async () => {
 </template>
 
 <style scoped>
-.glowing {
+.container.glowing {
+    box-shadow: 0 0 4px 0 #eee;
+}
+.toolbar-inner.glowing {
     box-shadow: 0 0 8px 0 #aaa;
 }
 
@@ -152,7 +155,7 @@ watch([ canvas, props ], async () => {
 .toolbar-outer {
     position: absolute;
     z-index: 1;
-    top: -8px;
+    top: -14px;
     left: 100%;
     height: 100%;
     width: min-content;
