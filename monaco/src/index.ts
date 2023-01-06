@@ -132,17 +132,19 @@ export const getMonacoForCuiping = (monaco: typeof Monaco) => {
         base: 'vs',
         inherit: false,
         rules: [
-            { token: 'bonds', foreground: '0000FF' },
-            { token: 'ref', foreground: '#007F00', fontStyle: 'italic' },
-            { token: 'bond.type', foreground: 'FF0000' },
-            { token: 'group.typeset', foreground: 'FF9933' },
-            { token: 'group.content.typeset', foreground: 'AAAAAA', fontStyle: 'italic' },
-            { token: 'attrs', foreground: '0000FF' },
-            { token: 'attr.key', foreground: '3CCDFF' },
-            { token: 'attr.colon', foreground: '0000FF' }
+            { token: 'bonds', foreground: 'FA9246' },
+            { token: 'ref', foreground: 'DC68E6', fontStyle: 'italic' },
+            { token: 'bond.type', foreground: '545A7B', fontStyle: 'bold' },
+            { token: 'group.typeset', foreground: 'AAAAAA', fontStyle: 'italic' },
+            { token: 'group.content.typeset', foreground: 'B9E260', fontStyle: 'italic' },
+            { token: 'attrs', foreground: '62C169' },
+            { token: 'attr.key', foreground: '64D99D', fontStyle: 'bold' },
+            { token: 'attr.colon', foreground: '5558D7' },
+            { token: 'bonds.comma', foreground: 'B7ACf0' },
+            { token: 'semicolon', foreground: 'B7ACf0' }
         ],
         colors: {
-            'editor.foreground': '#000000'
+            'editor.foreground': '#876FFF'
         }
     })
 
