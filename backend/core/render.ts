@@ -176,7 +176,6 @@ export function renderSVG(c: Chem, opt: SvgRendererOption = {}): SvgResult {
 	let svg = ''
 
 	const vp = getViewport(l, hw)
-
 	Debug.D('layout: %o, viewport: %o', l, vp)
 
 	const width = vp.width + paddingX * 2
@@ -221,11 +220,12 @@ export function renderSVG(c: Chem, opt: SvgRendererOption = {}): SvgResult {
 	const O = { x: 0, y: 0 }
 	const X = (x: number) => x + vp.xOffset + paddingX + O.x
 	const Y = (y: number) => y + vp.yOffset + paddingY + O.y
+	const A = (attrs: string[]) => attrs.length ? ' ' + attrs.join(' ') : ''
 	const ln = (
 		x1: number, y1: number, x2: number, y2: number, attr: string[],
 		to: boolean = false, from: boolean = false
 	) => {
-		svg += `<line x1="${X(x1)}" y1="${Y(y1)}" x2="${X(x2)}" y2="${Y(y2)}" ${attr.join(' ')}></line>`
+		svg += `<line x1="${X(x1)}" y1="${Y(y1)}" x2="${X(x2)}" y2="${Y(y2)}"${A(attr)}></line>`
 		if (to) arrow(x1, y1, x2, y2, attr)
 		if (from) arrow(x2, y2, x1, y1, attr)
 	}
@@ -241,7 +241,7 @@ export function renderSVG(c: Chem, opt: SvgRendererOption = {}): SvgResult {
 			+ `M ${X(x2)} ${Y(y2)}`
 			+ `L ${X(x2 - xwh + xwv)} ${Y(y2 - ywh - ywv)}`
 			+ `L ${X(x2 - xwh - xwv)} ${Y(y2 - ywh + ywv)} Z`
-		+ `" ${[...attr, `tofill=""`].join(' ')}></path>`
+		+ `"${A([...attr, `tofill=""`])}></path>`
 	}
 
 	for (const { x, y, xo, yo, t, a } of l.groups) {
@@ -259,7 +259,7 @@ export function renderSVG(c: Chem, opt: SvgRendererOption = {}): SvgResult {
 			if (w > 0) w += B.w / 2
 			if (B.s !== '?' && B.s !== '.') {
 				if (B.a !== 'base') attr.push(`box-align="${B.a}"`)
-				svg += `<text x="${X(x + w * 2 * hw)}" y="${Y(y)}" ${attr.join(' ')}>`
+				svg += `<text x="${X(x + w * 2 * hw)}" y="${Y(y)}"${A(attr)}>`
 						+ encodeXML(B.s)
 					+ `</text>`
 			}
@@ -307,7 +307,7 @@ export function renderSVG(c: Chem, opt: SvgRendererOption = {}): SvgResult {
 				svg += `<path d="`
 					+ `M ${X(x1)} ${Y(y1)} `
 					+ `C ${X(x3 + xw)} ${Y(y3 - yw)} ${X(x4 - xw)} ${Y(y4 + yw)} ${X(x2)} ${Y(y2)}`
-				+ `" ${attr.join(' ')}></path>`
+				+ `"${A(attr)}></path>`
 			}
 			else if (c === 1) {
 				ln(x1, y1, x2, y2, attr, !! a.to, !! a.from)
