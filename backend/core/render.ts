@@ -61,21 +61,22 @@ export function locate(chem: Chem, {
 			const k = yr / xr // Note: slope of the line from center to corner
 			const t = MathEx.tand(b.d) // Note: tangent of the bond angle
 
-			const collpased = c.g.t.B[0].s === '.'
+			const cd = c.g.t.B[0].s === '.' // Note: collasped
 
-			const dxo = collpased
+			const dxo = cd
 				? 0
 				: hw * (Math.abs(t) > Math.abs(k)
 					? yr / t // Note: yr / dxo = tan d
 					: xr)
 
-			const dyo = collpased
+			const dyo = cd
 				? 0
 				: hh * (Math.abs(t) > Math.abs(k)
 					? yr
 					: xr * t) // Note: dyo / xr = tan d
 
 			const { t: T } = b.t.g
+			const Cd = T.B[0].s === '.' // Note: target collapsed
 
 			const L = b.a.length ?? 1
 			const Lu = L * u
@@ -83,11 +84,12 @@ export function locate(chem: Chem, {
 			const x2 = x1 + MathEx.cosd(b.d) * Lu
 			const cx2 = x1 + MathEx.cosd(b.d) * (Lu + T.B[0].w * hw)
 			const y2 = y1 + MathEx.sind(b.d) * Lu
-			const cy2 = y1 + MathEx.sind(b.d) * (Lu + (collpased ? 0 : hh))
+			const cy2 = y1 + MathEx.sind(b.d) * (Lu + (cd ? 0 : hh))
 
 			const txo = MathEx.cosd(b.d) >= 0 // Note: text offset x of target group
 				? 0
 				: (- T.w + T.B[0].w) * 2 * hw
+			const tyo = (Cd !== cd) ? (Cd ? - 1 : + 1) * (MathEx.sind(b.d) * hh) : 0
 
 			bonds.push({
 				g1: b.f, g2: b.t.g,
@@ -99,7 +101,7 @@ export function locate(chem: Chem, {
 				b.t,
 				cx2, cy2,
 				xo + dxo + txo,
-				yo + dyo,
+				yo + dyo + tyo
 			)
 		})
 	}
@@ -176,7 +178,6 @@ export function renderSVG(c: Chem, opt: SvgRendererOption = {}): SvgResult {
 	let svg = ''
 
 	const vp = getViewport(l, hw)
-
 	Debug.D('layout: %o, viewport: %o', l, vp)
 
 	const width = vp.width + paddingX * 2
@@ -209,14 +210,41 @@ export function renderSVG(c: Chem, opt: SvgRendererOption = {}): SvgResult {
 				+ `dominant-baseline: alphabetic;`
 			+ `}`
 			+ `#${id} text[bold] {font-weight: bold;}`
-			+ `#${id} line:not([nobasecolor]), #${id} path:not([nobasecolor]) {`
+			+ `#${id} line:not([nobasecolor]):not([debug]), #${id} path:not([nobasecolor]) {`
 				+ `stroke: ${lineBaseColor};`
+			+ `}`
+			+ `#${id} [debug] {`
+				+ `stroke: red;`
+				+ `fill: none;`
 			+ `}`
 		+ `</style>`
 
 	const O = { x: 0, y: 0 }
 	const X = (x: number) => x + vp.xOffset + paddingX + O.x
 	const Y = (y: number) => y + vp.yOffset + paddingY + O.y
+	const A = (attrs: string[]) => attrs.length ? ' ' + attrs.join(' ') : ''
+	const ln = (
+		x1: number, y1: number, x2: number, y2: number, attr: string[],
+		to: boolean = false, from: boolean = false
+	) => {
+		svg += `<line x1="${X(x1)}" y1="${Y(y1)}" x2="${X(x2)}" y2="${Y(y2)}"${A(attr)}></line>`
+		if (to) arrow(x1, y1, x2, y2, attr)
+		if (from) arrow(x2, y2, x1, y1, attr)
+	}
+
+	const arrow = (x1: number, y1: number, x2: number, y2: number, attr: string[]) => {
+		const wh = 4
+		const xwh = wh * (x2 - x1) / u
+		const ywh = wh * (y2 - y1) / u
+		const wv = 1.5
+		const xwv = wv * (y2 - y1) / u
+		const ywv = wv * (x2 - x1) / u
+		svg += `<path d="`
+			+ `M ${X(x2)} ${Y(y2)}`
+			+ `L ${X(x2 - xwh + xwv)} ${Y(y2 - ywh - ywv)}`
+			+ `L ${X(x2 - xwh - xwv)} ${Y(y2 - ywh + ywv)} Z`
+		+ `"${A([...attr, `tofill=""`])}></path>`
+	}
 
 	for (const { x, y, xo, yo, t, a } of l.groups) {
 		O.x = xo
@@ -233,50 +261,34 @@ export function renderSVG(c: Chem, opt: SvgRendererOption = {}): SvgResult {
 			if (w > 0) w += B.w / 2
 			if (B.s !== '?' && B.s !== '.') {
 				if (B.a !== 'base') attr.push(`box-align="${B.a}"`)
-				svg += `<text x="${X(x + w * 2 * hw)}" y="${Y(y)}" ${attr.join(' ')}>`
+				svg += `<text x="${X(x + w * 2 * hw)}" y="${Y(y)}"${A(attr)}>`
 						+ encodeXML(B.s)
 					+ `</text>`
 			}
-			if (displayTextBox) // Note: text box
-				svg += `<rect `
-					+ `x="${X(x + (w * 2 - B.w) * hw)}" `
-					+ `y="${Y(
-						B.a === 'base' ? y - hh : 
-						B.a === 'sub' ? y - hh / 4 :
-						y - hh * 3 / 2
-					)}" `
-					+ `width="${hw * B.w * 2 || 1}" height="${hh * 2}" `
-					+ `stroke="red" fill="transparent"`
-				+ `></rect>`
+			if (displayTextBox) {
+				if (B.s === '.') {
+					ln(x - 3, y - 3, x + 3, y + 3, [ `debug=""` ])
+					ln(x - 3, y + 3, x + 3, y - 3, [ `debug=""` ])
+				}
+				else {
+					svg += `<rect `
+						+ `x="${X(x + (w * 2 - B.w) * hw)}" `
+						+ `y="${Y(
+							B.a === 'base' ? y - hh : 
+							B.a === 'sub' ? y - hh / 4 :
+							y - hh * 3 / 2
+						)}" `
+						+ `width="${hw * B.w * 2}" height="${hh * 2}" `
+						+ `debug=""`
+					+ `></rect>`
+				}
+			}
 
 			w += B.w / 2
 		}
 	}
 
 	if (displayBonds) {
-		const ln = (
-			x1: number, y1: number, x2: number, y2: number, attr: string[],
-			to: boolean = false, from: boolean = false
-		) => {
-			svg += `<line x1="${X(x1)}" y1="${Y(y1)}" x2="${X(x2)}" y2="${Y(y2)}" ${attr.join(' ')}></line>`
-			if (to) arrow(x1, y1, x2, y2, attr)
-			if (from) arrow(x2, y2, x1, y1, attr)
-		}
-
-		const arrow = (x1: number, y1: number, x2: number, y2: number, attr: string[]) => {
-			const wh = 4
-			const xwh = wh * (x2 - x1) / u
-			const ywh = wh * (y2 - y1) / u
-			const wv = 1.5
-			const xwv = wv * (y2 - y1) / u
-			const ywv = wv * (x2 - x1) / u
-			svg += `<path d="`
-				+ `M ${X(x2)} ${Y(y2)}`
-				+ `L ${X(x2 - xwh + xwv)} ${Y(y2 - ywh - ywv)}`
-				+ `L ${X(x2 - xwh - xwv)} ${Y(y2 - ywh + ywv)} Z`
-			+ `" ${[...attr, `tofill=""`].join(' ')}></path>`
-		}
-
 		for (let {
 			x1, y1, x2, y2, xo, yo, c, a
 		} of l.bonds) {
@@ -297,7 +309,7 @@ export function renderSVG(c: Chem, opt: SvgRendererOption = {}): SvgResult {
 				svg += `<path d="`
 					+ `M ${X(x1)} ${Y(y1)} `
 					+ `C ${X(x3 + xw)} ${Y(y3 - yw)} ${X(x4 - xw)} ${Y(y4 + yw)} ${X(x2)} ${Y(y2)}`
-				+ `" ${attr.join(' ')}></path>`
+				+ `"${A(attr)}></path>`
 			}
 			else if (c === 1) {
 				ln(x1, y1, x2, y2, attr, !! a.to, !! a.from)

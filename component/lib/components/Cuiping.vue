@@ -108,6 +108,7 @@ watch([ canvas, props ], async () => {
                 transform: `scale(${scale})`,
                 transformOrigin: 'left top'
             }"
+            :class="{ glowing: scale !== 1 }"
         >
             <div
                 v-if="useImage"
@@ -125,7 +126,7 @@ watch([ canvas, props ], async () => {
         <p v-else>...</p>
         <div class="toolbar-outer">
             <div class="toolbar">
-                <div class="toolbar-inner">
+                <div class="toolbar-inner glowing">
                     <button @click="zoomOut">+</button>
                     <button @click="scale = 1">{{ scale * 100 }}%</button>
                     <button @click="zoomIn">-</button>
@@ -140,6 +141,13 @@ watch([ canvas, props ], async () => {
 </template>
 
 <style scoped>
+.container.glowing {
+    box-shadow: 0 0 4px 0 #eee;
+}
+.toolbar-inner.glowing {
+    box-shadow: 0 0 8px 0 #aaa;
+}
+
 .error {
     color: red;
 }
@@ -147,7 +155,7 @@ watch([ canvas, props ], async () => {
 .toolbar-outer {
     position: absolute;
     z-index: 1;
-    top: -8px;
+    top: -14px;
     left: 100%;
     height: 100%;
     width: min-content;
@@ -168,7 +176,6 @@ watch([ canvas, props ], async () => {
     margin: 0 16px;
     background-color: white;
     border-radius: 1em;
-    box-shadow: 0 0 8px 0 #aaa;
     overflow: hidden;
     height: 2em;
 }
