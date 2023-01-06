@@ -499,9 +499,11 @@ export class ChemParser extends Parser<Formula> {
 	private doParseBondType({
 		isPrefix = false,
 		parsedBonds = [],
+		dirFrom: df
 	}: {
 		isPrefix?: boolean,
 		parsedBonds?: Bond[],
+		dirFrom: BondDir | null
 	}): BondType {
 		let c: BondCount = 1
 		const dirs: BondDir[] = []
@@ -516,10 +518,16 @@ export class ChemParser extends Parser<Formula> {
 		const noImplictDir = ! inCharset(this.current, BondDirCharset)
 		const auto0Deg = noImplictDir && (c > 1 || preModifiers.zeroWidth)
 		const auto180Deg = noImplictDir && preModifiers.add180Deg
+		const auto30Deg = noImplictDir && preModifiers.use30Deg
 
-		while (inCharset(this.current, BondDirCharset) || auto0Deg || auto180Deg) {
+		while (inCharset(this.current, BondDirCharset) || auto0Deg || auto30Deg || auto180Deg) {
 			const ds = []
 			if (auto0Deg || auto180Deg) ds.push(0)
+			else if (auto30Deg) {
+				if (df === 30 || df === null) ds.push(330)
+				else if (df === 330) ds.push(30)
+				else throw Error(`Cannot infer the direction of '~' (from direction ${df}deg)`)
+			}
 			else ds.push(...BondDirTable[this.current as keyof typeof BondDirTable])
 
 			for (let d of ds) {
@@ -537,7 +545,7 @@ export class ChemParser extends Parser<Formula> {
 				dirs.push(d)
 			}
 
-			if (auto0Deg || auto180Deg) break
+			if (auto0Deg || auto30Deg || auto180Deg) break
 			this.index ++
 		}
 		if (! dirs.length) {
@@ -559,25 +567,27 @@ export class ChemParser extends Parser<Formula> {
 	private doParseBond({
 		requirePrefix = false,
 		parsedBonds = [],
-		self
+		self,
+		dirFrom
 	}: {
 		requirePrefix?: boolean,
 		parsedBonds?: Bond[],
 		self: Struct
+		dirFrom: BondDir | null
 	}): Bond | undefined {
 		let bond: Bond
 		if (! inCharset(this.current, BondCharset)) {
 			if (requirePrefix) throw this.expect('prefix-styled bond')
 			if (inCharset(this.current, GroupCharset)) {
-				const n = this.doParseStruct()
-				const { c, d, a } = this.doParseBondType({ isPrefix: false, parsedBonds })
+				const n = this.doParseStruct({ dirFrom: null })
+				const { c, d, a } = this.doParseBondType({ isPrefix: false, parsedBonds, dirFrom })
 				bond = { c, d, a, i: 0, n }
 			}
 			else throw this.expect('bond')
 		}
 		else {
-			const { c, d, a } = this.doParseBondType({ isPrefix: true, parsedBonds })
-			const n = this.doParseStruct()
+			const { c, d, a } = this.doParseBondType({ isPrefix: true, parsedBonds, dirFrom })
+			const n = this.doParseStruct({ dirFrom: d[0] }) // Note: use the first direction
 			bond = { c, d, a, i: 0, n }
 		}
 
@@ -592,8 +602,10 @@ export class ChemParser extends Parser<Formula> {
 	}
 
 	private doParseBonds({
+		dirFrom,
 		self
 	} : {
+		dirFrom: BondDir | null
 		self: Struct
 	}): Bond[] {
 		const bonds: Bond[] = []
@@ -601,7 +613,7 @@ export class ChemParser extends Parser<Formula> {
 		if (this.current === '[') {
 			this.index ++
 			while (true) {
-				bonds.push(this.doParseBond({ parsedBonds: bonds, self })!)
+				bonds.push(this.doParseBond({ parsedBonds: bonds, self, dirFrom })!)
 				if (this.current as string === ',') this.index ++
 				if (this.current as string === ']') {
 					this.index ++
@@ -611,7 +623,7 @@ export class ChemParser extends Parser<Formula> {
 		}
 		if (inCharset(this.current, BondCharset)) {
 			const bond = this
-				.try(() => this.doParseBond({ parsedBonds: bonds, self }))
+				.try(() => this.doParseBond({ parsedBonds: bonds, self, dirFrom }))
 				.except('atom group', null)
 			if (bond) bonds.push(bond)
 		}
@@ -683,7 +695,11 @@ export class ChemParser extends Parser<Formula> {
 		}
 	}
 
-	protected doParseStruct(): Struct {
+	protected doParseStruct({
+		dirFrom = null
+	}: {
+		dirFrom: BondDir | null
+	}): Struct {
 		const head = this.doParseStructHead()
 		const struct: Struct = {
 			...head,
@@ -691,7 +707,7 @@ export class ChemParser extends Parser<Formula> {
 			parents: [],
 			treeId: this.treeId
 		}
-		struct.children = this.doParseBonds({ self: struct })
+		struct.children = this.doParseBonds({ self: struct, dirFrom })
 		if (Debug.on) struct.toString = () => `[${head.S}] ` + (
 			head.S === 'chem' ? head.node.t.B.map(x => x.s).join('') :
 			head.S === 'ref' ? '&' + head.node.names.join(',') :
@@ -710,7 +726,7 @@ export class ChemParser extends Parser<Formula> {
 	protected doParse(): Formula {
 		const structs: Struct[] = []
 		while (true) {
-			structs.push(this.doParseStruct())
+			structs.push(this.doParseStruct({ dirFrom: null }))
 			if (this.current === ';') {
 				this.index ++
 				if (! this.current) break // Note: allow dangling semicolon
