@@ -58,25 +58,25 @@ export function locate(chem: Chem, {
 			const xr = MathEx.cosd(b.d) > 0 ? w - cxo : - cxo
 			const yr = b.d < 180 ? + 1 : - 1
 
-			const k = yr / xr // Note: slope of the line from center to corner
-			const t = MathEx.tand(b.d) // Note: tangent of the bond angle
+			const kr = yr / xr // Note: slope of the line from center to corner
+			const k = MathEx.tand(b.d) // Note: tangent of the bond angle
 
-			const cd = c.g.t.B[0].s === '.' // Note: collasped
+			const { cd } = c.g.t.B[0] // Note: collasped
 
 			const dxo = cd
 				? 0
-				: hw * (Math.abs(t) > Math.abs(k)
-					? yr / t // Note: yr / dxo = tan d
+				: hw * (Math.abs(k) > Math.abs(kr)
+					? yr / k // Note: yr / dxo = tan d
 					: xr)
 
 			const dyo = cd
 				? 0
-				: hh * (Math.abs(t) > Math.abs(k)
+				: hh * (Math.abs(k) > Math.abs(kr)
 					? yr
-					: xr * t) // Note: dyo / xr = tan d
+					: xr * k) // Note: dyo / xr = tan d
 
 			const { t: T } = b.t.g
-			const Cd = T.B[0].s === '.' // Note: target collapsed
+			const { cd: Cd } = T.B[0] // Note: target collapsed
 
 			const L = b.a.length ?? 1
 			const Lu = L * u
@@ -259,14 +259,14 @@ export function renderSVG(c: Chem, opt: SvgRendererOption = {}): SvgResult {
 				attr.push(`bold=""`)
 
 			if (w > 0) w += B.w / 2
-			if (B.s !== '?' && B.s !== '.') {
+			if (! B.nd && ! B.cd) {
 				if (B.a !== 'base') attr.push(`box-align="${B.a}"`)
 				svg += `<text x="${X(x + w * 2 * hw)}" y="${Y(y)}"${A(attr)}>`
 						+ encodeXML(B.s)
 					+ `</text>`
 			}
 			if (displayTextBox) {
-				if (B.s === '.') {
+				if (B.cd) {
 					ln(x - 3, y - 3, x + 3, y + 3, [ `debug=""` ])
 					ln(x - 3, y + 3, x + 3, y - 3, [ `debug=""` ])
 				}

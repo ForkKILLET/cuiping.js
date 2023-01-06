@@ -96,7 +96,7 @@ export function combine(formula: Formula): Chem {
 				}
 				bond.n = {
 					S: 'chem',
-					node: { t: { B: [ { s: '?', w: 1, a: 'base' as const } ], w: 1 }, a: {} },
+					node: { t: { B: [ { s: '?', w: 1, a: 'base' as const, nd: true } ], w: 1 }, a: {} },
 					children: [],
 					parents: [],
 					treeId: bond.n.treeId

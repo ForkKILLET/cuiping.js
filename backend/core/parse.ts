@@ -72,7 +72,9 @@ export const GroupTypesetAlignTable = {
 export type GroupTypesetBox = {
 	s: string,
 	w: number,
-	a: GroupTypesetAlign
+	a: GroupTypesetAlign,
+	cd?: boolean // Note: collapsed
+	nd?: boolean // Note: not to display
 }
 export type GroupTypeset = {
 	B: GroupTypesetBox[],
@@ -397,15 +399,21 @@ export class ChemParser extends Parser<Formula> {
 		let r = '', s = ''
 
 		const boxes: GroupTypesetBox[] = []
-		let alignShort = false, alignLong = false
+		// Todo: refactor these states :(
+		let alignShort = false, alignLong = false, aligned = false
 		let align: GroupTypesetAlign = 'base'
 		let hasNonDigit = false
 
 		const eatChar = () => {
 			if (! s) return
-			let w = getWidth(s)
+			let w = getWidth(s), cd, nd
+			if (! aligned) {
+				if (s === '.') cd = true, w = 0
+				else if (s === '?') nd = true
+			}
+			else aligned = true
 			if (align !== 'base') w /= 2
-			boxes.push({ s, w, a: align })
+			boxes.push({ s, w, a: align, cd, nd })
 		}
 
 		while (
@@ -424,6 +432,7 @@ export class ChemParser extends Parser<Formula> {
 					this.index ++
 				}
 				else alignShort = true
+				aligned = true
 			}
 			else if (ch === '}' && alignLong) alignLong = false
 			else {
