@@ -139,7 +139,7 @@ export const getMonacoForCuiping = (monaco: typeof Monaco) => {
             { token: 'group.content.typeset', foreground: 'B9E260', fontStyle: 'italic' },
             { token: 'attrs', foreground: '62C169' },
             { token: 'attr.key', foreground: '64D99D', fontStyle: 'bold' },
-            { token: 'attr.colon', foreground: '5558D7' },
+            { token: 'attr.colon', foreground: '89E2B5' },
             { token: 'bonds.comma', foreground: 'B7ACf0' },
             { token: 'semicolon', foreground: 'B7ACf0' }
         ],
