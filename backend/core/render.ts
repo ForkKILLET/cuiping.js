@@ -245,7 +245,7 @@ export function renderSVG(c: Chem, opt: SvgRendererOption = {}): SvgResult {
 						B.a === 'sub' ? y - hh / 4 :
 						y - hh * 3 / 2
 					)}" `
-					+ `width="${hw * B.w * 2 || 1}" height="${hh * 2}"`
+					+ `width="${hw * B.w * 2 || 1}" height="${hh * 2}" `
 					+ `stroke="red" fill="transparent"`
 				+ `></rect>`
 
