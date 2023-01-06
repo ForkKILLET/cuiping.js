@@ -1,5 +1,5 @@
 import * as Monaco from 'monaco-editor'
-import { GroupAttrs, BondAttrs, Attr } from 'cuiping/core/parse'
+import { GroupAttrs, BondAttrs } from 'cuiping/core/parse'
 
 export const getMonacoForCuiping = (monaco: typeof Monaco) => {
     monaco.languages.register({ id: 'cuipingFormula' })
@@ -101,7 +101,7 @@ export const getMonacoForCuiping = (monaco: typeof Monaco) => {
             }
 
             if (before.match(/(?<![\^_`]({[^}]*)?)&\w*$/)) { // Note: complete ref
-                const refNames = [ ...all.matchAll(/(&|ref):(\w+)/g) ]
+                const refNames = [ ...all.matchAll(/(&|ref)\s*:\s*(\w+)/g) ]
                 range.startColumn --
                 return {
                     suggestions: refNames.map(res => ({
@@ -113,7 +113,7 @@ export const getMonacoForCuiping = (monaco: typeof Monaco) => {
                 }
             }
 
-            const res = before.match(/(.)\s*{([^}]*,)*[^}]+$/)
+            const res = before.match(/(.)\s*{\s*([^}]*,)*[^:}]+$/)
             if (res) {
                 if (res[1].match(/[\^_`]/)) return noSuggestions
                 if (res[1].match(/[+\-|\/\\*!~=#]/)) return {
