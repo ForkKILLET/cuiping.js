@@ -148,5 +148,8 @@ export const getMonacoForCuiping = (monaco: typeof Monaco) => {
         }
     })
 
+    if (MonacoEnvironment) MonacoEnvironment.getWorkerUrl = () => 'data:application/javascript;base64,'
+        + btoa(`console.log("Mocano, I DON'T NEED ANY WORKERS, YOU KNOW?")`)
+
     return monaco
 }
