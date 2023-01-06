@@ -531,12 +531,19 @@ export class ChemParser extends Parser<Formula> {
 
 		while (inCharset(this.current, BondDirCharset) || auto0Deg || auto30Deg || auto180Deg) {
 			const ds = []
-			if (auto0Deg || auto180Deg) ds.push(0)
-			else if (auto30Deg) {
-				if (df === 30 || df === null) ds.push(330)
-				else if (df === 330) ds.push(30)
-				else throw Error(`Cannot infer the direction of '~' (from direction ${df}deg)`)
+			if (auto30Deg) {
+				if (preModifiers.add180Deg) {
+					if (df === 150 || df === null) ds.push(30)
+					else if (df === 210) ds.push(330)
+				}
+				else {
+					if (df === 30 || df === null) ds.push(330)
+					else if (df === 330) ds.push(30)
+				}
+				if (! ds.length)
+					throw Error(`Cannot infer the direction of '${preModifiers.add180Deg ? '!' : ''}~' (from direction ${df} deg)`)
 			}
+			else if (auto0Deg || auto180Deg) ds.push(0)
 			else ds.push(...BondDirTable[this.current as keyof typeof BondDirTable])
 
 			for (let d of ds) {
