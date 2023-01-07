@@ -11,7 +11,7 @@ import { Conf, SchemasToValues, storageRef, storageReactive } from './conf';
 import examples from './examples'
 
 import * as originalMonaco from 'monaco-editor'
-import { getMonacoForCuiping } from 'cuiping-monaco'
+import { getMonacoForCuiping, cuipingMonacoEditorOptions } from 'cuiping-monaco'
 
 import { version as backVer } from 'cuiping/package.json'
 import { version as compVer } from 'cuiping-component/package.json'
@@ -121,10 +121,8 @@ watch(monacoContainer, () => {
         })
 
         monacoEditor = monaco.editor.create(monacoContainer.value, {
-            theme: 'cuipingFormulaDefaultTheme',
             value: molecule.value,
-            language: 'cuipingFormula',
-            automaticLayout: true
+            ...cuipingMonacoEditorOptions
         })
         monacoEditor.getModel()?.onDidChangeContent(() => {
             if (! updatingMolecule.value) molecule.value = monacoEditor.getValue()
@@ -395,7 +393,7 @@ button:hover {
     resize: both;
     overflow: hidden;
     margin: 1em auto;
-    padding: 1em;
+    padding: 2.5em 1em;
     text-align: left;
     background: white;
     border-radius: 1em 1em 0 1em;

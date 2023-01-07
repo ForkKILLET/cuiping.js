@@ -64,7 +64,8 @@ export const getMonacoForCuiping = (monaco: typeof Monaco, {
             { open: '{', close: '}' },
             { open: '[', close: ']' },
             { open: '(', close: ')' }
-        ]
+        ],
+        wordPattern: /&?\w+/
     })
 
     type CompletionList = Monaco.languages.CompletionList
@@ -77,6 +78,8 @@ export const getMonacoForCuiping = (monaco: typeof Monaco, {
             kind: CompletionItemKind.Field,
             range
         }))
+
+    const getRefNames = (all: string) => [ ...all.matchAll(/(&|ref)\s*:\s*(\w+)/g) ]
 
     monaco.languages.registerCompletionItemProvider('cuipingFormula', {
         triggerCharacters: [
@@ -107,7 +110,7 @@ export const getMonacoForCuiping = (monaco: typeof Monaco, {
             }
 
             if (before.match(/(?<![\^_`]({[^}]*)?)&\w*$/)) { // Note: complete ref
-                const refNames = [ ...all.matchAll(/(&|ref)\s*:\s*(\w+)/g) ]
+                const refNames = getRefNames(all)
                 range.startColumn --
                 return {
                     suggestions: refNames.map(res => ({
@@ -119,10 +122,10 @@ export const getMonacoForCuiping = (monaco: typeof Monaco, {
                 }
             }
 
-            const res = before.match(/(.)\s*{\s*([^}]*,)*[^:}]+$/)
-            if (res) {
-                if (res[1].match(/[\^_`]/)) return noSuggestions
-                if (res[1].match(/[+\-|\/\\*!~=#]/)) return {
+            const attrRes = before.match(/(.)\s*{\s*([^}]*,)*[^:}]+$/)
+            if (attrRes) {
+                if (attrRes[1].match(/[\^_`]/)) return noSuggestions
+                if (attrRes[1].match(/[+\-|\/\\*!~=#]/)) return {
                     suggestions: attrSuggestions(BondAttrs, range)
                 }
                 return {
@@ -131,6 +134,34 @@ export const getMonacoForCuiping = (monaco: typeof Monaco, {
             }
 
             return noSuggestions
+        }
+    })
+
+    monaco.languages.registerDefinitionProvider('cuipingFormula', {
+        provideDefinition: (model, position) => {
+            const before = model.getValueInRange({
+                startLineNumber: 1,
+                startColumn: 1,
+                endLineNumber: position.lineNumber,
+                endColumn: position.column + 1
+            })
+            const all = model.getValue()
+
+            const refRes = before.match(/(?<![\^_`]({[^}]*)?)(&\w*)$/)
+            const word = model.getWordAtPosition(position)?.word
+            if (refRes && word?.[0] ==='&') { // Note: go to definition of ref
+                const refNames = getRefNames(all)
+                const refNameNow = word.slice(1)
+                const refDef = refNames.find(res => res[2] === refNameNow)
+                if (! refDef) return null
+                const [ refDefPosition ] = model.findMatches(refDef[0], true, false, true, null, false)
+                return {
+                    uri: model.uri,
+                    range: refDefPosition.range
+                }
+            }
+
+            return null
         }
     })
 
@@ -177,4 +208,10 @@ export const getMonacoForCuiping = (monaco: typeof Monaco, {
         + btoa(`console.log("Mocano, I DON'T NEED ANY WORKERS, YOU KNOW?")`)
 
     return monaco
+}
+
+export const cuipingMonacoEditorOptions = {
+    theme: 'cuipingFormulaDefaultTheme',
+    language: 'cuipingFormula',
+    automaticLayout: true
 }
