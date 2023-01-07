@@ -1,9 +1,8 @@
-import { IncomingMessage } from 'http'
 import { Debug } from '../utils/debug.js'
 import { MathEx } from '../utils/math.js'
 import { getWidth } from '../utils/measure.js'
 import type { AllCharsInString, MaybeArray, TupleToUnion, ValueOf } from '../utils/types'
-import { inCharset } from '../utils/types'
+import { inCharset } from '../utils/types.js'
 
 export const SpaceCharset = ' \t\t\n'
 export const IdentifierCharset
@@ -25,6 +24,7 @@ export const BondCharset = BondCountCharset + BondDirCharset + BondModifiersChar
 
 export type Formula = {
 	structs: Struct[],
+	groups: Group[],
 	labels: Record<string, Struct | undefined>
 }
 
@@ -65,6 +65,8 @@ export type ChemDef = {}
 export type Group = {
 	t: GroupTypeset
 	a: AttrOfGroup
+	R: [number, number] // Note: range in the formula
+	i: number
 }
 export type GroupTypesetAlign = 'base' | 'sub' | 'sup'
 export const GroupTypesetAlignTable = {
@@ -91,7 +93,6 @@ export type Bond<H extends StructHead = StructHead> = {
 	d: BondDir[],
 	n: Struct<H, H, H>,
 	a: AttrOfBond,
-	i: number // Note: index of connected atom
 }
 export type BondType = { c: BondCount, d: BondDir[], a: AttrOfBond }
 export type BondModifiers = {
@@ -415,8 +416,9 @@ export class ChemParser extends Parser<Formula> {
 	
 	private doParseGroup(): Group {
 		let r = '', s = ''
-
+		let Rb: number = this.index, Re: number
 		const boxes: GroupTypesetBox[] = []
+
 		// Todo: refactor these states :(
 		let alignShort = false, alignLong = false, aligned = false
 		let align: GroupTypesetAlign = 'base'
@@ -479,6 +481,8 @@ export class ChemParser extends Parser<Formula> {
 		}
 
 		eatChar()
+		Re = this.index - 1
+
 		this.maybeSpace()
 
 		if (alignLong) throw Error(`Unclosed ${align}script in group typeset '${r}'`)
@@ -492,14 +496,17 @@ export class ChemParser extends Parser<Formula> {
 
 		Debug.D('group typeset: %s -> %o', r, t)
 
+		const R: [number, number] = [Rb, Re]
+		const i = this.groupId ++
 		let a
 		if (this.current === '{') {
 			a = this.doParseAttr(GroupAttrs)
-			a = a.validate({ group: { t, a: a.raw } })
+			a = a.validate({ group: { t, a: a.raw, R, i } })
 		}
 		else a = {}
 
-		const group = { t, a }
+		const group = { t, a, R, i }
+		this.groups.push(group)
 
 		return group
 	}
@@ -617,14 +624,14 @@ export class ChemParser extends Parser<Formula> {
 			if (inCharset(this.current, GroupCharset)) {
 				const n = this.doParseStruct({ dirFrom: null })
 				const { c, d, a } = this.doParseBondType({ isPrefix: false, parsedBonds, dirFrom })
-				bond = { c, d, a, i: 0, n }
+				bond = { c, d, a, n }
 			}
 			else throw this.expect('bond')
 		}
 		else {
 			const { c, d, a } = this.doParseBondType({ isPrefix: true, parsedBonds, dirFrom })
 			const n = this.doParseStruct({ dirFrom: d[0] }) // Note: use the first direction
-			bond = { c, d, a, i: 0, n }
+			bond = { c, d, a, n }
 		}
 		this.maybeSpace()
 
@@ -632,7 +639,6 @@ export class ChemParser extends Parser<Formula> {
 			c: bond.c,
 			d: bond.d.map(d => MathEx.stdAng(d + 180)),
 			a: bond.a,
-			i: 0,
 			n: self
 		})
 		return bond
@@ -691,6 +697,7 @@ export class ChemParser extends Parser<Formula> {
 	}
 
 	private labels: Record<string, Struct> = {}
+	private groups: Group[] = []
 
 	private doParseRef(): Ref {
 		this.index ++ // Note: skip '&'
@@ -763,6 +770,7 @@ export class ChemParser extends Parser<Formula> {
 	}
 
 	private treeId = 0
+	private groupId = 0
 
 	protected doParse(): Formula {
 		const structs: Struct[] = []
@@ -778,7 +786,7 @@ export class ChemParser extends Parser<Formula> {
 			else break
 		}
 		const formula = {
-			structs, labels: this.labels
+			structs, labels: this.labels, groups: this.groups
 		}
 		Debug.D('formula: %o', formula)
 		return formula

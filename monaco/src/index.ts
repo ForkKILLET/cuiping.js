@@ -1,7 +1,13 @@
 import * as Monaco from 'monaco-editor'
-import { GroupAttrs, BondAttrs } from 'cuiping/core/parse'
+import { GroupAttrs, BondAttrs, Formula } from 'cuiping/core/parse'
 
-export const getMonacoForCuiping = (monaco: typeof Monaco) => {
+export const getMonacoForCuiping = (monaco: typeof Monaco, {
+    getFormula,
+    markGroup
+}: {
+    getFormula?: () => Formula | undefined,
+    markGroup?: (groupId: number) => void
+}) => {
     monaco.languages.register({ id: 'cuipingFormula' })
 
     monaco.languages.setMonarchTokensProvider('cuipingFormula', {
@@ -145,6 +151,25 @@ export const getMonacoForCuiping = (monaco: typeof Monaco) => {
         ],
         colors: {
             'editor.foreground': '#876FFF'
+        }
+    })
+
+    if (getFormula && markGroup) monaco.editor.addEditorAction({
+        id: 'cuipingFormula.markGroupInOutput',
+        label: 'Toggle Group Mark',
+        keybindings: [
+            monaco.KeyMod.CtrlCmd | monaco.KeyCode.KeyM
+        ],
+        contextMenuGroupId: 'navigation',
+        run: (ed) => {
+            const model = ed.getModel()
+            const position = ed.getPosition()
+            const formula = getFormula()
+            if (model && position && formula) {
+                const offset = model.getOffsetAt(position)
+                const group = formula.groups.find(g => g.R[0] <= offset && offset <= g.R[1] + 1)
+                if (group) markGroup(group.i)
+            }
         }
     })
 

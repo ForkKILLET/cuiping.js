@@ -20,6 +20,7 @@ export type LayoutBond = {
 export type LayoutGroup = {
 	t: Group['t'],
 	a: Group['a'],
+	i: Group['i'],
 	x: number,
 	y: number,
 	xo: number,
@@ -246,7 +247,7 @@ export function renderSVG(c: Chem, opt: SvgRendererOption = {}): SvgResult {
 		+ `"${A([...attr, `tofill=""`])}></path>`
 	}
 
-	for (const { x, y, xo, yo, t, a } of l.groups) {
+	for (const { x, y, xo, yo, t, a, i } of l.groups) {
 		O.x = xo
 		O.y = yo
 
@@ -286,6 +287,11 @@ export function renderSVG(c: Chem, opt: SvgRendererOption = {}): SvgResult {
 
 			w += B.w / 2
 		}
+
+		svg += `<rect group-id="${i}" fill="none" `
+			+ `x="${X(x - t.B[0].w * hw)}" y="${Y(y - hh)}" `
+			+ `width="${hw * w * 2 + t.B[0].w * hw}" height="${hh * 2}"`
+		+ `></rect>`
 	}
 
 	if (displayBonds) {

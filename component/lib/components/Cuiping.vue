@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, ref, toRefs, watch } from 'vue'
+import { computed, ref, UnwrapRef, watch } from 'vue'
 import { render, SvgRendererOption } from 'cuiping'
 import { Canvg } from 'canvg'
 
@@ -81,9 +81,14 @@ function zoomOut() {
 
 const canvas = ref<HTMLCanvasElement>()
 const canvasDataUrl = ref<string>()
+const redrawCounter = ref(0)
 let canvg: Canvg
 
-watch([ canvas, props ], async () => {
+const redraw = () => {
+    redrawCounter.value ++
+}
+
+watch([ canvas, props, redrawCounter ], async () => {
     if (canvas.value && props.useImage && props.molecule && res.value.state === 'ok') {
         const svg = res.value.data.svg
             .replace(/width="([\d\.]+)"/, (_, w) => `width="${w * props.imageScale}"`)
@@ -94,6 +99,10 @@ watch([ canvas, props ], async () => {
         canvg.start()
         canvasDataUrl.value = canvas.value.toDataURL()
     }
+})
+
+defineExpose({
+    res, redraw
 })
 </script>
 
@@ -120,7 +129,7 @@ watch([ canvas, props ], async () => {
                 <canvas ref="canvas"></canvas>
                 <img :src="canvasDataUrl" />
             </div>
-            <div v-else v-html="res.data.svg"></div>
+            <div v-else v-html="res.data.svg" :key="redrawCounter"></div>
         </div>
         <p v-else-if="res.state === 'error'">{{ res.errMsg }}</p>
         <p v-else>...</p>

@@ -90,6 +90,8 @@ const buildTime = import.meta.env.VITE_BUILD_TIME ?? 'now'
 const buildEnv = import.meta.env.VITE_BUILD_ENV ?? 'local'
 const [ lastCommitHash, lastCommitMessage ] = import.meta.env.VITE_LAST_COMMIT?.split(/(?<! .*) /) ?? []
 
+const mainCuiping = ref<InstanceType<typeof Cuiping>>()
+
 const monacoContainer = ref<HTMLDivElement>()
 
 let monaco: typeof originalMonaco
@@ -106,7 +108,18 @@ function updateMolecule(value: string) {
 
 watch(monacoContainer, () => {
     if (monacoContainer.value && ! updatingMolecule.value) {
-        monaco = getMonacoForCuiping(originalMonaco)
+        monaco = getMonacoForCuiping(originalMonaco, {
+            getFormula: () => mainCuiping.value?.res.data?.formula,
+            markGroup: (id: number) => {
+                const data = mainCuiping.value!.res.data!
+                data.svg = data.svg.replace(
+                    RegExp(`<rect group-id="${id}" fill="(.+?)"`, 'g'),
+                    (_, fill) => `<rect group-id="${id}" fill="${fill === 'none' ? '#ff000066' : 'none'}"`
+                )
+                mainCuiping.value!.redraw()
+            }
+        })
+
         monacoEditor = monaco.editor.create(monacoContainer.value, {
             theme: 'cuipingFormulaDefaultTheme',
             value: molecule.value,
@@ -154,8 +167,10 @@ watch(monacoContainer, () => {
             })
         "></p>
         <Cuiping
+            v-bind="confComp" 
+            ref="mainCuiping"
             :molecule="molecule"
-            v-bind="confComp" :render-options="confRender"
+            :render-options="confRender"
         />
 
         <div class="confs" :class="{ folden: confFolden }">

@@ -1,6 +1,6 @@
-import { ChemParser } from './parse.js'
+import { ChemParser, Formula } from './parse.js'
 import { combine } from './postproc.js'
-import { renderSVG, SvgRendererOption } from './render.js'
+import { renderSVG, SvgRendererOption, SvgResult } from './render.js'
 
 export {
     GroupAttrs as Attributes,
@@ -46,14 +46,16 @@ export function render(molecule: string, options: {
     onError?: (err: Error) => void,
     renderer: 'svg',
     rendererOptions: SvgRendererOption
-}) {
+}): (SvgResult & { formula: Formula }) | undefined {
     try {
         const parser = new ChemParser(molecule)
         const formula = parser.parse()
         const chem = combine(formula)
-        if (options.renderer === 'svg') {
-            return renderSVG(chem, options.rendererOptions)
+        if (options.renderer === 'svg') return {
+            ...renderSVG(chem, options.rendererOptions),
+            formula
         }
+        else throw Error(`Unknown renderer '${options.renderer}'`)
     }
     catch (error) {
         options.onError?.(error as Error)
