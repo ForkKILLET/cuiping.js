@@ -32,7 +32,7 @@ export type {
 export {
     getViewport,
     locate,
-    renderSVG,
+    renderSVG
 } from './render.js'
 
 export type {
@@ -43,8 +43,8 @@ export type {
 } from './render.js'
 
 export function render(molecule: string, options: {
-    onError?: (err: Error) => void,
-    renderer: 'svg',
+    onError?: (err: Error) => void
+    renderer: 'svg'
     rendererOptions: SvgRendererOption
 }): (SvgResult & { formula: Formula }) | undefined {
     try {
@@ -55,7 +55,6 @@ export function render(molecule: string, options: {
             ...renderSVG(chem, options.rendererOptions),
             formula
         }
-        else throw Error(`Unknown renderer '${options.renderer}'`)
     }
     catch (error) {
         options.onError?.(error as Error)

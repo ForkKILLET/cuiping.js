@@ -4,8 +4,8 @@ import Conf from './Conf.vue'
 export type Schema = {
     ty: 'boolean'
 } | {
-    ty: 'number',
-    min?: number,
+    ty: 'number'
+    min?: number
     max?: number
 } | {
     ty: 'color'
@@ -15,9 +15,9 @@ export type Schemas = Record<string, Schema>
 
 export type SchemaToValue<S extends Schema>
     = S['ty'] extends 'boolean' ? boolean
-    : S['ty'] extends 'color' ? string
-    : S['ty'] extends 'number' ? number
-    : never
+        : S['ty'] extends 'color' ? string
+            : S['ty'] extends 'number' ? number
+                : never
 
 export type SchemasToValues<SS extends Schemas> = {
     [K in keyof SS]: SchemaToValue<SS[K]>
@@ -45,7 +45,6 @@ export const storageReactive = <T extends object>(name: string, def: T) => {
     let r: T
 
     name = 'cuiping' + name.replace(/^[a-z]/, s => s.toUpperCase())
-
 
     const saved = localStorage.getItem(name)
     if (saved) r = reactive(JSON.parse(saved))

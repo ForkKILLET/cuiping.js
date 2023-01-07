@@ -6,16 +6,16 @@ import { inCharset } from '../utils/types.js'
 
 export const SpaceCharset = ' \t\t\n'
 export const IdentifierCharset
-	= 'abcdefghijklmnopqrstuvwxyz'
-	+ 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'
-	+ '0123456789'
+    = 'abcdefghijklmnopqrstuvwxyz'
+    + 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'
+    + '0123456789'
 export const RefNameCharset = IdentifierCharset + '.,'
 export const GroupCharset
-	= IdentifierCharset
-	+ '^_`'
-	+ '()'
-	+ '?' // Note: willcard
-	+ '.' // Note: collpased carbonA
+    = IdentifierCharset
+    + '^_`'
+    + '()'
+    + '?' // Note: willcard
+    + '.' // Note: collpased carbonA
 export const AttrEndCharset = ',}'
 export const BondCountCharset = '=#'
 export const BondDirCharset = '-|/\\+'
@@ -23,772 +23,774 @@ export const BondModifiersCharset = '*!~'
 export const BondCharset = BondCountCharset + BondDirCharset + BondModifiersCharset
 
 export type Formula = {
-	structs: Struct[],
-	groups: Group[],
-	labels: Record<string, Struct | undefined>
+    structs: Struct[]
+    groups: Group[]
+    labels: Record<string, Struct | undefined>
 }
 
 export type StructHead = ChemStructHead | RefStructHead | AttrStructHead
 export type Struct<
-	H extends StructHead = StructHead,
-	C extends StructHead = StructHead,
-	P extends StructHead = StructHead
+    H extends StructHead = StructHead,
+    C extends StructHead = StructHead,
+    P extends StructHead = StructHead
 > = H & {
-	children: Bond<C>[],
-	parents: Bond<P>[],
-	treeId: number,
-	[key: `${string}Visited`]: boolean | undefined
+    children: Bond<C>[]
+    parents: Bond<P>[]
+    treeId: number
+    [key: `${string}Visited`]: boolean | undefined
 }
 export type ChemStructHead = {
-	S: 'chem',
-	node: Group
+    S: 'chem'
+    node: Group
 }
 export type RefStructHead = {
-	S: 'ref',
-	node: Ref
+    S: 'ref'
+    node: Ref
 }
 export type AttrStructHead = {
-	S: 'attr',
-	node: AttrCall
+    S: 'attr'
+    node: AttrCall
 }
 
 export type Ref = {
-	names: string[]
+    names: string[]
 }
 
 export type AttrCall = {
-	d: AttrStructDef,
-	a: Attr<any>
+    d: AttrStructDef
+    a: Attr<any>
 }
 export type ChemDef = {}
 
 export type Group = {
-	t: GroupTypeset
-	a: AttrOfGroup
-	R: [number, number] // Note: range in the formula
-	i: number
+    t: GroupTypeset
+    a: AttrOfGroup
+    R: [number, number] // Note: range in the formula
+    i: number
 }
 export type GroupTypesetAlign = 'base' | 'sub' | 'sup'
 export const GroupTypesetAlignTable = {
-	'^': 'sup',
-	'_': 'sub',
-	'`': 'base'
+    '^': 'sup',
+    '_': 'sub',
+    '`': 'base'
 } as const
 export type GroupTypesetBox = {
-	s: string,
-	w: number,
-	a: GroupTypesetAlign,
-	cd?: boolean // Note: collapsed
-	nd?: boolean // Note: not to display
+    s: string
+    w: number
+    a: GroupTypesetAlign
+    cd?: boolean // Note: collapsed
+    nd?: boolean // Note: not to display
 }
 export type GroupTypeset = {
-	B: GroupTypesetBox[],
-	w: number
+    B: GroupTypesetBox[]
+    w: number
 }
 
-export type BondCount = 1 | 2 | 3 
+export type BondCount = 1 | 2 | 3
 export type BondDir = number
 export type Bond<H extends StructHead = StructHead> = {
-	c: BondCount,
-	d: BondDir[],
-	n: Struct<H, H, H>,
-	a: AttrOfBond,
+    c: BondCount
+    d: BondDir[]
+    n: Struct<H, H, H>
+    a: AttrOfBond
 }
 export type BondType = { c: BondCount, d: BondDir[], a: AttrOfBond }
 export type BondModifiers = {
-	zeroWidth?: boolean,
-	add180Deg?: boolean,
-	use30Deg?: boolean
+    zeroWidth?: boolean
+    add180Deg?: boolean
+    use30Deg?: boolean
 }
 
-export const BondCountTable: Record<
-	AllCharsInString<typeof BondCountCharset>, BondCount
-> = {
-	'=': 2,
-	'#': 3
+export const BondCountTable: Record<AllCharsInString<typeof BondCountCharset>, BondCount> = {
+    '=': 2,
+    '#': 3
 }
 export const BondDirTable = {
-	'-': [ 0 ],
-	// Note: the y-axis of SVG is top-to-bottom
-	'/': [ 300 ],
-	'|': [ 270 ],
-	'\\': [ 60 ],
-	'+': [ 0, 90, 180, 270 ]
+    '-': [ 0 ],
+    // Note: the y-axis of SVG is top-to-bottom
+    '/': [ 300 ],
+    '|': [ 270 ],
+    '\\': [ 60 ],
+    '+': [ 0, 90, 180, 270 ]
 }
 
-export const BondModifiersTable: Record<
-	AllCharsInString<typeof BondModifiersCharset>, keyof BondModifiers
-> = {
-	'*': 'zeroWidth',
-	'!': 'add180Deg',
-	'~': 'use30Deg'
+export const BondModifiersTable: Record<AllCharsInString<typeof BondModifiersCharset>, keyof BondModifiers> = {
+    '*': 'zeroWidth',
+    '!': 'add180Deg',
+    '~': 'use30Deg'
 }
 
 export const GroupAttrs = {
-	color: { type: 'string' },
-	C: 'color',
-	bold: { type: 'boolean' },
-	B: 'bold',
-	ref: { type: 'string' },
-	'&': 'ref'
+    'color': { type: 'string' },
+    'C': 'color',
+    'bold': { type: 'boolean' },
+    'B': 'bold',
+    'ref': { type: 'string' },
+    '&': 'ref'
 } as const
-const coordinateBondValidator: AttrValidator = ((attr, { bondType }) => {
-	const a = attr as AttrOfBond
-	const cc = (a.from ?? a.to) as number
-	const { c } = bondType!
-	if (cc > c)
-		throw Error(`Coordinated bonds (${cc}) more than total bonds (${c}).`)
-})
+const coordinateBondValidator: AttrValidator = (attr, { bondType }) => {
+    const a = attr as AttrOfBond
+    const cc = (a.from ?? a.to) as number
+    const { c } = bondType!
+    if (cc > c)
+        throw Error(`Coordinated bonds (${cc}) more than total bonds (${c}).`)
+}
 export const BondAttrs = {
-	color: { type: 'string' },
-	C: 'color',
-	highEnergy: { type: 'boolean' },
-	HE: 'highEnergy',
-	'~': 'highEnergy',
-	from: [
-		{ type: 'boolean' },
-		{
-			type: 'integer', min: 1, max: 3,
-			validate: coordinateBondValidator
-		}
-	],
-	'<': 'from',
-	to: [
-		{ type: 'boolean' },
-		{
-			type: 'integer', min: 1, max: 3,
-			validate: coordinateBondValidator
-		}
-	],
-	'>': 'to',
-	length: { type: 'float', min: 0 },
-	L: 'length'
+    'color': { type: 'string' },
+    'C': 'color',
+    'highEnergy': { type: 'boolean' },
+    'HE': 'highEnergy',
+    '~': 'highEnergy',
+    'from': [
+        { type: 'boolean' },
+        {
+            type: 'integer', min: 1, max: 3,
+            validate: coordinateBondValidator
+        }
+    ],
+    '<': 'from',
+    'to': [
+        { type: 'boolean' },
+        {
+            type: 'integer', min: 1, max: 3,
+            validate: coordinateBondValidator
+        }
+    ],
+    '>': 'to',
+    'length': { type: 'float', min: 0 },
+    'L': 'length'
 } as const
 export type AttrOfGroup = Attr<typeof GroupAttrs>
 export type AttrOfBond = Attr<typeof BondAttrs>
 
 export type AttrOne<R extends AttrSchemaRule> =
-	R extends { type: 'string' } ? string :
-	R extends { type: 'boolean' } ? boolean :
-	R extends { type: 'integer' } ? number :
-	R extends { type: 'float' } ? number :
-	never
+    R extends { type: 'string' } ? string :
+        R extends { type: 'boolean' } ? boolean :
+            R extends { type: 'integer' } ? number :
+                R extends { type: 'float' } ? number :
+                    never
 export type AttrMany<S extends readonly AttrSchemaRule[]> =
-	TupleToUnion<{ 
-		[L in keyof S]: S[L] extends AttrSchemaRule
-			? AttrOne<S[L]>
-			: never
-	}>
+    TupleToUnion<{
+        [L in keyof S]: S[L] extends AttrSchemaRule
+            ? AttrOne<S[L]>
+            : never
+    }>
 export type AttrMaybeOne<S extends Readonly<ValueOf<AttrSchema>>> =
-	S extends readonly AttrSchemaRule[] ? TupleToUnion<{ 
-		[L in keyof S]: S[L] extends AttrSchemaRule
-			? AttrOne<S[L]>
-			: never
-	}> :
-	S extends AttrSchemaRule ? AttrOne<S> :
-	never
+    S extends readonly AttrSchemaRule[] ? TupleToUnion<{
+        [L in keyof S]: S[L] extends AttrSchemaRule
+            ? AttrOne<S[L]>
+            : never
+    }> :
+        S extends AttrSchemaRule ? AttrOne<S> :
+            never
 export type Attr<S extends AttrSchema> = {
-	-readonly [K in keyof S]?:
-		S[K] extends keyof S
-			? S[S[K]] extends MaybeArray<AttrSchemaRule>
-				? AttrMaybeOne<S[S[K]]>
-				: never
-			: S[K] extends Readonly<MaybeArray<AttrSchemaRule>>
-				? AttrMaybeOne<S[K]>
-				: never
+    -readonly [K in keyof S]?:
+    S[K] extends keyof S
+        ? S[S[K]] extends MaybeArray<AttrSchemaRule>
+            ? AttrMaybeOne<S[S[K]]>
+            : never
+        : S[K] extends Readonly<MaybeArray<AttrSchemaRule>>
+            ? AttrMaybeOne<S[K]>
+            : never
 }
 
 export type AttrValidatorParams = {
-	group?: Group,
-	bondType?: BondType
+    group?: Group
+    bondType?: BondType
 }
 export type AttrValidator =
-	((raw: Attr<any>, params: AttrValidatorParams) => void)
+    ((raw: Attr<any>, params: AttrValidatorParams) => void)
 export type AttrSchemaRule = Readonly<({
-	type: 'boolean'
+    type: 'boolean'
 } | {
-	type: 'integer',
-	min?: number,
-	max?: number
+    type: 'integer'
+    min?: number
+    max?: number
 } | {
-	type: 'float',
-	min?: number,
-	max?: number
+    type: 'float'
+    min?: number
+    max?: number
 } | {
-	type: 'string'
+    type: 'string'
 }) & {
-	validate?: AttrValidator
+    validate?: AttrValidator
 }>
 export type AttrSchema = Record<string, string | Readonly<MaybeArray<AttrSchemaRule>>>
 
 export type AttrStructDef = {
-	type: 'chem',
-	attr: AttrSchema,
-	chem: ChemDef
+    type: 'chem'
+    attr: AttrSchema
+    chem: ChemDef
 } | {
-	type: 'void',
-	attr: AttrSchema
+    type: 'void'
+    attr: AttrSchema
 }
 
 export type AttrStructDefs = Record<string, AttrStructDef>
 
 const isAttribute = (k: string, attrSchema: AttrSchema): k is keyof typeof attrSchema => {
-	return k in attrSchema
+    return k in attrSchema
 }
 
 export type AttrToValidate<T extends AttrSchema> = {
-	raw: Attr<T>,
-	validate: (params: AttrValidatorParams) => Attr<T>
+    raw: Attr<T>
+    validate: (params: AttrValidatorParams) => Attr<T>
 }
 
 export abstract class Parser<T> {
-	constructor(protected str: string) {}
+    constructor(protected str: string) {}
 
-	protected expect(expect: string, got?: string) {
-		return Error(`Expecting ${expect}, but got ${
-			got ?? (this.current
-				? `'${this.current}'`
-				: 'end of input'
-			)
-		}.`)
-	}
+    protected expect(expect: string, got?: string) {
+        return Error(`Expecting ${expect}, but got ${
+            got ?? (this.current
+                ? `'${this.current}'`
+                : 'end of input'
+            )
+        }.`)
+    }
 
-	private used = false
+    private used = false
 
-	protected index = 0
-	protected get current(): string {
-		return this.str[this.index]
-	}
-	protected get after(): string {
-		return this.str.slice(this.index + 1)
-	}
+    protected index = 0
+    protected get current(): string {
+        return this.str[this.index]
+    }
 
-	getStr(): string {
-		return this.str
-	}
+    protected get after(): string {
+        return this.str.slice(this.index + 1)
+    }
 
-	parse(): T | never {
-		if (this.used) throw Error('Parser is already used.')
-		this.used = true
-		const result = this.doParse()
-		if (this.index !== this.str.length)
-			throw Error(`Unexcepted trailing characters '${this.current + this.after}'`)
-		return result
-	}
+    getStr(): string {
+        return this.str
+    }
 
-	protected try<R>(fn: () => R) {
-		const indexNow = this.index
-		let res: R, err: Error | undefined
-		try {
-			res = fn()
-		}
-		catch (e) {
-			err = e as Error
-		}
-		return {
-			except: <D>(expect: string, or: D): R | D => {
-				if (! err) return res
-				if (err.message.startsWith(`Expecting ${expect}`)) {
-					this.index = indexNow
-					return or
-				}
-				throw err
-			},
-			catch: <D>(or: D): R | D => {
-				if (! err) return res
-				this.index = indexNow
-				return or
-			}
-		}
-	}
+    parse(): T | never {
+        if (this.used) throw Error('Parser is already used.')
+        this.used = true
+        const result = this.doParse()
+        if (this.index !== this.str.length)
+            throw Error(`Unexcepted trailing characters '${this.current + this.after}'`)
+        return result
+    }
 
-	protected maybeSpace() {
-		while (inCharset(this.current, SpaceCharset)) this.index ++
-	}
+    protected try<R>(fn: () => R) {
+        const indexNow = this.index
+        let res: R, err: Error | undefined
+        try {
+            res = fn()
+        }
+        catch (e) {
+            err = e as Error
+        }
+        return {
+            except: <D>(expect: string, or: D): R | D => {
+                if (! err) return res
+                if (err.message.startsWith(`Expecting ${expect}`)) {
+                    this.index = indexNow
+                    return or
+                }
+                throw err
+            },
+            catch: <D>(or: D): R | D => {
+                if (! err) return res
+                this.index = indexNow
+                return or
+            }
+        }
+    }
 
-	protected abstract doParse(options?: any): T
+    protected maybeSpace() {
+        while (inCharset(this.current, SpaceCharset)) this.index ++
+    }
+
+    protected abstract doParse(options?: any): T
 }
 
 export class ChemParser extends Parser<Formula> {
-	constructor(str: string, private defs: AttrStructDefs = {}) {
-		super(str)
-	}
+    constructor(str: string, private readonly defs: AttrStructDefs = {}) {
+        super(str)
+    }
 
-	private doParseAttr<T extends AttrSchema>(attrSchema: T): AttrToValidate<T> {
-		this.index ++ // Note: skip '{'
-		this.maybeSpace()
+    private doParseAttr<T extends AttrSchema>(attrSchema: T): AttrToValidate<T> {
+        this.index ++ // Note: skip '{'
+        this.maybeSpace()
 
-		let vf: AttrValidator
+        let vf: AttrValidator
 
-		const a: Record<string, string | boolean> = {}
-		let k = ''
-		let readingValue = false
-		attr: while (this.current) {
-			if (inCharset(this.current, SpaceCharset)) {
-				this.maybeSpace()
-				if (readingValue && ! inCharset(this.current, AttrEndCharset))
-					throw Error('Attr value mustn\'t contain white spaces.')
-			}
-			switch (this.current as string) {
-				case '}':
-					if (! readingValue) if (k) a[k] = true
-					break attr
-				case ':':
-					this.index ++
-					this.maybeSpace()
-					readingValue = true
-					a[k] = ''
-					break
-				case ',':
-					this.index ++
-					this.maybeSpace()
-					if (! readingValue) if (k) a[k] = true
-					else throw this.expect('Attribute key')
-					k = ''
-					readingValue = false
-					break
-				default:
-					if (readingValue) a[k] += this.current
-					else k += this.current
-					this.index ++
-			}
-		}
-		if (! this.current) throw this.expect(`delimiter '}' of attributes`)
-		this.index ++
-		this.maybeSpace()
+        const a: Record<string, string | boolean> = {}
+        let k = ''
+        let readingValue = false
+        attr: while (this.current) {
+            if (inCharset(this.current, SpaceCharset)) {
+                this.maybeSpace()
+                if (readingValue && ! inCharset(this.current, AttrEndCharset))
+                    throw Error('Attr value mustn\'t contain white spaces.')
+            }
+            switch (this.current) {
+                case '}':
+                    if (! readingValue) if (k) a[k] = true
+                    break attr
+                case ':':
+                    this.index ++
+                    this.maybeSpace()
+                    readingValue = true
+                    a[k] = ''
+                    break
+                case ',':
+                    this.index ++
+                    this.maybeSpace()
+                    if (! readingValue) if (k) a[k] = true
+                    else throw this.expect('Attribute key')
+                    k = ''
+                    readingValue = false
+                    break
+                default:
+                    if (readingValue) a[k] += this.current
+                    else k += this.current
+                    this.index ++
+            }
+        }
+        if (! this.current) throw this.expect('delimiter \'}\' of attributes')
+        this.index ++
+        this.maybeSpace()
 
-		Debug.D('attr: %o', a)
+        Debug.D('attr: %o', a)
 
-		for (const k in a) {
-			if (isAttribute(k, attrSchema)) {
-				let ss = attrSchema[k]
-				if (typeof ss === 'string') {
-					a[ss] = a[k]
-					ss = attrSchema[ss] as Readonly<AttrSchemaRule>
-				}
-				if (! Array.isArray(ss)) ss = [ ss as AttrSchemaRule ]
-				const tyNow = typeof a[k]
-				let tyMatched = false
-				let tyError: string | undefined
-				typeCheck: for (const s of ss as AttrSchemaRule[]) {
-					const ty = s.type
-					if (
-						tyNow === ty ||
-						(tyNow === 'string' && a[k] && ! isNaN(+ a[k]) && (ty === 'integer' || ty === 'float'))
-					) {
-						switch (ty) {
-							case 'integer':
-							case 'float':
-								if (ty === 'integer' && ! Number.isInteger(+ a[k])) {
-									tyError = 'not integer'
-									break typeCheck
-								}
-								if (s.min !== undefined && + a[k] < s.min) {
-									tyError = `less than min value ${s.min}`
-									break typeCheck
-								}
-								if (s.max !== undefined && + a[k] > s.max) {
-									tyError = `greater than max value ${s.max}`
-									break typeCheck
-								}
-						}
-						if (s.validate) vf = s.validate
-						tyMatched = true
-						break
-					}
-				}
-				if (! tyMatched)
-					throw this.expect(`attribute '${k}' to be ${
-						ss.map(s => s.type).join(' or ')
-					} type`, a[k] + (tyError ? ': ' + tyError : ''))
-			}
-			else throw Error(`Unknown attribute '${k}'.`)
-		}
+        for (const k in a) {
+            if (isAttribute(k, attrSchema)) {
+                let ss = attrSchema[k]
+                if (typeof ss === 'string') {
+                    a[ss] = a[k]
+                    ss = attrSchema[ss] as Readonly<AttrSchemaRule>
+                }
+                if (! Array.isArray(ss)) ss = [ ss as AttrSchemaRule ]
+                const tyNow = typeof a[k]
+                let tyMatched = false
+                let tyError: string | undefined
+                typeCheck: for (const s of ss as AttrSchemaRule[]) {
+                    const ty = s.type
+                    if (
+                        tyNow === ty
+                        || (tyNow === 'string' && a[k] && ! isNaN(+ a[k]) && (ty === 'integer' || ty === 'float'))
+                    ) {
+                        switch (ty) {
+                            case 'integer':
+                            case 'float':
+                                if (ty === 'integer' && ! Number.isInteger(+ a[k])) {
+                                    tyError = 'not integer'
+                                    break typeCheck
+                                }
+                                if (s.min !== undefined && + a[k] < s.min) {
+                                    tyError = `less than min value ${s.min}`
+                                    break typeCheck
+                                }
+                                if (s.max !== undefined && + a[k] > s.max) {
+                                    tyError = `greater than max value ${s.max}`
+                                    break typeCheck
+                                }
+                        }
+                        if (s.validate) vf = s.validate
+                        tyMatched = true
+                        break
+                    }
+                }
+                if (! tyMatched)
+                    throw this.expect(`attribute '${k}' to be ${
+                        ss.map(s => s.type).join(' or ')
+                    } type`, a[k] + (tyError ? ': ' + tyError : ''))
+            }
+            else throw Error(`Unknown attribute '${k}'.`)
+        }
 
-		return {
-			raw: a as Attr<T>,
-			validate(params: AttrValidatorParams) {
-				vf?.(this.raw, params)
-				return this.raw
-			}
-		}
-	}
-	
-	private doParseGroup(): Group {
-		let r = '', s = ''
-		let Rb: number = this.index, Re: number
-		const boxes: GroupTypesetBox[] = []
+        return {
+            raw: a as Attr<T>,
+            validate(params: AttrValidatorParams) {
+                vf?.(this.raw, params)
+                return this.raw
+            }
+        }
+    }
 
-		// Todo: refactor these states :(
-		let alignShort = false, alignLong = false, aligned = false
-		let align: GroupTypesetAlign = 'base'
-		let hasNonDigit = false
+    private doParseGroup(): Group {
+        let r = ''; let s = ''
+        const Rb = this.index
+        const boxes: GroupTypesetBox[] = []
 
-		const eatChar = () => {
-			if (! s) return
-			let w = getWidth(s), cd, nd
-			if (! aligned) {
-				if (s === '.') cd = true, w = 0
-				else if (s === '?') nd = true
-			}
-			else aligned = true
-			if (align !== 'base') w /= 2
-			boxes.push({ s, w, a: align, cd, nd })
-		}
+        // Todo: refactor these states :(
+        let alignShort = false; let alignLong = false; let aligned = false
+        let align: GroupTypesetAlign = 'base'
+        let hasNonDigit = false
 
-		while (
-			this.current &&
-			(inCharset(this.current, GroupCharset) || alignShort || alignLong)
-		) {
-			const ch = this.current
+        const eatChar = () => {
+            if (! s) return
+            let w = getWidth(s); let cd; let nd
+            if (! aligned) {
+                if (s === '.') {
+                    cd = true
+                    w = 0
+                }
+                else if (s === '?') nd = true
+            }
+            else aligned = true
+            if (align !== 'base') w /= 2
+            boxes.push({ s, w, a: align, cd, nd })
+        }
 
-			if (ch === '^' || ch === '_' || ch === '`') {
-				eatChar()
-				s = ''
+        while (
+            this.current
+            && (inCharset(this.current, GroupCharset) || alignShort || alignLong)
+        ) {
+            const ch = this.current
 
-				align = GroupTypesetAlignTable[ch]
-				if (this.after[0] === '{') {
-					alignLong = true
-					this.index ++
-				}
-				else alignShort = true
-				aligned = true
-			}
-			else if (ch === '}' && alignLong) alignLong = false
-			else {
-				if (ch < '0' || ch > '9') {
-					hasNonDigit = true
-					if ((ch < 'a' || ch > 'z') && (ch < 'A' || ch > 'Z')) hasNonDigit = false
-				}
+            if (ch === '^' || ch === '_' || ch === '`') {
+                eatChar()
+                s = ''
 
-				if (! alignShort &&
-					s[0] >= 'A' && s[0] <= 'Z' && ch >= 'a' && ch <= 'z'
-				) s += ch
-				else {
-					eatChar()
-					s = ch
+                align = GroupTypesetAlignTable[ch]
+                if (this.after[0] === '{') {
+                    alignLong = true
+                    this.index ++
+                }
+                else alignShort = true
+                aligned = true
+            }
+            else if (ch === '}' && alignLong) alignLong = false
+            else {
+                if (ch < '0' || ch > '9') {
+                    hasNonDigit = true
+                    if ((ch < 'a' || ch > 'z') && (ch < 'A' || ch > 'Z')) hasNonDigit = false
+                }
 
-					if (alignShort) alignShort = false
-					else if (! alignLong) {
-						if (ch >= '0' && ch <= '9' && hasNonDigit) align = 'sub'
-						else if (align !== 'base') align = 'base'
-					}
-				}
-			}
+                if (! alignShort
+                    && s[0] >= 'A' && s[0] <= 'Z' && ch >= 'a' && ch <= 'z'
+                ) s += ch
+                else {
+                    eatChar()
+                    s = ch
 
-			r += ch
-			this.index ++
-		}
+                    if (alignShort) alignShort = false
+                    else if (! alignLong) {
+                        if (ch >= '0' && ch <= '9' && hasNonDigit) align = 'sub'
+                        else if (align !== 'base') align = 'base'
+                    }
+                }
+            }
 
-		eatChar()
-		Re = this.index - 1
+            r += ch
+            this.index ++
+        }
 
-		this.maybeSpace()
+        eatChar()
+        const Re = this.index - 1
 
-		if (alignLong) throw Error(`Unclosed ${align}script in group typeset '${r}'`)
+        this.maybeSpace()
 
-		if (! r) throw this.expect('atom group')
+        if (alignLong) throw Error(`Unclosed ${align}script in group typeset '${r}'`)
 
-		const t: GroupTypeset = {
-			B: boxes,
-			w: boxes.reduce((w, B) => w + B.w, 0)
-		}
+        if (! r) throw this.expect('atom group')
 
-		Debug.D('group typeset: %s -> %o', r, t)
+        const t: GroupTypeset = {
+            B: boxes,
+            w: boxes.reduce((w, B) => w + B.w, 0)
+        }
 
-		const R: [number, number] = [Rb, Re]
-		const i = this.groupId ++
-		let a
-		if (this.current === '{') {
-			a = this.doParseAttr(GroupAttrs)
-			a = a.validate({ group: { t, a: a.raw, R, i } })
-		}
-		else a = {}
+        Debug.D('group typeset: %s -> %o', r, t)
 
-		const group = { t, a, R, i }
-		this.groups.push(group)
+        const R: [number, number] = [ Rb, Re ]
+        const i = this.groupId ++
+        let a
+        if (this.current === '{') {
+            a = this.doParseAttr(GroupAttrs)
+            a = a.validate({ group: { t, a: a.raw, R, i } })
+        }
+        else a = {}
 
-		return group
-	}
+        const group = { t, a, R, i }
+        this.groups.push(group)
 
-	private checkDupBondDir(
-		parsedBonds: Bond[],
-		currentDirs: BondDir[],
-		dir: BondDir
-	) {
-		return currentDirs.includes(dir)
-			|| parsedBonds.some(({ d: dirs }) => dirs.includes(dir))
-	}
+        return group
+    }
 
-	private doParseBondModifiers(): BondModifiers {
-		const modifiers: BondModifiers = {}
-		while (inCharset(this.current, BondModifiersCharset)) {
-			const modifierName = BondModifiersTable[this.current]
-			if (modifiers[modifierName]) throw Error(`Duplicated bond modifier ${this.current}`)
-			modifiers[modifierName] = true
-			this.index ++
-		}
-		return modifiers
-	}
+    private checkDupBondDir(
+        parsedBonds: Bond[],
+        currentDirs: BondDir[],
+        dir: BondDir
+    ) {
+        return currentDirs.includes(dir)
+            || parsedBonds.some(({ d: dirs }) => dirs.includes(dir))
+    }
 
-	private doParseBondType({
-		isPrefix = false,
-		parsedBonds = [],
-		dirFrom: df
-	}: {
-		isPrefix?: boolean,
-		parsedBonds?: Bond[],
-		dirFrom: BondDir | null
-	}): BondType {
-		let c: BondCount = 1
-		const dirs: BondDir[] = []
+    private doParseBondModifiers(): BondModifiers {
+        const modifiers: BondModifiers = {}
+        while (inCharset(this.current, BondModifiersCharset)) {
+            const modifierName = BondModifiersTable[this.current]
+            if (modifiers[modifierName]) throw Error(`Duplicated bond modifier ${this.current}`)
+            modifiers[modifierName] = true
+            this.index ++
+        }
+        return modifiers
+    }
 
-		const preModifiers = this.doParseBondModifiers()
+    private doParseBondType({
+        isPrefix = false,
+        parsedBonds = [],
+        dirFrom: df
+    }: {
+        isPrefix?: boolean
+        parsedBonds?: Bond[]
+        dirFrom: BondDir | null
+    }): BondType {
+        let c: BondCount = 1
+        const dirs: BondDir[] = []
 
-		if (inCharset(this.current, BondCountCharset)) {
-			c = BondCountTable[this.current as keyof typeof BondCountTable]
-			this.index ++
-		}
+        const preModifiers = this.doParseBondModifiers()
 
-		const noImplictDir = ! inCharset(this.current, BondDirCharset)
-		const auto0Deg = noImplictDir && (c > 1 || preModifiers.zeroWidth)
-		const auto180Deg = noImplictDir && preModifiers.add180Deg
-		const auto30Deg = noImplictDir && preModifiers.use30Deg
+        if (inCharset(this.current, BondCountCharset)) {
+            c = BondCountTable[this.current]
+            this.index ++
+        }
 
-		while (inCharset(this.current, BondDirCharset) || auto0Deg || auto30Deg || auto180Deg) {
-			const ds = []
-			if (auto30Deg) {
-				if (preModifiers.add180Deg) {
-					if (df === 150 || df === null) ds.push(30)
-					else if (df === 210) ds.push(330)
-				}
-				else {
-					if (df === 30 || df === null) ds.push(330)
-					else if (df === 330) ds.push(30)
-				}
-				if (! ds.length)
-					throw Error(`Cannot infer the direction of '${preModifiers.add180Deg ? '!' : ''}~' (from direction ${df} deg)`)
-			}
-			else if (auto0Deg || auto180Deg) ds.push(0)
-			else ds.push(...BondDirTable[this.current as keyof typeof BondDirTable])
+        const noImplictDir = ! inCharset(this.current, BondDirCharset)
+        const auto0Deg = noImplictDir && (c > 1 || preModifiers.zeroWidth)
+        const auto180Deg = noImplictDir && preModifiers.add180Deg
+        const auto30Deg = noImplictDir && preModifiers.use30Deg
 
-			for (let d of ds) {
-				if (preModifiers.use30Deg) {
-					if (d === 60) d = 30
-					else if (d === 300) d = 330
-				}
-				if (preModifiers.add180Deg) d = MathEx.stdAng(d + 180)
-				if (! isPrefix) d = MathEx.stdAng(d + 180)
-				if (dirs.includes(d)) d = MathEx.stdAng(d + 180)
+        while (inCharset(this.current, BondDirCharset) || auto0Deg || auto30Deg || auto180Deg) {
+            const ds = []
+            if (auto30Deg) {
+                if (preModifiers.add180Deg) {
+                    if (df === 150 || df === null) ds.push(30)
+                    else if (df === 210) ds.push(330)
+                }
+                else {
+                    if (df === 30 || df === null) ds.push(330)
+                    else if (df === 330) ds.push(30)
+                }
+                if (! ds.length)
+                    throw Error(`Cannot infer the direction of '${preModifiers.add180Deg ? '!' : ''}~' (from direction ${df} deg)`)
+            }
+            else if (auto0Deg || auto180Deg) ds.push(0)
+            else ds.push(...BondDirTable[this.current as keyof typeof BondDirTable])
 
-				if (this.checkDupBondDir(parsedBonds, dirs, d))
-					throw Error(`Duplicated bond direction (${ds} deg)`)
+            for (let d of ds) {
+                if (preModifiers.use30Deg) {
+                    if (d === 60) d = 30
+                    else if (d === 300) d = 330
+                }
+                if (preModifiers.add180Deg) d = MathEx.stdAng(d + 180)
+                if (! isPrefix) d = MathEx.stdAng(d + 180)
+                if (dirs.includes(d)) d = MathEx.stdAng(d + 180)
 
-				dirs.push(d)
-			}
+                if (this.checkDupBondDir(parsedBonds, dirs, d))
+                    throw Error(`Duplicated bond direction (${ds} deg)`)
 
-			if (auto0Deg || auto30Deg || auto180Deg) break
-			this.index ++
-		}
-		this.maybeSpace()
+                dirs.push(d)
+            }
 
-		if (! dirs.length) throw this.expect('at least one bond direction')
+            if (auto0Deg || auto30Deg || auto180Deg) break
+            this.index ++
+        }
+        this.maybeSpace()
 
-		let a
-		if (this.current === '{') {
-			a = this.doParseAttr(BondAttrs)
-			a = a.validate({ bondType: { c, d: dirs, a: a.raw } })
-		}
-		else a = {}
-		
-		if (preModifiers.zeroWidth) a.length = 0
+        if (! dirs.length) throw this.expect('at least one bond direction')
 
-		return { c, d: dirs, a }
-	}
+        let a
+        if (this.current === '{') {
+            a = this.doParseAttr(BondAttrs)
+            a = a.validate({ bondType: { c, d: dirs, a: a.raw } })
+        }
+        else a = {}
 
-	private doParseBond({
-		requirePrefix = false,
-		parsedBonds = [],
-		self,
-		dirFrom
-	}: {
-		requirePrefix?: boolean,
-		parsedBonds?: Bond[],
-		self: Struct
-		dirFrom: BondDir | null
-	}): Bond | undefined {
-		let bond: Bond
+        if (preModifiers.zeroWidth) a.length = 0
 
-		if (! inCharset(this.current, BondCharset)) {
-			if (requirePrefix) throw this.expect('prefix-styled bond')
-			if (inCharset(this.current, GroupCharset)) {
-				const n = this.doParseStruct({ dirFrom: null })
-				const { c, d, a } = this.doParseBondType({ isPrefix: false, parsedBonds, dirFrom })
-				bond = { c, d, a, n }
-			}
-			else throw this.expect('bond')
-		}
-		else {
-			const { c, d, a } = this.doParseBondType({ isPrefix: true, parsedBonds, dirFrom })
-			const n = this.doParseStruct({ dirFrom: d[0] }) // Note: use the first direction
-			bond = { c, d, a, n }
-		}
-		this.maybeSpace()
+        return { c, d: dirs, a }
+    }
 
-		bond.n.parents.push({
-			c: bond.c,
-			d: bond.d.map(d => MathEx.stdAng(d + 180)),
-			a: bond.a,
-			n: self
-		})
-		return bond
-	}
+    private doParseBond({
+        requirePrefix = false,
+        parsedBonds = [],
+        self,
+        dirFrom
+    }: {
+        requirePrefix?: boolean
+        parsedBonds?: Bond[]
+        self: Struct
+        dirFrom: BondDir | null
+    }): Bond | undefined {
+        let bond: Bond
 
-	private doParseBonds({
-		dirFrom,
-		self
-	} : {
-		dirFrom: BondDir | null
-		self: Struct
-	}): Bond[] {
-		const bonds: Bond[] = []
+        if (! inCharset(this.current, BondCharset)) {
+            if (requirePrefix) throw this.expect('prefix-styled bond')
+            if (inCharset(this.current, GroupCharset)) {
+                const n = this.doParseStruct({ dirFrom: null })
+                const { c, d, a } = this.doParseBondType({ isPrefix: false, parsedBonds, dirFrom })
+                bond = { c, d, a, n }
+            }
+            else throw this.expect('bond')
+        }
+        else {
+            const { c, d, a } = this.doParseBondType({ isPrefix: true, parsedBonds, dirFrom })
+            const n = this.doParseStruct({ dirFrom: d[0] }) // Note: use the first direction
+            bond = { c, d, a, n }
+        }
+        this.maybeSpace()
 
-		if (this.current === '[') {
-			this.index ++
-			this.maybeSpace()
-			while (true) {
-				bonds.push(this.doParseBond({ parsedBonds: bonds, self, dirFrom })!)
-				if (this.current as string === ',') this.index ++
-				this.maybeSpace()
-				if (this.current as string === ']') {
-					this.index ++
-					break
-				}
-			}
-		}
-		if (inCharset(this.current, BondCharset)) {
-			const bond = this
-				.try(() => this.doParseBond({ parsedBonds: bonds, self, dirFrom }))
-				.except('atom group', null)
-			if (bond) bonds.push(bond)
-		}
-		return bonds
-	}
+        bond.n.parents.push({
+            c: bond.c,
+            d: bond.d.map(d => MathEx.stdAng(d + 180)),
+            a: bond.a,
+            n: self
+        })
+        return bond
+    }
 
-	private doParseAttrCall(): AttrCall {
-		this.index ++ // Note: skip '$'
+    private doParseBonds({
+        dirFrom,
+        self
+    }: {
+        dirFrom: BondDir | null
+        self: Struct
+    }): Bond[] {
+        const bonds: Bond[] = []
 
-		let name = ''
-		while (inCharset(this.current, IdentifierCharset)) {
-			name += this.current
-			this.index ++
-		}
+        if (this.current === '[') {
+            this.index ++
+            this.maybeSpace()
+            while (true) {
+                bonds.push(this.doParseBond({ parsedBonds: bonds, self, dirFrom })!)
+                if (this.current as string === ',') this.index ++
+                this.maybeSpace()
+                if (this.current as string === ']') {
+                    this.index ++
+                    break
+                }
+            }
+        }
+        if (inCharset(this.current, BondCharset)) {
+            const bond = this
+                .try(() => this.doParseBond({ parsedBonds: bonds, self, dirFrom }))
+                .except('atom group', null)
+            if (bond) bonds.push(bond)
+        }
+        return bonds
+    }
 
-		const def = this.defs[name]
-		if (! def) throw Error(`Unknown attr struct "${name}"`)
-		if (def.type !== 'chem')
-			throw this.expect('attr struct in chem type', `${def.type} type`)
+    private doParseAttrCall(): AttrCall {
+        this.index ++ // Note: skip '$'
 
-		const a = this.current === '{'
-			? this.doParseAttr({ ...GroupAttrs, ...def.attr })
-			: {}
+        let name = ''
+        while (inCharset(this.current, IdentifierCharset)) {
+            name += this.current
+            this.index ++
+        }
 
-		return { d: def, a }
-	}
+        const def = this.defs[name]
+        if (! def) throw Error(`Unknown attr struct "${name}"`)
+        if (def.type !== 'chem')
+            throw this.expect('attr struct in chem type', `${def.type} type`)
 
-	private labels: Record<string, Struct> = {}
-	private groups: Group[] = []
+        const a = this.current === '{'
+            ? this.doParseAttr({ ...GroupAttrs, ...def.attr })
+            : {}
 
-	private doParseRef(): Ref {
-		this.index ++ // Note: skip '&'
+        return { d: def, a }
+    }
 
-		const names: string[] = []
-		let s = ''
-		// Todo: ref range
-		while (inCharset(this.current, RefNameCharset)) {
-			switch (this.current) {
-				case ',':
-					names.push(s)
-					s = ''
-					break
-				default:
-					s += this.current
-			}
-			this.index ++
-		}
-		names.push(s)
+    private labels: Record<string, Struct> = {}
+    private readonly groups: Group[] = []
 
-		return { names }
-	}
-	
-	private doParseStructHead(): StructHead {
-		switch (this.current) {
-			case '&':
-				return {
-					S: 'ref',
-					node: this.doParseRef()
-				}
-			case '$':
-				return {
-					S: 'attr',
-					node: this.doParseAttrCall()
-				}
-			default:
-				return {
-					S: 'chem',
-					node: this.doParseGroup()
-				}
-		}
-	}
+    private doParseRef(): Ref {
+        this.index ++ // Note: skip '&'
 
-	protected doParseStruct({
-		dirFrom = null
-	}: {
-		dirFrom: BondDir | null
-	}): Struct {
-		const head = this.doParseStructHead()
-		this.maybeSpace()
+        const names: string[] = []
+        let s = ''
+        // Todo: ref range
+        while (inCharset(this.current, RefNameCharset)) {
+            switch (this.current) {
+                case ',':
+                    names.push(s)
+                    s = ''
+                    break
+                default:
+                    s += this.current
+            }
+            this.index ++
+        }
+        names.push(s)
 
-		const struct: Struct = {
-			...head,
-			children: null as unknown as Struct['children'],
-			parents: [],
-			treeId: this.treeId
-		}
-		struct.children = this.doParseBonds({ self: struct, dirFrom })
-		if (Debug.on) struct.toString = () => `[${head.S}] ` + (
-			head.S === 'chem' ? head.node.t.B.map(x => x.s).join('') :
-			head.S === 'ref' ? '&' + head.node.names.join(',') :
-			''
-		)
+        return { names }
+    }
 
-		if (head.S === 'chem' && head.node.a.ref) {
-			this.labels[head.node.a.ref] = struct
-		}
+    private doParseStructHead(): StructHead {
+        switch (this.current) {
+            case '&':
+                return {
+                    S: 'ref',
+                    node: this.doParseRef()
+                }
+            case '$':
+                return {
+                    S: 'attr',
+                    node: this.doParseAttrCall()
+                }
+            default:
+                return {
+                    S: 'chem',
+                    node: this.doParseGroup()
+                }
+        }
+    }
 
-		return struct
-	}
+    protected doParseStruct({
+        dirFrom = null
+    }: {
+        dirFrom: BondDir | null
+    }): Struct {
+        const head = this.doParseStructHead()
+        this.maybeSpace()
 
-	private treeId = 0
-	private groupId = 0
+        const struct: Struct = {
+            ...head,
+            children: null as unknown as Struct['children'],
+            parents: [],
+            treeId: this.treeId
+        }
+        struct.children = this.doParseBonds({ self: struct, dirFrom })
+        if (Debug.on) struct.toString = () => `[${head.S}] ` + (
+            head.S === 'chem'
+                ? head.node.t.B.map(x => x.s).join('')
+                : head.S === 'ref'
+                    ? '&' + head.node.names.join(',')
+                    : ''
+        )
 
-	protected doParse(): Formula {
-		const structs: Struct[] = []
-		while (true) {
-			structs.push(this.doParseStruct({ dirFrom: null }))
-			if (this.current === ';') {
-				this.index ++
-				this.maybeSpace()
-				if (! this.current) break // Note: allow dangling semicolon
-				this.treeId ++
-				continue
-			}
-			else break
-		}
-		const formula = {
-			structs, labels: this.labels, groups: this.groups
-		}
-		Debug.D('formula: %o', formula)
-		return formula
-	}
+        if (head.S === 'chem' && head.node.a.ref) {
+            this.labels[head.node.a.ref] = struct
+        }
+
+        return struct
+    }
+
+    private treeId = 0
+    private groupId = 0
+
+    protected doParse(): Formula {
+        const structs: Struct[] = []
+        while (true) {
+            structs.push(this.doParseStruct({ dirFrom: null }))
+            if (this.current === ';') {
+                this.index ++
+                this.maybeSpace()
+                if (! this.current) break // Note: allow dangling semicolon
+                this.treeId ++
+                continue
+            }
+            else break
+        }
+        const formula = {
+            structs, labels: this.labels, groups: this.groups
+        }
+        Debug.D('formula: %o', formula)
+        return formula
+    }
 }

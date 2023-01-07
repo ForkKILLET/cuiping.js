@@ -25,7 +25,7 @@ update()
 
 <template>
     <div class="conf root">
-        <li v-for="s, k in schemas">
+        <li v-for="s, k in schemas" :key="k">
             <span class="name">{{ t(`conf.${k}`) }}</span>
             <input
                 v-if="s.ty === 'boolean'"

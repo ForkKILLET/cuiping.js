@@ -5,28 +5,28 @@ export const getMonacoForCuiping = (monaco: typeof Monaco, {
     getFormula,
     markGroup
 }: {
-    getFormula?: () => Formula | undefined,
+    getFormula?: () => Formula | undefined
     markGroup?: (groupId: number) => void
 }) => {
     monaco.languages.register({ id: 'cuipingFormula' })
 
     monaco.languages.setMonarchTokensProvider('cuipingFormula', {
         tokenizer: {
-            root: [
+            'root': [
                 [ /\[/, 'bonds', '@bonds' ],
                 [ /&\w*/, 'ref' ],
                 [ /\{/, 'attrs', '@attrs' ],
-                [ /[+\-|\/\\*!~=#]/, 'bond.type' ],
+                [ /[+\-|/\\*!~=#]/, 'bond.type' ],
                 [ /\s+/, 'space' ],
-                [ /(?=([\^_`](.|\([^)]*?\))|[^[\]{+\-|\/\\*!~=#;,]+)+)/, 'group.dlmt', '@group' ],
+                [ /(?=([\^_`](.|\([^)]*?\))|[^[\]{+\-|/\\*!~=#;,]+)+)/, 'group.dlmt', '@group' ],
                 [ /;/, 'semicolon' ]
             ],
-            bonds: [
+            'bonds': [
                 { include: 'root' },
                 [ /,/, 'bonds.comma' ],
                 [ /\]/, 'bonds', '@pop' ]
             ],
-            attrs: [
+            'attrs': [
                 [ /(?=[^,:}]+:[^,}]*)/, 'attr.dlmt', '@attr-with-value' ],
                 [ /(?=[^,:}]+)/, 'attr.dlmt', '@attr-without-value' ],
                 [ /}/, 'attrs', '@pop' ]
@@ -43,11 +43,11 @@ export const getMonacoForCuiping = (monaco: typeof Monaco, {
                 [ /,/, 'attrs.comma', '@pop' ],
                 [ /(?=})/, 'attr.dlmt', '@pop' ]
             ],
-            group: [
+            'group': [
                 [ /[\^_`]{/, 'group.typeset', '@group-typeset-multiple' ],
                 [ /[\^_`]/, 'group.typeset', '@group-typeset' ],
-                [ /[^[\]{+\-|\/\\*!~=#;,\^_`]+/, 'group.content' ],
-                [ /(?=[[\]{+\-|\/\\*!~=#;,])/, 'group.dlmt', '@pop' ]
+                [ /[^[\]{+\-|/\\*!~=#;,^_`]+/, 'group.content' ],
+                [ /(?=[[\]{+\-|/\\*!~=#;,])/, 'group.dlmt', '@pop' ]
             ],
             'group-typeset-multiple': [
                 [ /[^}]+/, 'group.content.typeset' ],
@@ -69,7 +69,7 @@ export const getMonacoForCuiping = (monaco: typeof Monaco, {
     })
 
     type CompletionList = Monaco.languages.CompletionList
-    const { CompletionItemKind } = monaco.languages 
+    const { CompletionItemKind } = monaco.languages
 
     const attrSuggestions = (attr: typeof GroupAttrs | typeof BondAttrs, range: Monaco.IRange) => Object.keys(attr)
         .map(name => ({
@@ -109,7 +109,7 @@ export const getMonacoForCuiping = (monaco: typeof Monaco, {
                 endColumn: word.endColumn
             }
 
-            if (before.match(/(?<![\^_`]({[^}]*)?)&\w*$/)) { // Note: complete ref
+            if (before.match(/(?<![\^_`]({[^}]*)?)&\w*$/) != null) { // Note: complete ref
                 const refNames = getRefNames(all)
                 range.startColumn --
                 return {
@@ -123,9 +123,9 @@ export const getMonacoForCuiping = (monaco: typeof Monaco, {
             }
 
             const attrRes = before.match(/(.)\s*{\s*([^}]*,)*[^:}]+$/)
-            if (attrRes) {
-                if (attrRes[1].match(/[\^_`]/)) return noSuggestions
-                if (attrRes[1].match(/[+\-|\/\\*!~=#]/)) return {
+            if (attrRes != null) {
+                if (attrRes[1].match(/[\^_`]/) != null) return noSuggestions
+                if (attrRes[1].match(/[+\-|/\\*!~=#]/) != null) return {
                     suggestions: attrSuggestions(BondAttrs, range)
                 }
                 return {
@@ -149,11 +149,11 @@ export const getMonacoForCuiping = (monaco: typeof Monaco, {
 
             const refRes = before.match(/(?<![\^_`]({[^}]*)?)(&\w*)$/)
             const word = model.getWordAtPosition(position)?.word
-            if (refRes && word?.[0] ==='&') { // Note: go to definition of ref
+            if ((refRes != null) && word?.[0] === '&') { // Note: go to definition of ref
                 const refNames = getRefNames(all)
                 const refNameNow = word.slice(1)
                 const refDef = refNames.find(res => res[2] === refNameNow)
-                if (! refDef) return null
+                if (refDef == null) return null
                 const [ refDefPosition ] = model.findMatches(refDef[0], true, false, true, null, false)
                 return {
                     uri: model.uri,
@@ -185,7 +185,7 @@ export const getMonacoForCuiping = (monaco: typeof Monaco, {
         }
     })
 
-    if (getFormula && markGroup) monaco.editor.addEditorAction({
+    if ((getFormula != null) && (markGroup != null)) monaco.editor.addEditorAction({
         id: 'cuipingFormula.markGroupInOutput',
         label: 'Toggle Group Mark',
         keybindings: [
@@ -196,10 +196,10 @@ export const getMonacoForCuiping = (monaco: typeof Monaco, {
             const model = ed.getModel()
             const position = ed.getPosition()
             const formula = getFormula()
-            if (model && position && formula) {
+            if ((model != null) && (position != null) && (formula != null)) {
                 const offset = model.getOffsetAt(position)
                 const group = formula.groups.find(g => g.R[0] <= offset && offset <= g.R[1] + 1)
-                if (group) markGroup(group.i)
+                if (group != null) markGroup(group.i)
             }
         }
     })

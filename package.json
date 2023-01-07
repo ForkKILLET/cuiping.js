@@ -2,11 +2,23 @@
   "name": "cuiping-workspace",
   "version": "1.0.0",
   "scripts": {
-	"loc": "tokei -e '*.yaml' -e '*.txt' -e '*.md'",
-	"build": "pnpm -F cuiping build && pnpm -F cuiping-component build && pnpm -F cuiping-monaco build && pnpm -F cuiping-frontend build"
+    "loc": "tokei -e '*.yaml' -e '*.txt' -e '*.md'",
+    "lint": "eslint . --ext .js,.ts,.vue",
+    "build": "pnpm -F cuiping build && pnpm -F cuiping-component build && pnpm -F cuiping-monaco build && pnpm -F cuiping-frontend build"
   },
   "repository": "git@github.com:ForkKILLET/cuiping.js.git",
   "author": "ForkΨKILLET <fork_killet@qq.com>",
   "license": "MIT",
-  "private": true
+  "private": true,
+  "devDependencies": {
+    "@typescript-eslint/eslint-plugin": "^5.0.0",
+    "@typescript-eslint/parser": "^5.48.0",
+    "eslint": "^8.28.0",
+    "eslint-config-standard-with-typescript": "^26.0.0",
+    "eslint-plugin-import": "^2.25.2",
+    "eslint-plugin-n": "^15.0.0",
+    "eslint-plugin-promise": "^6.0.0",
+    "eslint-plugin-vue": "^9.8.0",
+    "typescript": "*"
+  }
 }

@@ -1,0 +1,72 @@
+{
+  "env": {
+    "browser": true,
+    "es2021": true
+  },
+  "extends": [
+    "plugin:vue/vue3-essential",
+    "standard-with-typescript"
+  ],
+  "overrides": [],
+  "parser": "vue-eslint-parser",
+  "parserOptions": {
+    "parser": "@typescript-eslint/parser",
+    "extraFileExtensions": [ ".vue" ],
+    "ecmaVersion": "latest",
+    "sourceType": "module",
+    "project": [
+      "backend/tsconfig.json",
+      "frontend/tsconfig.json",
+      "component/tsconfig.json",
+      "monaco/tsconfig.json"
+    ]
+  },
+  "plugins": [
+    "vue"
+  ],
+  "rules": {
+    "curly": "off",
+    "no-labels": "off",
+    "indent": "off",
+    "space-before-function-paren": "off",
+    "object-property-newline": "off",
+    "no-unmodified-loop-condition": "off",
+    "func-call-spacing": "off",
+    "operator-linebreak": [ "error", "before" ],
+    "array-bracket-spacing": [
+        "error", "always",
+        {
+          "objectsInArrays": false,
+          "arraysInArrays": false
+        }
+    ],
+    "space-unary-ops": [
+      "error",
+      {
+        "words": true,
+        "nonwords": true
+      }
+    ],
+    "quote-props": [ "error", "consistent-as-needed" ],
+
+    "@typescript-eslint/space-before-function-paren": "off",
+    "@typescript-eslint/explicit-function-return-type": "off",
+    "@typescript-eslint/no-non-null-assertion": "off",
+    "@typescript-eslint/strict-boolean-expressions": "off",
+    "@typescript-eslint/restrict-plus-operands": "off",
+    "@typescript-eslint/prefer-nullish-coalescing": "off",
+    "@typescript-eslint/restrict-template-expressions": "off",
+    "@typescript-eslint/brace-style": [ "error", "stroustrup" ],
+    "@typescript-eslint/array-type": [
+      "error",
+      {
+        "default": "array",
+        "readonly": "array"
+      }
+    ],
+    "@typescript-eslint/indent": [ "error", 4 ],
+    "@typescript-eslint/consistent-type-definitions": [ "error", "type" ],
+
+    "vue/multi-word-component-names": "off"
+  }
+}

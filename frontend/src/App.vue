@@ -7,7 +7,7 @@ import type { Locales } from './i18n/locales'
 import { Cuiping } from 'cuiping-component'
 import 'cuiping-component/dist/style.css'
 
-import { Conf, SchemasToValues, storageRef, storageReactive } from './conf';
+import { Conf, SchemasToValues, storageRef, storageReactive } from './conf'
 import examples from './examples'
 
 import * as originalMonaco from 'monaco-editor'
@@ -57,13 +57,13 @@ const confComp = storageReactive<SchemasToValues<typeof schemasComp>>('confComp'
 })
 
 const schemasRender = {
-	unitLen: { ty: 'number', min: 0 },
-	paddingX: { ty: 'number' },
-	paddingY: { ty: 'number' },
-	displayBonds: { ty: 'boolean' },
-	bondGap: { ty: 'number', min: 0 },
-	lineBaseColor: { ty: 'color' },
-	textBaseColor: { ty: 'color' },
+    unitLen: { ty: 'number', min: 0 },
+    paddingX: { ty: 'number' },
+    paddingY: { ty: 'number' },
+    displayBonds: { ty: 'boolean' },
+    bondGap: { ty: 'number', min: 0 },
+    lineBaseColor: { ty: 'color' },
+    textBaseColor: { ty: 'color' },
     halfFontSize: { ty: 'number', min: 0 },
     halfTextBoxWidth: { ty: 'number', min: 0 },
     halfTextBoxHeight: { ty: 'number', min: 0 },
@@ -136,7 +136,7 @@ watch(monacoContainer, () => {
     <header>
         <h1>Cuiping.js</h1>
 
-        <span v-for="locale, i in i18n.availableLocales">
+        <span v-for="locale, i in i18n.availableLocales" :key="i">
             {{ i ? ' | ' : '' }}<span
                 class="locale"
                 :class="{ active: locale === i18n.locale.value }"
@@ -156,16 +156,14 @@ watch(monacoContainer, () => {
 
         <p v-html="
             t('info.structure', {
-                formula: `<code>\`${
-                    molecule
-                        ?.replace(/./g, (ch) => `&#x${ch.charCodeAt(0).toString(16)};`)
-                        ?.replace(/\n/, '<br />')
+                formula: `<code>${
+                    molecule?.replace(/\n/, '<br />')
                         ?? ''
-                }\`</code>`
+                }</code>`
             })
         "></p>
         <Cuiping
-            v-bind="confComp" 
+            v-bind="confComp"
             ref="mainCuiping"
             :molecule="molecule"
             :render-options="confRender"
@@ -190,9 +188,9 @@ watch(monacoContainer, () => {
         <br />
         <div class="mols">
             <template v-if="history.length">
-                <div v-for="mol, index in history">
+                <div v-for="mol, i in history" :key="i">
                     <code>{{ mol }}</code>
-                    <button @click="history.splice(index, 1)">{{ t('op.remove') }}</button>
+                    <button @click="history.splice(i, 1)">{{ t('op.remove') }}</button>
                     <button @click="selectMol(mol)">{{ t('op.select') }}</button>
                     <br />
                     <Cuiping
@@ -206,7 +204,7 @@ watch(monacoContainer, () => {
 
         <h2>{{ t('title.examples') }}</h2>
         <div class="mols">
-            <div v-for="[ desc, mol ] in examples">
+            <div v-for="[ desc, mol ], i in examples" :key="i">
                 <strong>{{ desc[i18n.locale.value as Locales] }}</strong><br />
                 <code>{{ mol }}</code>
                 <button @click="selectMol(mol)">{{ t('op.select') }}</button>

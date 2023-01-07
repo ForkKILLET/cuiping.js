@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, ref, UnwrapRef, watch } from 'vue'
+import { computed, ref, watch } from 'vue'
 import { render, SvgRendererOption } from 'cuiping'
 import { Canvg } from 'canvg'
 
@@ -17,7 +17,7 @@ const res = computed(() => {
     if (! props.molecule) return { state: 'empty' as const }
 
     let errMsg: string = ''
-    
+
     const data = render(props.molecule, {
         onError: err => {
             errMsg = err.toString()
@@ -91,8 +91,8 @@ const redraw = () => {
 watch([ canvas, props, redrawCounter ], async () => {
     if (canvas.value && props.useImage && props.molecule && res.value.state === 'ok') {
         const svg = res.value.data.svg
-            .replace(/width="([\d\.]+)"/, (_, w) => `width="${w * props.imageScale}"`)
-            .replace(/height="([\d\.]+)"/, (_, h) => `height="${h * props.imageScale}"`)
+            .replace(/width="([\d.]+)"/, (_, w) => `width="${w * props.imageScale}"`)
+            .replace(/height="([\d.]+)"/, (_, h) => `height="${h * props.imageScale}"`)
         if (canvg) canvg.stop()
         const ctx = canvas.value.getContext('2d')!
         canvg = Canvg.fromString(ctx, svg)
