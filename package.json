@@ -4,7 +4,8 @@
   "scripts": {
     "loc": "tokei -e '*.yaml' -e '*.txt' -e '*.md'",
     "lint": "eslint . --ext .js,.ts,.vue",
-    "build": "pnpm -F cuiping build && pnpm -F cuiping-component build && pnpm -F cuiping-monaco build && pnpm -F cuiping-frontend build"
+    "build": "pnpm -F cuiping build && pnpm -F cuiping-component build && pnpm -F cuiping-monaco build && pnpm -F cuiping-frontend build",
+    "prepare": "husky install"
   },
   "repository": "git@github.com:ForkKILLET/cuiping.js.git",
   "author": "ForkΨKILLET <fork_killet@qq.com>",
@@ -19,6 +20,7 @@
     "eslint-plugin-n": "^15.0.0",
     "eslint-plugin-promise": "^6.0.0",
     "eslint-plugin-vue": "^9.8.0",
+    "husky": "^8.0.0",
     "typescript": "*"
   }
 }
