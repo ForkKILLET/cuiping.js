@@ -1,23 +1,24 @@
+
 # Cuiping.js Component
 
-English | [简体中文](./README.zh-Hans.md)
+[English](./README.md) | 简体中文
 
-## Usage
+## 使用
 
-1. Use your familiar package manager to install the component package `cuiping-component`.
+1. 使用你熟悉的包管理器安装 Cuiping.js 组件包 `cuiping-component`
     ```shell
     $ pnpm i cuiping-component
     $ yarn add cuiping-component
     $ npm i cuiping-component
     ```
 
-2. Import and use the component (You may refer to our [Demo page](../frontend/src/App.vue)).
+2. 引入并使用组件（可以参考 [Demo 页面](../frontend/src/App.vue)）
     ```vue
     <!-- App.vue -->
 
     <script lang="ts">
     import { Cuiping } from 'cuiping-component'
-    import 'cuiping-component/dist/style.css' /* Don't forget the style */
+    import 'cuiping-component/dist/style.css' /* 别忘了样式 */
     </script>
 
     <template>

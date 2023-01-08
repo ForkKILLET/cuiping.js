@@ -1,6 +1,7 @@
 {
   "name": "cuiping-component",
   "version": "1.5.0",
+  "description": "Vue component for cuiping.js",
   "type": "module",
   "files": [
     "dist",

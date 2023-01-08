@@ -89,26 +89,7 @@ You can experience the demo at [icelava.top](https://icelava.top/cuiping.js/):
 
 ### Using the Vue component in the browser
 
-1. Use your familiar package manager to install the component package `cuiping-component`.
-    ```shell
-    $ pnpm i cuiping-component
-    $ yarn add cuiping-component
-    $ npm i cuiping-component
-    ```
-
-2. Import and use the component (You may refer to our [Demo page](./frontend/src/App.vue)).
-    ```vue
-    <!-- App.vue -->
-
-    <script lang="ts">
-    import { Cuiping } from 'cuiping-component'
-    import 'cuiping-component/dist/style.css' /* Don't forget the style */
-    </script>
-
-    <template>
-        <Cuiping :molecule="..." :render-options="..." />
-    </template>
-    ```
+See [component document](./component/README.md#usage).
 
 ## Contribution
 
