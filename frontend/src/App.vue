@@ -4,6 +4,8 @@ import { watch, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 import type { Locales } from './i18n/locales'
 
+import { encodeHTML } from 'entities'
+
 import { Cuiping } from 'cuiping-component'
 import 'cuiping-component/dist/style.css'
 
@@ -157,8 +159,7 @@ watch(monacoContainer, () => {
         <p v-html="
             t('info.structure', {
                 formula: `<code>${
-                    molecule.replace(/\n/, '<br />')
-                        ?? ''
+                    encodeHTML(molecule).replace(/\n/, '<br />') ?? ''
                 }</code>`
             })
         "></p>

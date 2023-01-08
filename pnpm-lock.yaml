@@ -69,6 +69,7 @@ importers:
       cuiping: workspace:^1.10.0
       cuiping-component: workspace:^1.5.0
       cuiping-monaco: workspace:^0.2.0
+      entities: ^4.4.0
       monaco-editor: ^0.34.1
       typescript: ^4.9.4
       vite: 3.2.0
@@ -81,6 +82,7 @@ importers:
       cuiping: link:../backend
       cuiping-component: link:../component
       cuiping-monaco: link:../monaco
+      entities: 4.4.0
       monaco-editor: 0.34.1
       vite-plugin-monaco-editor: 1.1.0_monaco-editor@0.34.1
       vue: 3.2.45
