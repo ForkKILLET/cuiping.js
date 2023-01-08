@@ -23,10 +23,14 @@ jobs:
         with:
           version: 7.x.x
 
-      - name: Build frontend
-        run: |
-          pnpm i
-          pnpm build
+      - name: Install modules
+        run: pnpm i
+
+      - name: Run ESLint
+        run: pnpm lint
+
+      - name: Build project
+        run: pnpm build
 
       - name: Deploy to GitHub Pages
         uses: crazy-max/ghaction-github-pages@v2
