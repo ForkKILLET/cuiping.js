@@ -221,8 +221,9 @@ export function renderSVG(c: Chem, opt: SvgRendererOption = {}): SvgResult {
         + '</style>'
 
     const O = { x: 0, y: 0 }
-    const X = (x: number) => x + vp.xOffset + paddingX + O.x
-    const Y = (y: number) => y + vp.yOffset + paddingY + O.y
+    const R = (n: number) => MathEx.round(n, 7)
+    const X = (x: number) => R(x + vp.xOffset + paddingX + O.x)
+    const Y = (y: number) => R(y + vp.yOffset + paddingY + O.y)
     const A = (attrs: string[]) => attrs.length ? ' ' + attrs.join(' ') : ''
     const ln = (
         x1: number, y1: number, x2: number, y2: number, attr: string[],
@@ -281,7 +282,7 @@ export function renderSVG(c: Chem, opt: SvgRendererOption = {}): SvgResult {
                                     ? y - hh / 4
                                     : y - hh * 3 / 2
                         )}" `
-                        + `width="${hw * B.w * 2}" height="${hh * 2}" `
+                        + `width="${R(hw * B.w * 2)}" height="${hh * 2}" `
                         + 'debug=""'
                     + '></rect>'
                 }
@@ -292,7 +293,7 @@ export function renderSVG(c: Chem, opt: SvgRendererOption = {}): SvgResult {
 
         svg += `<rect group-id="${i}" fill="none" `
             + `x="${X(x - t.B[0].w * hw)}" y="${Y(y - hh)}" `
-            + `width="${hw * w * 2 + t.B[0].w * hw}" height="${hh * 2}"`
+            + `width="${R(hw * w * 2 + t.B[0].w * hw)}" height="${hh * 2}"`
         + '></rect>'
     }
 

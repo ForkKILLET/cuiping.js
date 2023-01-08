@@ -18,13 +18,7 @@ export const MathEx = {
         const p = 10 ** n
         return Math.round(x * p) / p
     },
-    sind: (deg: number) => (
-        MathEx.round(Math.sin(MathEx.d2r(deg)), 15)
-    ),
-    cosd: (deg: number) => (
-        MathEx.round(Math.cos(MathEx.d2r(deg)), 15)
-    ),
-    tand: (deg: number) => (
-        MathEx.round(Math.tan(MathEx.d2r(deg)), 15)
-    )
+    sind: (deg: number) => Math.sin(MathEx.d2r(deg)),
+    cosd: (deg: number) => Math.cos(MathEx.d2r(deg)),
+    tand: (deg: number) => Math.tan(MathEx.d2r(deg))
 }
