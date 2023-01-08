@@ -18,7 +18,7 @@ export const GroupCharset
     + '.' // Note: collpased carbonA
 export const AttrEndCharset = ',}'
 export const BondCountCharset = '=#'
-export const BondDirCharset = '-|/\\+'
+export const BondDirCharset = '-|/\\+@'
 export const BondModifiersCharset = '*!~'
 export const BondCharset = BondCountCharset + BondDirCharset + BondModifiersCharset
 
@@ -312,6 +312,38 @@ export abstract class Parser<T> {
         while (inCharset(this.current, SpaceCharset)) this.index ++
     }
 
+    protected doParseNumber() {
+        let number = 0
+        let hasMinus = false
+        let hasDigit = false
+        let dotPower
+
+        if (this.current === '-') {
+            hasMinus = true
+            this.index ++
+        }
+
+        while (true) {
+            if (this.current === '.') {
+                if (dotPower) return number
+                else {
+                    dotPower = 0.1
+                }
+            }
+            else if (this.current >= '0' && this.current <= '9') {
+                hasDigit = true
+                if (dotPower) number += + this.current * dotPower
+                else number = number * 10 + (+ this.current)
+            }
+            else break
+            this.index ++
+        }
+
+        if (! hasDigit) throw this.expect('number')
+
+        return number * (hasMinus ? - 1 : 1)
+    }
+
     protected abstract doParse(options?: any): T
 }
 
@@ -579,7 +611,35 @@ export class ChemParser extends Parser<Formula> {
                     throw Error(`Cannot infer the direction of '${preModifiers.add180Deg ? '!' : ''}~' (from direction ${df} deg)`)
             }
             else if (auto0Deg || auto180Deg) ds.push(0)
-            else ds.push(...BondDirTable[this.current as keyof typeof BondDirTable])
+            else if (this.current === '@') {
+                this.index ++
+                let deflect = false
+                let filpX = false
+                let filpY = false
+                const op = this.current as string
+                if (op === '!') {
+                    deflect = true
+                    this.index ++
+                }
+                else if (op === '|') {
+                    filpY = true
+                    this.index ++
+                }
+                else if (op === '-') {
+                    filpX = true
+                    this.index ++
+                }
+
+                const d = MathEx.stdAng(180 - this.doParseNumber())
+                ds.push(d)
+                if (deflect) ds.push(MathEx.stdAng(d + 180))
+                else if (filpY) ds.push(MathEx.stdAng(180 - d))
+                else if (filpX) ds.push(MathEx.stdAng(- d))
+            }
+            else {
+                ds.push(...BondDirTable[this.current as keyof typeof BondDirTable])
+                this.index ++
+            }
 
             for (let d of ds) {
                 if (preModifiers.use30Deg) {
@@ -597,7 +657,6 @@ export class ChemParser extends Parser<Formula> {
             }
 
             if (auto0Deg || auto30Deg || auto180Deg) break
-            this.index ++
         }
         this.maybeSpace()
 
