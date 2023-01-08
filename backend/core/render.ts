@@ -324,14 +324,28 @@ export function renderSVG(c: Chem, opt: SvgRendererOption = {}): SvgResult {
                 ln(x1, y1, x2, y2, attr, !! a.to, !! a.from)
             }
             else if (c === 2) {
-                let xg = bg * (y2 - y1) / u
-                let yg = bg * (x2 - x1) / u
-                if (yg < 0) {
-                    xg = - xg
-                    yg = - yg
+                if (a.side) {
+                    const xg = (bg + 1) * (y2 - y1) / u
+                    const yg = (bg + 1) * (x2 - x1) / u
+                    if (a.side === 'L') {
+                        ln(x1, y1, x2, y2, attr, !! a.to, !! a.from)
+                        ln(x1 + xg, y1 - yg, x2 + xg, y2 - yg, attr, (a.to ?? 0) > 1, (a.from ?? 0) > 1)
+                    }
+                    else if (a.side === 'R') {
+                        ln(x1, y1, x2, y2, attr, !! a.to, !! a.from)
+                        ln(x1 - xg, y1 + yg, x2 - xg, y2 + yg, attr, (a.to ?? 0) > 1, (a.from ?? 0) > 1)
+                    }
                 }
-                ln(x1 + xg, y1 - yg, x2 + xg, y2 - yg, attr, !! a.to, !! a.from)
-                ln(x1 - xg, y1 + yg, x2 - xg, y2 + yg, attr, (a.to ?? 0) > 1, (a.from ?? 0) > 1)
+                else {
+                    let xg = (bg / 2 + 0.5) * (y2 - y1) / u
+                    let yg = (bg / 2 + 0.5) * (x2 - x1) / u
+                    if (yg < 0) {
+                        xg = - xg
+                        yg = - yg
+                    }
+                    ln(x1 + xg, y1 - yg, x2 + xg, y2 - yg, attr, !! a.to, !! a.from)
+                    ln(x1 - xg, y1 + yg, x2 - xg, y2 + yg, attr, (a.to ?? 0) > 1, (a.from ?? 0) > 1)
+                }
             }
             else if (c === 3) {
                 let xg = (bg + 1) * (y2 - y1) / u

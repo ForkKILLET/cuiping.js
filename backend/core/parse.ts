@@ -158,7 +158,12 @@ export const BondAttrs = {
     ],
     '>': 'to',
     'length': { type: 'float', min: 0 },
-    'L': 'length'
+    'L': 'length',
+    'side': [
+        { type: 'const', value: 'L' },
+        { type: 'const', value: 'R' }
+    ],
+    'S': 'side'
 } as const
 export type AttrOfGroup = Attr<typeof GroupAttrs>
 export type AttrOfBond = Attr<typeof BondAttrs>
@@ -168,7 +173,8 @@ export type AttrOne<R extends AttrSchemaRule> =
         R extends { type: 'boolean' } ? boolean :
             R extends { type: 'integer' } ? number :
                 R extends { type: 'float' } ? number :
-                    never
+                    R extends { type: 'const', value: infer V } ? V :
+                        never
 export type AttrMany<S extends readonly AttrSchemaRule[]> =
     TupleToUnion<{
         [L in keyof S]: S[L] extends AttrSchemaRule
@@ -212,6 +218,9 @@ export type AttrSchemaRule = Readonly<({
     max?: number
 } | {
     type: 'string'
+} | {
+    type: 'const'
+    value: string
 }) & {
     validate?: AttrValidator
 }>
@@ -369,9 +378,9 @@ export class ChemParser extends Parser<Formula> {
                 let tyError: string | undefined
                 typeCheck: for (const s of ss as AttrSchemaRule[]) {
                     const ty = s.type
-                    if (
-                        tyNow === ty
+                    if (tyNow === ty
                         || (tyNow === 'string' && a[k] && ! isNaN(+ a[k]) && (ty === 'integer' || ty === 'float'))
+                        || (ty === 'const' && a[k] === s.value)
                     ) {
                         switch (ty) {
                             case 'integer':
