@@ -18,7 +18,7 @@ import { version as compVer } from 'cuiping-component/package.json'
 import { version as monacoVer } from 'cuiping-monaco/package.json'
 import { version as frontVer } from '../package.json'
 
-const molecule = ref<string | undefined>()
+const molecule = storageRef<string>('molecule', '')
 
 const history = storageReactive<string[]>('history', [])
 
@@ -157,7 +157,7 @@ watch(monacoContainer, () => {
         <p v-html="
             t('info.structure', {
                 formula: `<code>${
-                    molecule?.replace(/\n/, '<br />')
+                    molecule.replace(/\n/, '<br />')
                         ?? ''
                 }</code>`
             })
