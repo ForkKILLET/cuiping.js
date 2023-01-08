@@ -703,9 +703,13 @@ export class ChemParser extends Parser<Formula> {
         }
         this.maybeSpace()
 
+        const pd = bond.d.map(d => MathEx.stdAng(d + 180))
+        if (bond.n.children.some(({ d: ds }) => ds.some(d => d === pd[0])))
+            throw Error(`Duplicated bond direction (${pd[0]}deg, same as parent)`)
+
         bond.n.parents.push({
             c: bond.c,
-            d: bond.d.map(d => MathEx.stdAng(d + 180)),
+            d: pd,
             a: bond.a,
             n: self
         })
