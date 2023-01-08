@@ -95,7 +95,7 @@ See [component document](./component/README.md#usage).
 
 ### Welcome PR!
 
-At present, the project doen't have any linters configured. Just keep the code style similar.
+We use ESLint to unify code style and run checks by Husky and GitHub Action.
 
 ### Development plan
 

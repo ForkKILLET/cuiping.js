@@ -96,7 +96,7 @@
 
 ### 欢迎 PR！
 
-本项目目前没有配置 linter，保持代码风格相近即可
+本项目用 ESLint 统一代码风格，并通过 Husky 和 GitHub Action 检查。
 
 ### 开发计划
 
