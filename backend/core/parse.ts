@@ -472,7 +472,7 @@ export class ChemParser extends Parser<Formula> {
                 }
                 else if (s === '?') nd = true
             }
-            else aligned = true
+            else aligned = false
             if (align !== 'base') w /= 2
             boxes.push({ s, w, a: align, cd, nd })
         }
@@ -526,7 +526,8 @@ export class ChemParser extends Parser<Formula> {
 
         this.maybeSpace()
 
-        if (alignLong) throw Error(`Unclosed ${align}script in group typeset '${r}'`)
+        if (aligned)
+            throw Error(`Unclosed ${align.replace('_', '')} typeset in group typeset '${r}'`)
 
         if (! r) throw this.expect('atom group')
 
