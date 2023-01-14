@@ -1,5 +1,8 @@
 // Todo: allow to customize
+// Todo: measure text
 
 export const getWidth = (ch: string) => {
-    return 1 + (ch.length - 1) * 0.6
+    if (ch.length)
+        return 1 + (ch.length - 1) * 0.6
+    return 0
 }

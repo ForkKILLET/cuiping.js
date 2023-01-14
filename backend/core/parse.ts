@@ -461,20 +461,21 @@ export class ChemParser extends Parser<Formula> {
         let alignShort = false; let alignLong = false; let aligned = false
         let align: GroupTypesetAlign = 'base'
         let hasNonDigit = false
+        let cd = false
 
-        const eatChar = () => {
-            if (! s) return
-            let w = getWidth(s); let cd; let nd
-            if (! aligned) {
-                if (s === '.') {
-                    cd = true
-                    w = 0
-                }
-                else if (s === '?') nd = true
-            }
-            else aligned = false
+        const eatChar = (emptyCd = false) => {
+            if (! emptyCd && ! s) return
+            let w = getWidth(s)
+            const nd = ! aligned && s === '?'
+            if (aligned) aligned = false
             if (align !== 'base') w /= 2
             boxes.push({ s, w, a: align, cd, nd })
+        }
+
+        if (this.current === '.') {
+            cd = true
+            r += '.'
+            this.index ++
         }
 
         while (
@@ -521,7 +522,7 @@ export class ChemParser extends Parser<Formula> {
             this.index ++
         }
 
-        eatChar()
+        eatChar(cd)
         const Re = this.index - 1
 
         this.maybeSpace()

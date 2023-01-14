@@ -218,6 +218,7 @@ export function renderSVG(c: Chem, opt: SvgRendererOption = {}): SvgResult {
                 + 'stroke: red;'
                 + 'fill: none;'
             + '}'
+            + `#${id} [mask] {fill: white;}`
         + '</style>'
 
     const O = { x: 0, y: 0 }
@@ -246,55 +247,6 @@ export function renderSVG(c: Chem, opt: SvgRendererOption = {}): SvgResult {
             + `L ${X(x2 - xwh + xwv)} ${Y(y2 - ywh - ywv)}`
             + `L ${X(x2 - xwh - xwv)} ${Y(y2 - ywh + ywv)} Z`
         + `"${A([ ...attr, 'tofill=""' ])}></path>`
-    }
-
-    for (const { x, y, xo, yo, t, a, i } of l.groups) {
-        O.x = xo
-        O.y = yo
-
-        let w = 0
-        for (const B of t.B) {
-            const attr: string[] = []
-            if (a.color)
-                attr.push('nobasecolor=""', `fill="${a.color}"`)
-            if (a.bold)
-                attr.push('bold=""')
-
-            if (w > 0) w += B.w / 2
-            if (! B.nd && ! B.cd) {
-                if (B.a !== 'base') attr.push(`box-align="${B.a}"`)
-                svg += `<text x="${X(x + w * 2 * hw)}" y="${Y(y)}"${A(attr)}>`
-                        + encodeXML(B.s)
-                    + '</text>'
-            }
-            if (displayTextBox) {
-                if (B.cd) {
-                    ln(x - 3, y - 3, x + 3, y + 3, [ 'debug=""' ])
-                    ln(x - 3, y + 3, x + 3, y - 3, [ 'debug=""' ])
-                }
-                else {
-                    svg += '<rect '
-                        + `x="${X(x + (w * 2 - B.w) * hw)}" `
-                        + `y="${Y(
-                            B.a === 'base'
-                                ? y - hh
-                                : B.a === 'sub'
-                                    ? y - hh / 4
-                                    : y - hh * 3 / 2
-                        )}" `
-                        + `width="${R(hw * B.w * 2)}" height="${hh * 2}" `
-                        + 'debug=""'
-                    + '></rect>'
-                }
-            }
-
-            w += B.w / 2
-        }
-
-        svg += `<rect group-id="${i}" fill="none" `
-            + `x="${X(x - t.B[0].w * hw)}" y="${Y(y - hh)}" `
-            + `width="${R(hw * w * 2 + t.B[0].w * hw)}" height="${hh * 2}"`
-        + '></rect>'
     }
 
     if (displayBonds) {
@@ -359,6 +311,62 @@ export function renderSVG(c: Chem, opt: SvgRendererOption = {}): SvgResult {
                 ln(x1 - xg, y1 + yg, x2 - xg, y2 + yg, attr, (a.to ?? 0) > 2, (a.from ?? 0) > 2)
             }
         }
+    }
+
+    for (const { x, y, xo, yo, t, a, i } of l.groups) {
+        O.x = xo
+        O.y = yo
+
+        let w = 0
+        for (const B of t.B) {
+            const attr: string[] = []
+            if (a.color)
+                attr.push('nobasecolor=""', `fill="${a.color}"`)
+            if (a.bold)
+                attr.push('bold=""')
+
+            if (w > 0) w += B.w / 2
+
+            const rx = X(x + (w * 2 - B.w) * hw)
+            const ry = Y(
+                B.a === 'base' ? y - hh : B.a === 'sub' ? y - hh / 4 : y - hh * 3 / 2
+            )
+            const rw = R(hw * B.w * 2)
+            const rh = hh * 2
+
+            if (! B.nd) {
+                if (B.cd) {
+                    svg += `<rect x="${rx}" y="${ry}" `
+                        + `width="${rw}" height="${rh}" `
+                        + 'mask=""'
+                    + '></rect>'
+                }
+                if (B.a !== 'base') attr.push(`box-align="${B.a}"`)
+                svg += `<text x="${X(x + w * 2 * hw)}" y="${Y(y)}"${A(attr)}>`
+                        + encodeXML(B.s)
+                    + '</text>'
+            }
+
+            if (displayTextBox) {
+                if (B.cd) {
+                    ln(x - 3, y - 3, x + 3, y + 3, [ 'debug=""' ])
+                    ln(x - 3, y + 3, x + 3, y - 3, [ 'debug=""' ])
+                }
+                else {
+                    svg += `<rect x="${rx}" y="${ry}" `
+                        + `width="${rw}" height="${rh}" `
+                        + 'debug=""'
+                    + '></rect>'
+                }
+            }
+
+            w += B.w / 2
+        }
+
+        svg += `<rect group-id="${i}" fill="none" `
+            + `x="${X(x - t.B[0].w * hw)}" y="${Y(y - hh)}" `
+            + `width="${R(hw * w * 2 + t.B[0].w * hw)}" height="${hh * 2}"`
+        + '></rect>'
     }
 
     svg += '</svg>'
