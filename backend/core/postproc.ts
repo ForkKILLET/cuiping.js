@@ -32,7 +32,9 @@ export function combine(formula: Formula): Chem {
         return struct as ChemOnlyStruct
     }
 
-    function toGraph(struct: Struct): ChemOnlyStruct {
+    function toGraph(struct: Struct, index: number): ChemOnlyStruct {
+        Debug.D('toGraph: %s', struct)
+
         const { children, parents } = struct
 
         if (struct.S === 'ref') {
@@ -56,15 +58,18 @@ export function combine(formula: Formula): Chem {
 
         if (struct.S === 'attr') throw Error('Not implemented')
 
-        if (! struct.toGraphVisited) {
+        struct[`toGraph${index}Visited`] = true
+        if (! struct.toGraphAnyVisited) {
+            struct.toGraphAnyVisited = true
             totalStruct ++
-            struct.toGraphVisited = true
         }
 
         struct.children.forEach(bond => {
-            if (! bond.n.toGraphVisited) {
-                bond.n = toGraph(bond.n)
-            }
+            const target = deref(bond.n)
+            if (! target[`toGraph${index}Visited`])
+                bond.n = toGraph(bond.n, index)
+            else
+                bond.n = target
         })
 
         return struct as ChemOnlyStruct
