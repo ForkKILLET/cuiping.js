@@ -6,6 +6,9 @@ import type { Locales } from './i18n/locales'
 
 import { encodeHTML } from 'entities'
 
+import { Debug } from 'cuiping/utils/debug'
+import { printStruct } from 'cuiping/core/stringify'
+
 import { Cuiping } from 'cuiping-component'
 import 'cuiping-component/dist/style.css'
 
@@ -134,6 +137,9 @@ watch(monacoContainer, () => {
 }, { immediate: true })
 
 const query = new URLSearchParams(location.search)
+
+Debug.on = query.has('debug')
+if (Debug.on) Object.assign(window, { printStruct })
 </script>
 
 <template>

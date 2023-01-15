@@ -4,6 +4,7 @@ import type {
 } from './parse.js'
 import { MathEx } from '../utils/math.js'
 import { Debug } from '../utils/debug.js'
+import { wrapStructString } from './stringify.js'
 
 export type ExpandedBond = {
     c: BondCount
@@ -33,7 +34,7 @@ export function combine(formula: Formula): Chem {
     }
 
     function toGraph(struct: Struct, index: number): ChemOnlyStruct {
-        Debug.D('toGraph: %s', struct)
+        Debug.D('toGraph:\n%s', wrapStructString(struct))
 
         const { children, parents } = struct
 
@@ -134,7 +135,7 @@ export function combine(formula: Formula): Chem {
     const roots = formula.structs.map(toGraph)
     const one = toTree(toRoot(roots[0]))
 
-    Debug.D('one tree: %o', one)
+    Debug.D('toTree: %o\n%s', one, wrapStructString(one))
 
     if (visitedStruct < totalStruct)
         throw Error(`Structs aren't connected. (nodes ${visitedStruct} / ${totalStruct})`)
