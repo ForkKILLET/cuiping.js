@@ -132,6 +132,8 @@ watch(monacoContainer, () => {
         })
     }
 }, { immediate: true })
+
+const query = new URLSearchParams(location.search)
 </script>
 
 <template>
@@ -187,7 +189,7 @@ watch(monacoContainer, () => {
         <button @click="history.unshift(molecule ?? '')">{{ t('op.save_current') }}</button>
         <button @click="history.splice(0, history.length)">{{ t('op.clear') }}</button>
         <br />
-        <div class="mols">
+        <div v-if="! query.has('nohistory')" class="mols">
             <template v-if="history.length">
                 <div v-for="mol, i in history" :key="i">
                     <code>{{ mol }}</code>
@@ -204,7 +206,7 @@ watch(monacoContainer, () => {
         </div>
 
         <h2>{{ t('title.examples') }}</h2>
-        <div class="mols">
+        <div v-if="! query.has('noexamples')" class="mols">
             <div v-for="[ desc, mol ], i in examples" :key="i">
                 <strong>{{ desc[i18n.locale.value as Locales] }}</strong><br />
                 <code>{{ mol }}</code>
