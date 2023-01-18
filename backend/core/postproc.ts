@@ -34,7 +34,7 @@ export function combine(formula: Formula): Chem {
     }
 
     function toGraph(struct: Struct, index: number): ChemOnlyStruct {
-        Debug.D('toGraph:\n%s', wrapStructString(struct))
+        Debug.D('toGraph %d:\n%s', index, wrapStructString(struct))
 
         const { children, parents } = struct
 
@@ -76,32 +76,28 @@ export function combine(formula: Formula): Chem {
         return struct as ChemOnlyStruct
     }
 
-    function invert(struct: ChemOnlyStruct): ChemOnlyStruct {
-        struct.parents.forEach(bond => {
-            if (bond.n.toTreeVisited) return
-            bond.n.parentVisited = true
-            invert(bond.n)
-            struct.children.push(bond)
+    function invert(struct: ChemOnlyStruct, parentStruct: ChemOnlyStruct | null): ChemOnlyStruct {
+        struct.parents.forEach(parent => {
+            if (parent.n === parentStruct) return
+            parent.n.invertVisited = true
+            struct.children.push(parent)
+            parent.n.children = parent.n.children.filter(parentChild => parentChild.n !== struct)
         })
         struct.parents = []
         return struct
     }
 
-    function toTree(struct: ChemOnlyStruct): ChemOnlyStruct {
+    function toTree(struct: ChemOnlyStruct, parentStruct: ChemOnlyStruct | null): ChemOnlyStruct {
         if (! struct.toTreeVisited) {
             struct.toTreeVisited = true
             visitedStruct ++
         }
 
-        invert(struct)
+        invert(struct, parentStruct)
 
         const childrenToDelete: number[] = []
         struct.children.forEach((bond, i) => {
             if (bond.n.toTreeVisited) {
-                if (bond.n.parentVisited) {
-                    childrenToDelete.unshift(i)
-                    return
-                }
                 bond.n = {
                     S: 'chem',
                     node: {
@@ -115,7 +111,7 @@ export function combine(formula: Formula): Chem {
                     treeId: bond.n.treeId
                 }
             }
-            else bond.n = toTree(bond.n)
+            else bond.n = toTree(bond.n, struct)
         })
         childrenToDelete.forEach(i => struct.children.splice(i, 1))
 
@@ -133,7 +129,7 @@ export function combine(formula: Formula): Chem {
     }
 
     const roots = formula.structs.map(toGraph)
-    const one = toTree(toRoot(roots[0]))
+    const one = toTree(toRoot(roots[0]), null)
 
     Debug.D('toTree: %o\n%s', one, wrapStructString(one))
 
