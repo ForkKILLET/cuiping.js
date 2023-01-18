@@ -632,7 +632,7 @@ export class ChemParser extends Parser<Formula> {
                     this.index ++
                 }
 
-                const d = MathEx.stdAng(180 - this.doParseNumber())
+                const d = MathEx.stdAng(- this.doParseNumber())
                 ds.push(d)
                 if (deflect) ds.push(MathEx.stdAng(d + 180))
                 else if (filpY) ds.push(MathEx.stdAng(180 - d))
