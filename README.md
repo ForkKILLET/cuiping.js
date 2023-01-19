@@ -11,6 +11,11 @@ English | [简体中文](./README.zh-Hans.md)
 
 - [Brief](#brief)
 - [Experience](#experience)
+  - [Basic function](#basic-function)
+  - [Monaco Editor function](#monaco-editor-function)
+  - [About saving images](#about-saving-image)
+  - [App configuration](#app-configuration)
+  - [(advanced) URL params](#advanced-url-params)
 - [Usage](#usage)
   - [Only use backend](#only-use-backend-including-parsing-and-rendering)
   - [Rendering configuration](#rendering-configuration)
@@ -32,12 +37,43 @@ Render the chemical formula of SVG format in the browser, using the accurate [_C
 
 ## Experience
 
-You can experience the demo at [icelava.top](https://icelava.top/cuiping.js/):
+You can try the demo at [icelava.top](https://icelava.top/cuiping.js/).
+
+### Basic function
+
 - Try to input _Cuiping formula_ and view rendered results in real time
 - Save the formulas you tried to browser
 - Modify the rendering configuration at any time
 - Check some preset examples and edit them
-- Hover over the rendering result to copy _Cuiping formula_ or download SVG images
+- Hover over the rendering result to zoom, copy _Cuiping formula_ or download SVG images
+
+### Monaco Editor function
+
+- Support syntax highlighting of _Cuiping Formula_
+- Support auto-completion of _Refs_ and _Attributes_
+- Support going to definition of _Refs_ (<kbd>Ctrl-Click</kbd> or <kbd>Right Click</kbd> > `Go To Definition`)
+- Support marking _Groups_ (<kbd>Ctrl-M</kbd> or <kbd>Right Click</kbd> > `Toggle Group Mark`)
+
+### About saving image
+
+- Hover on the output and click `SVG` in the pop-up toolbar to download vector graph.
+- To get non-vector images (e.g. for PPT), turn on the `Use Image` option in configuration, then you can copy or save the image by right-clicking them.
+
+### App configuration
+
+| Options             | Type    | Description
+|:--------------------|:--------|:-----------
+| `useMonacoEditor`   | boolean | Whether to use Monaco Editor
+| `useImage`          | boolean | Whether to render to PNG instead of SVG
+| `imageScale`        | number  | Scale of the image, only when `useImage` is on. Larger scale makes the image clearer
+
+### (advanced) URL params
+
+| Param        | Description
+|:-------------|:-----------
+| `debug`      | Enable debug
+| `nohistory`  | Do not display the history
+| `noexamples` | Do not display examples
 
 ## Usage
 
@@ -149,10 +185,7 @@ The development plan of this project can be found on [Notion](https://humdrum-zi
     $ pnpm build
     $ pnpm preview
     ```
-3. You may set `cuipingDebug` in `localStorage` to enable debug.
-    ```javascript
-    localStorage.cuipingDebug = 1
-    ```
+3. You may add `?debug` URL param to enable debug.
 
 ### Commit your changes
 
