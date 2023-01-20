@@ -197,5 +197,7 @@ export function combine(formula: Formula): Chem {
         throw Error('Not implemented')
     }
 
-    return expand(one)
+    const chem = expand(one)
+    Debug.D('expand: %o', chem)
+    return chem
 }
