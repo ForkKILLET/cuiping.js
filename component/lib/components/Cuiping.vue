@@ -8,7 +8,8 @@ const props = withDefaults(defineProps<{
     molecule?: string,
     useImage?: boolean,
     imageScale?: number,
-    renderOptions?: SvgRendererOption
+    renderOptions?: SvgRendererOption,
+    genTestCase?: boolean
 }>(), {
     useImage: false,
     imageScale: 1
@@ -21,7 +22,7 @@ const res = computed(() => {
 
     const data = render(props.molecule, {
         onError: err => {
-            errMsg = err.toString()
+            errMsg = err.message
             console.warn(err)
         },
         renderer: 'svg',
@@ -102,13 +103,23 @@ watch([ canvas, props, redrawCounter ], () => {
     }
 })
 
+const copyTestCase = () => {
+    if (! props.molecule || res.value.state === 'empty') return
+
+    navigator.clipboard.writeText(`[ ${JSON.stringify(props.molecule)}, ${
+        res.value.state === 'ok'
+            ? JSON.stringify(res.value.data.svg.replace(/ id=".+?" xmlns=".+?"/, '').replace(/<style>.+<\/style>/, ''))
+            : `Error(${JSON.stringify(res.value.errMsg)})`
+    } ],\n`)
+}
+
 defineExpose({
     res, redraw
 })
 </script>
 
 <template>
-    <div class="root" :class="res.state">
+    <div class="root" :class="{ [res.state]: true, testmode: props.genTestCase }">
         <div
             v-if="res.state === 'ok'"
             class="container"
@@ -144,6 +155,7 @@ defineExpose({
                     <button @click="copyFormula">
                         {{ copyState }}
                     </button>
+                    <button v-if="genTestCase" @click="copyTestCase">TestCase</button>
                 </div>
             </div>
         </div>
@@ -173,6 +185,7 @@ defineExpose({
 }
 
 .toolbar {
+    display: none;
     user-select: none;
     overflow: hidden;
     width: 0px;
@@ -213,7 +226,8 @@ defineExpose({
     background-color: #eee;
 }
 
-.root.ok:hover .toolbar {
+.root.ok:hover .toolbar, .root.testmode:hover .toolbar {
+    display: block;
     width: 100%;
 }
 
