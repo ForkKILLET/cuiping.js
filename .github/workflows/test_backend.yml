@@ -1,0 +1,32 @@
+name: test_backend
+
+on:
+  push:
+    branches: [ main ]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v1
+        with:
+          node-version: '16'
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v2.2.4
+        with:
+          version: 7.x.x
+
+      - name: Install modules
+        run: pnpm i
+
+      - name: Test backend
+        env:
+          FORCE_COLOR: "1"
+        run: pnpm -F cuiping build:test
