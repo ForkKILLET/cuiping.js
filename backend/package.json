@@ -7,6 +7,8 @@
 	"types": "./dist/core/index.d.ts",
 	"scripts": {
 		"build": "tsc",
+		"test": "node dist/test/testaction.js",
+		"build:test": "pnpm build && pnpm test",
 		"build:run": "pnpm build && node dist/test/loop.js",
 		"prepublish": "pnpm build"
 	},
