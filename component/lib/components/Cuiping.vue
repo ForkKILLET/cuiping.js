@@ -226,7 +226,7 @@ defineExpose({
     background-color: #eee;
 }
 
-.root.ok:hover .toolbar, .root.testmode:hover .toolbar {
+.root.ok:hover .toolbar, .root.testmode:hover .toolbar, .toolbar-outer:hover .toolbar {
     display: block;
     width: 100%;
 }
