@@ -175,6 +175,7 @@ if (Debug.on) Object.assign(window, { printStruct })
             v-bind="confComp"
             ref="mainCuiping"
             :molecule="molecule"
+            :gen-test-case="Debug.on"
             :render-options="confRender"
         />
 
@@ -203,7 +204,9 @@ if (Debug.on) Object.assign(window, { printStruct })
                     <button @click="selectMol(mol)">{{ t('op.select') }}</button>
                     <br />
                     <Cuiping
-                        :molecule="mol" :key="mol"
+                        :molecule="mol"
+                        :key="mol"
+                        :gen-test-case="Debug.on"
                         v-bind="confComp" :render-options="confRender"
                     />
                 </div>
@@ -219,8 +222,11 @@ if (Debug.on) Object.assign(window, { printStruct })
                 <button @click="selectMol(mol)">{{ t('op.select') }}</button>
                 <br />
                 <Cuiping
-                    :molecule="mol" :key="mol"
-                    v-bind="confComp" :render-options="confRender"
+                    :molecule="mol"
+                    :key="mol"
+                    :gen-test-case="Debug.on"
+                    v-bind="confComp"
+                    :render-options="confRender"
                 />
             </div>
         </div>
