@@ -9,12 +9,12 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
         with:
           fetch-depth: 0
 
       - name: Setup Node.js
-        uses: actions/setup-node@v1
+        uses: actions/setup-node@v3
         with:
           node-version: '16'
 
@@ -28,5 +28,5 @@ jobs:
 
       - name: Test backend
         env:
-          FORCE_COLOR: "1"
+          FORCE_COLOR: '1'
         run: pnpm -F cuiping build:test
