@@ -16,8 +16,12 @@
     "sourceType": "module",
     "project": [
       "backend/tsconfig.json",
-      "frontend/tsconfig.json",
+      "frontend/tsconfig.app.json",
+      "frontend/tsconfig.config.json",
+      "frontend/tsconfig.cypress-ct.json",
+      "frontend/cypress/e2e/tsconfig.json",
       "component/tsconfig.json",
+      "component/tsconfig.node.json",
       "monaco/tsconfig.json"
     ]
   },
@@ -66,6 +70,7 @@
     ],
     "@typescript-eslint/indent": [ "error", 4 ],
     "@typescript-eslint/consistent-type-definitions": [ "error", "type" ],
+    "@typescript-eslint/consistent-type-imports": "error",
 
     "vue/multi-word-component-names": "off"
   }

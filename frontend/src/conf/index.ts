@@ -1,4 +1,5 @@
-import { watch, ref, reactive, Ref } from 'vue'
+import type { Ref } from 'vue'
+import { watch, ref, reactive } from 'vue'
 import Conf from './Conf.vue'
 
 export type Schema = {

@@ -23,7 +23,7 @@
     "dev": "vite",
     "build": "vite build && vue-tsc --emitDeclarationOnly",
     "preview": "vite preview",
-	"prepublish": "pnpm build"
+	  "prepublish": "pnpm build"
   },
   "dependencies": {
     "canvg": "^4.0.1",

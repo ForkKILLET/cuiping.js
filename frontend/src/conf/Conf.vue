@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { reactive } from 'vue'
 import { useI18n } from 'vue-i18n'
-import { Schemas } from './index'
+import type { Schemas } from './index'
 
 const { t } = useI18n()
 
@@ -25,7 +25,7 @@ update()
 
 <template>
     <div class="conf root">
-        <li v-for="s, k in schemas" :key="k">
+        <li v-for="s, k in schemas" :key="k" :data-cy="`conf-${k}`">
             <span class="name">{{ t(`conf.${k}`) }}</span>
             <input
                 v-if="s.ty === 'boolean'"

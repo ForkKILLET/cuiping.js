@@ -1,6 +1,8 @@
-import { ChemParser, Formula } from './parse.js'
+import type { Formula } from './parse.js'
+import { ChemParser } from './parse.js'
 import { combine } from './postproc.js'
-import { renderSVG, SvgRendererOption, SvgResult } from './render.js'
+import type { SvgRendererOption, SvgResult } from './render.js'
+import { renderSVG } from './render.js'
 
 export {
     GroupAttrs as Attributes,
