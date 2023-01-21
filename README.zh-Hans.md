@@ -1,6 +1,7 @@
 # Cuiping.js
 
-[![github-workflow](https://img.shields.io/github/actions/workflow/status/ForkKILLET/cuiping.js/deploy_page.yml?logo=github)](https://github.com/ForkKILLET/cuiping.js/actions)
+[![github-workflow-deploy_page](https://img.shields.io/github/actions/workflow/status/ForkKILLET/cuiping.js/deploy_page.yml?logo=github)](https://github.com/ForkKILLET/cuiping.js/actions?query=workflow%3Adeploy_page)
+[![github-workflow-test_backend](https://img.shields.io/github/actions/workflow/status/ForkKILLET/cuiping.js/test_backend.yml?logo=github&label=test)](https://github.com/ForkKILLET/cuiping.js/actions?query=workflow%3Atest_backend)
 ![npm:cuiping](https://img.shields.io/npm/v/cuiping?label=cuiping&logo=npm)
 ![npm:cuiping-component](https://img.shields.io/npm/v/cuiping-component?label=cuiping-component&logo=npm)
 ![npm:cuiping-monaco](https://img.shields.io/npm/v/cuiping-monaco?label=cuiping-monaco&logo=npm)
