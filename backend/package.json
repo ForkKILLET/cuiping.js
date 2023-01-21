@@ -1,6 +1,6 @@
 {
 	"name": "cuiping",
-	"version": "1.10.0",
+	"version": "1.11.0",
 	"description": "rendering chemistry strutures to SVG",
 	"type": "module",
 	"main": "./dist/core/index.js",
