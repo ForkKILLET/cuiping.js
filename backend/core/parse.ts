@@ -691,7 +691,7 @@ export class ChemParser extends Parser<Formula> {
 
         if (! inCharset(this.current, BondCharset)) {
             if (requirePrefix) throw this.expect('prefix-styled bond')
-            if (inCharset(this.current, GroupCharset)) {
+            if (inCharset(this.current, GroupCharset) || this.current === '&') {
                 const n = this.doParseStruct({ dirFrom: null })
                 const { c, d, a } = this.doParseBondType({ isPrefix: false, parsedBonds, dirFrom })
                 bond = { c, d, a, n }
