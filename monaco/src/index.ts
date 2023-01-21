@@ -1,5 +1,6 @@
-import * as Monaco from 'monaco-editor'
-import { GroupAttrs, BondAttrs, Formula } from 'cuiping/core/parse'
+import type * as Monaco from 'monaco-editor'
+import type { Formula } from 'cuiping/core/parse'
+import { GroupAttrs, BondAttrs } from 'cuiping/core/parse'
 
 export const getMonacoForCuiping = (monaco: typeof Monaco, {
     getFormula,

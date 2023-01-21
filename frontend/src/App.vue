@@ -2,6 +2,7 @@
 import { watch, ref } from 'vue'
 
 import { useI18n } from 'vue-i18n'
+// eslint-disable-next-line @typescript-eslint/consistent-type-imports
 import type { Locales } from './i18n/locales'
 
 import { encodeHTML } from 'entities'
@@ -12,7 +13,8 @@ import { printStruct } from 'cuiping/core/stringify'
 import { Cuiping } from 'cuiping-component'
 import 'cuiping-component/dist/style.css'
 
-import { Conf, SchemasToValues, storageRef, storageReactive } from './conf'
+import type { SchemasToValues } from './conf'
+import { Conf, storageRef, storageReactive } from './conf'
 import examples from './examples'
 
 import * as originalMonaco from 'monaco-editor'

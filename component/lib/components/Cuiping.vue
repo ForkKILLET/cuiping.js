@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { computed, ref, watch } from 'vue'
-import { render, SvgRendererOption } from 'cuiping'
+import type { SvgRendererOption } from 'cuiping'
+import { render } from 'cuiping'
 import { Canvg } from 'canvg'
 import SvgWrapper from './SvgWrapper.vue'
 

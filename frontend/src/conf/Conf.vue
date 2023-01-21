@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { reactive } from 'vue'
 import { useI18n } from 'vue-i18n'
-import { Schemas } from './index'
+import type { Schemas } from './index'
 
 const { t } = useI18n()
 
