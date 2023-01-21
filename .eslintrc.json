@@ -19,6 +19,7 @@
       "frontend/tsconfig.app.json",
       "frontend/tsconfig.config.json",
       "component/tsconfig.json",
+      "component/tsconfig.node.json",
       "monaco/tsconfig.json"
     ]
   },
