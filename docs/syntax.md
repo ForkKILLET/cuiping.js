@@ -11,13 +11,13 @@ A *Chemical Structure* starts with a *Group*. A *Group* can:
 - Include uppercase and lowercase characters, lowercase characters following uppercase characters will be merged into one text box (to make element notation more natural)
 - Include digits, digits will be rendered as subscript
 - Be an isolated *Wildcard `?`*, and will not be rendered (to express a substituent)
-- Start with a *Collapsing Flag `.`* to make the text box collapse. Connected *Bonds* will be rendered without gaps when there's nothing after `.` (like bond-line formulas)
+- Be an isolated *Collapsing Flag `.`*, and will not be rendered, connected bonds will be rendered without gaps if there's nothing following `.` (like bond-line formulas)
 
 A *Group* can include *In-group Typesetting*:
 
 - Using `^`/`_`/`` ` `` to turn the following character into superscript/subscript/normal text
 - When `^`/`_`/`` ` `` is followed by characters wrapped by `{}`, turning the wrapped characters into superscript/subscript/normal text
-- Superscripts and subscripts have no character limit
+- *In-group Typesetting* have no character limit
 
 ## Attribute
 
@@ -54,7 +54,7 @@ Rules of expressing a *Bond*:
 *Bond Directions* have a similar expressing method to writing chemical structure:
 
 - Using `-`, `|`, `/` and `\` to represent a *Bond* of 0°, 90°, 60° and 270° respectively
-- Using `@` followed by a number to represent a *Bond* of specific degree. The degree can be positive or negative, integer or decima. At end it will be converted to a value between 0° and 360°
+- Using `@` followed by a number to represent a *Bond* of a specific degree. The degree can be positive or negative, integer or decimal. It will be ultimately converted to a value between 0° and 360°
 - *Bond Directions* can be `+`, see [Overlapping](#bond-overlapping) for details
 - If *Bond Type* appears before the *Chemical Structure* it connected, the direction will follow the rules stated above; if *Bond Type* appears after the *Chemical Structure* it connected, the direction will be the opposite (i.e. adding a deflection of 180°)
 - If *Bond Type* appears after the *Chemical Structure* it connected, the *Bond* can only appear in a *Bonds Set*
@@ -64,11 +64,10 @@ Rules of expressing a *Bond*:
 
 - *Bond Modifier `*`* sets the length (*Attribute `length`*) of the *Bond* to 0
 - *Bond Modifier `!`* can make all the following *Bond Directions* add a deflection of 180° (to express opposite *Bonds* outsides the *Bonds Set*)
-- *Bond Modifier `~`* acts on all *Bond Directions* of `/` and `\` in the following *Bond Directions*. It can make their angle with x-axis change from 60° to 30°
+- *Bond Modifier `~`* affects all *Bond Directions* of `/` and `\` in the following *Bond Directions* by turning their angle with the x-axis change from 60° to 30°
 
 Shorthand rules for *Bond Modifier `~`*:
-- When `~` is not followed by *Bond Direction*, the direction will be automatically infered based on the direction of *Bond in*
-- 若没有入键，方向推导为 `~/`；若同时存在「键修饰符 `!`」，方向推导为 `!~\`
+- When `~` is not followed by *Bond Direction*, the direction will be automatically inferred based on the direction of *Bond in*
 - When there is no *Bond in*, the direction will be inferred to `~/`; when *Bond Modifier `!`* also exists, the direction will be inferred to `!~\`
 - When there is a *Bond in*, `~/` and `~\` will be inferred to each other; when *Bond Modifier `!`* also exists, `!~\` and `!~/` will be inferred to each other 
 - When there is a *Bond in* but its direction is not among the above four directions, an inferring error will occur
@@ -99,7 +98,7 @@ Overlapping `@` (experimental)
 
 - A *Chemical Structure* can be named by using *Attribute `ref`*, a named *Chemical Structure* is referenceable
 - A sign `&` followed by a referenced name is a *Referencing*, as well as a *Group*, it can be followed by *Bonds*
-- Using `;` to separate different *Chemical Structures*. (Dangling `;` is allowed) Ultimately, these *Chemical Structures* must be fully connected by *Referencing*
+- Using `;` to separate different *Chemical Structures* (Dangling `;` is allowed). These *Chemical Structures* must be ultimately fully connected by *Referencing*
 - A *Referencing* cannot be connected to itself by a *Bond* (i.e., self-loops are not allowed)
 
 ## Attributes List
