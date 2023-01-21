@@ -1,6 +1,6 @@
 {
   "name": "cuiping-monaco",
-  "version": "0.2.0",
+  "version": "1.0.0",
   "description": "Monaco Editor extension for Cuiping formula",
   "main": "./dist/index.js",
 	"types": "./dist/index.d.ts",
