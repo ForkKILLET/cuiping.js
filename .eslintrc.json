@@ -18,6 +18,8 @@
       "backend/tsconfig.json",
       "frontend/tsconfig.app.json",
       "frontend/tsconfig.config.json",
+      "frontend/tsconfig.cypress-ct.json",
+      "frontend/cypress/e2e/tsconfig.json",
       "component/tsconfig.json",
       "component/tsconfig.node.json",
       "monaco/tsconfig.json"

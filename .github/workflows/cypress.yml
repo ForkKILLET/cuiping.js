@@ -1,0 +1,27 @@
+---
+name: Cypress
+
+on: [push, pull_request]
+
+jobs:
+  cypress-run:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v3
+      - uses: pnpm/action-setup@v2
+        with:
+          version: "7"
+      - uses: actions/setup-node@v3
+        with:
+          node-version: "lts/*"
+          cache: pnpm
+      - name: Install dependencies
+        run: pnpm install
+      - name: Cypress run
+        uses: cypress-io/github-action@v5
+        with:
+          install: false
+          working-directory: frontend
+          build: pnpm run -w build
+          start: pnpm run preview
