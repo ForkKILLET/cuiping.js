@@ -17,11 +17,25 @@ jobs:
           node-version: "lts/*"
           cache: pnpm
       - name: Install dependencies
-        run: pnpm install
+        uses: cypress-io/github-action@v5
+        with:
+          runTests: false
       - name: Cypress run
         uses: cypress-io/github-action@v5
         with:
           install: false
           working-directory: frontend
-          build: pnpm run -w build
+          build: pnpm -r run build
           start: pnpm run preview
+      - name: Upload Cypress screenshots
+        uses: actions/upload-artifact@v3
+        if: failure()
+        with:
+          name: cypress-screenshots
+          path: frontend/cypress/screenshots
+      - name: Upload Cypress videos
+        uses: actions/upload-artifact@v3
+        if: always()
+        with:
+          name: cypress-videos
+          path: frontend/cypress/videos
