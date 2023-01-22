@@ -1,5 +1,5 @@
 ---
-name: Cypress
+name: test_frontend
 
 on: [push, pull_request]
 
