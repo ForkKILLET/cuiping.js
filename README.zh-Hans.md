@@ -120,6 +120,8 @@
 | `bondGap`             | 数值   | 双键、三键中键的间距
 | `lineBaseColor`       | 字符串 | 线基色
 | `textBaseColor`       | 字符串 | 文字基色
+| `displayBackground`   | 布尔   | 是否显示背景，不显示即透明背景
+| `backgroundColor`     | 字符串 | 背景色
 | `halfFontSize`        | 数值   | 半字号
 | `halfTextBoxWidth`    | 数值   | 半字框宽
 | `halfTextBoxHeight`   | 数值   | 半字框高

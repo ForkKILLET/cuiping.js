@@ -120,10 +120,12 @@ You can try the demo at [icelava.top](https://icelava.top/cuiping.js/).
 | `bondGap`           | integer | Gap between double/triple bonds
 | `lineBaseColor`     | string  | Base color of lines
 | `textBaseColor`     | string  | Base color of text
+| `displayBackground` | boolean | Whether to display background
+| `backgroundColor`   | string  | Background color
 | `halfFontSize`      | integer | Half font size
 | `halfTextBoxWidth`  | integer | Half width of text boxes
 | `halfTextBoxHeight` | integer | Half height of text boxes
-| `displayTextBox`    | boolean | Whether to show text boxes
+| `displayTextBox`    | boolean | Whether to display text boxes
 
 ### Using the Vue component in the browser
 

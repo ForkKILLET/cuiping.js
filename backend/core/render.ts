@@ -153,6 +153,8 @@ export type SvgRendererOption = {
     bondGap?: number
     lineBaseColor?: string
     textBaseColor?: string
+    displayBackground?: boolean
+    backgroundColor?: string
     halfFontSize?: number
     halfTextBoxWidth?: number
     halfTextBoxHeight?: number
@@ -177,6 +179,8 @@ export function renderSVG(c: Chem, opt: SvgRendererOption = {}): SvgResult {
         bondGap: bg = 2,
         lineBaseColor = 'black',
         textBaseColor = 'black',
+        displayBackground = false,
+        backgroundColor = 'white',
         halfFontSize = 8,
         halfTextBoxWidth: hw = 6,
         halfTextBoxHeight: hh = 8,
@@ -227,6 +231,9 @@ export function renderSVG(c: Chem, opt: SvgRendererOption = {}): SvgResult {
             + '}'
             + `#${id} [mask] {fill: white;}`
         + '</style>'
+
+    if (displayBackground)
+        svg += `<rect x="0" y="0" width="${width}" height="${height}" fill="${backgroundColor}"></rect>`
 
     const O = { x: 0, y: 0 }
     const R = (n: number) => MathEx.round(n, 7)

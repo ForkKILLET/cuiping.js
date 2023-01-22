@@ -30,10 +30,12 @@ export default {
             bondGap: 'Bond gap',
             lineBaseColor: 'Line base color',
             textBaseColor: 'Text base color',
+            displayBackground: 'Display background',
+            backgroundColor: 'Background Color',
             halfFontSize: 'Half font size',
             halfTextBoxWidth: 'Half text box width',
             halfTextBoxHeight: 'Half text box height',
-            displayTextBox: 'Show text box (debug)'
+            displayTextBox: 'Display text box (debug)'
         }
     },
     zh: {
@@ -67,6 +69,8 @@ export default {
             bondGap: '键间距',
             lineBaseColor: '线基色',
             textBaseColor: '文字基色',
+            displayBackground: '显示背景',
+            backgroundColor: '背景色',
             halfFontSize: '半字号',
             halfTextBoxWidth: '半字框宽',
             halfTextBoxHeight: '半字框高',
