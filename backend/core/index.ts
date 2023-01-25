@@ -1,8 +1,9 @@
 import type { Formula } from './parse.js'
 import { ChemParser } from './parse.js'
-import { combine } from './postproc.js'
+import { combine, expand } from './postproc.js'
 import type { SvgRendererOption, SvgResult } from './render.js'
 import { renderSVG } from './render.js'
+import { attrStructDefs } from './builtin.js'
 
 export {
     GroupAttrs as Attributes,
@@ -18,12 +19,18 @@ export type {
     BondCount,
     BondDir,
     Struct,
+    StructHead,
     Formula,
     Group
 } from './parse.js'
 
 export {
-    combine
+    attrStructDefs
+} from './builtin.js'
+
+export {
+    combine,
+    expand
 } from './postproc.js'
 
 export type {
@@ -50,9 +57,10 @@ export function render(molecule: string, options: {
     rendererOptions: SvgRendererOption
 }): (SvgResult & { formula: Formula }) | undefined {
     try {
-        const parser = new ChemParser(molecule)
+        const parser = new ChemParser(molecule, attrStructDefs)
         const formula = parser.parse()
-        const chem = combine(formula)
+        const one = combine(formula)
+        const chem = expand(one)
         if (options.renderer === 'svg') return {
             ...renderSVG(chem, options.rendererOptions),
             formula

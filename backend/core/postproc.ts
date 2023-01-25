@@ -1,10 +1,11 @@
 import type {
     Formula, Struct,
-    AttrOfBond, BondCount, BondDir, Group, ChemStructHead
+    AttrOfBond, BondCount, BondDir, Group, ChemStructHead, RefStructHead, StructHead
 } from './parse.js'
 import { MathEx } from '../utils/math.js'
 import { Debug } from '../utils/debug.js'
 import { wrapStructString } from './stringify.js'
+import deepClone from 'deep-clone'
 
 export type ExpandedBond = {
     c: BondCount
@@ -19,29 +20,74 @@ export type Chem = {
     bonds: ExpandedBond[]
 }
 
-type ChemOnlyStruct = Struct<ChemStructHead, ChemStructHead, ChemStructHead>
+type PureStruct<H extends StructHead> = Struct<H, H, H>
+type ChemAndRefStruct = PureStruct<ChemStructHead | RefStructHead>
+type ChemStruct = PureStruct<ChemStructHead>
 
-export function combine(formula: Formula): Chem {
+export function combine(formula: Formula): ChemStruct {
     let totalStruct = 0
     let visitedStruct = 0
 
-    function deref(struct: Struct): ChemOnlyStruct {
-        if (struct.S === 'ref') {
-            const refName = struct.node.names[0]
-            struct = formula.labels[refName]!
+    let unnamedAttrStructId = 0
+
+    function callAttrStruct(struct: Struct, parent: ChemAndRefStruct | null): ChemAndRefStruct[] {
+        if (struct.S === 'attr') {
+            const def = struct.node.d
+            if (def.type !== 'chem')
+                throw Error(`Not implemented: attr struct [type=${def.type}]`)
+
+            else {
+                const groupLabel = (struct.node.a.ref as string | undefined) ?? `unnamed:${unnamedAttrStructId ++}:`
+                const newTrees: ChemAndRefStruct[] = []
+                const cloneChemProto = (proto: ChemAndRefStruct): ChemAndRefStruct => {
+                    const cloned = {
+                        S: proto.S,
+                        node: deepClone(proto.node),
+                        treeId: proto.treeId,
+                        children: proto.children.map(bond => ({
+                            ...bond,
+                            n: cloneChemProto(bond.n)
+                        })),
+                        parents: parent
+                            ? [ deepClone({
+                                ...proto.parents[0],
+                                n: parent
+                            }) ]
+                            : []
+                    } as ChemAndRefStruct
+                    if (proto.S === 'chem') {
+                        const label = proto.node.a.ref
+                        if (label && def.chem.exposedLabels.includes(label)) {
+                            formula.labels[groupLabel + label] = cloned
+                        }
+                    }
+                    return cloned
+                }
+                return [ cloneChemProto(def.chem.proto), ...newTrees ]
+            }
         }
-        return struct as ChemOnlyStruct
+
+        // Todo
+        return [ struct as ChemAndRefStruct ]
     }
 
-    function toGraph(struct: Struct, index: number): ChemOnlyStruct {
+    function deref(struct: Struct): ChemStruct {
+        if (struct.S === 'ref') {
+            const label = struct.node.l[0]
+            struct = formula.labels[label]!
+        }
+        return struct as ChemStruct
+    }
+
+    function toGraph(struct: Struct, index: number): ChemStruct {
         Debug.D('toGraph %d:\n%s', index, wrapStructString(struct))
 
         const { children, parents } = struct
 
         if (struct.S === 'ref') {
-            const refName = struct.node.names[0]
-            const target = formula.labels[refName]
-            if (! target) throw Error(`Unknown ref &${refName}`)
+            const label = struct.node.l[0]
+            const target = formula.labels[label]
+            if (! target) throw Error(`Unknown ref &${label}`)
 
             // Note: Self -> Ref, Self children -> Ref children, Self parent -> Ref parent
             struct = target
@@ -51,13 +97,13 @@ export function combine(formula: Formula): Chem {
 
         children.forEach(child => {
             if (child.n.S === 'ref' && deref(child.n) === struct)
-                throw Error(`Self-loop on ref &${child.n.node.names[0]}`)
+                throw Error(`Self-loop on ref &${child.n.node.l[0]}`)
             child.n.parents.forEach(parent => {
                 parent.n = deref(parent.n)
             })
         })
 
-        if (struct.S === 'attr') throw Error('Not implemented')
+        if (struct.S === 'attr') throw Error('Not implemented: attr structs')
 
         struct[`toGraph${index}Visited`] = true
         if (! struct.toGraphAnyVisited) {
@@ -73,10 +119,10 @@ export function combine(formula: Formula): Chem {
                 bond.n = target
         })
 
-        return struct as ChemOnlyStruct
+        return struct as ChemStruct
     }
 
-    function invert(struct: ChemOnlyStruct, parentStruct: ChemOnlyStruct | null): ChemOnlyStruct {
+    function invert(struct: ChemStruct, parentStruct: ChemStruct | null): ChemStruct {
         struct.parents.forEach(parent => {
             if (parent.n === parentStruct) return
             parent.n.invertVisited = true
@@ -87,7 +133,7 @@ export function combine(formula: Formula): Chem {
         return struct
     }
 
-    function toTree(struct: ChemOnlyStruct, parentStruct: ChemOnlyStruct | null): ChemOnlyStruct {
+    function toTree(struct: ChemStruct, parentStruct: ChemStruct | null): ChemStruct {
         if (! struct.toTreeVisited) {
             struct.toTreeVisited = true
             visitedStruct ++
@@ -118,86 +164,73 @@ export function combine(formula: Formula): Chem {
         return struct
     }
 
-    function toRoot(struct: ChemOnlyStruct): ChemOnlyStruct {
-        if (! struct.toRootVisited) {
-            struct.toRootVisited = true
-        }
-        else return struct
-        return struct.parents.length
-            ? toRoot(struct.parents[0].n)
-            : struct
-    }
-
-    const roots = formula.structs.map(toGraph)
-    const one = toTree(toRoot(roots[0]), null)
+    const roots = formula.structs
+        .flatMap(root => callAttrStruct(root, null))
+        .map(toGraph)
+    const one = toTree(roots[0], null)
 
     Debug.D('toTree: %o\n%s', one, wrapStructString(one))
 
     if (visitedStruct < totalStruct)
         throw Error(`Structs aren't connected. (nodes ${visitedStruct} / ${totalStruct})`)
 
-    function expand(
-        struct: Struct<ChemStructHead, ChemStructHead>,
-        rotateD: number = 0, flipX: boolean = false, flipY: boolean = false,
-        depth: number = 0
-    ): Chem {
-        if (struct.S === 'chem') {
-            const bonds: ExpandedBond[] = []
-            struct.children.forEach(b => {
-                const [ d0 ] = b.d
+    return one
+}
 
-                // Note: expand bond dirs
-                b.d.forEach((d, i) => {
-                    let rD = rotateD
-                    let fX = flipX
-                    let fY = flipY
+export function expand(
+    struct: Struct<ChemStructHead, ChemStructHead>,
+    rotateD: number = 0, flipX: boolean = false, flipY: boolean = false,
+    depth: number = 0
+): Chem {
+    if (struct.S === 'chem') {
+        const bonds: ExpandedBond[] = []
+        struct.children.forEach(b => {
+            const [ d0 ] = b.d
 
-                    if (i) {
-                        if (d + d0 === 360)
-                            fY = ! fY
-                        else if (d + d0 === 180)
-                            fX = ! fX
-                        else {
-                            const dd = d - d0
-                            rD += MathEx.stdAng(flipX === flipY ? dd : - dd)
-                        }
+            // Note: expand bond dirs
+            b.d.forEach((d, i) => {
+                let rD = rotateD
+                let fX = flipX
+                let fY = flipY
+
+                if (i) {
+                    if (d + d0 === 360)
+                        fY = ! fY
+                    else if (d + d0 === 180)
+                        fX = ! fX
+                    else {
+                        const dd = d - d0
+                        rD += MathEx.stdAng(flipX === flipY ? dd : - dd)
                     }
+                }
 
-                    d += rotateD
-                    if (flipX) d = 180 - d
-                    if (flipY) d = 360 - d
-                    d = MathEx.stdAng(d)
+                d += rotateD
+                if (flipX) d = 180 - d
+                if (flipY) d = 360 - d
+                d = MathEx.stdAng(d)
 
-                    Debug.D(
-                        '>'.repeat(depth + 1) + ' '.repeat(8 * ((depth / 8 | 0) + 1) - depth)
-                        + 'rd %d,\tfx %o,\tfy %o\t-> %d',
-                        rotateD, flipX, flipY, d
-                    )
+                Debug.D(
+                    '>'.repeat(depth + 1) + ' '.repeat(8 * ((depth / 8 | 0) + 1) - depth)
+                    + 'rd %d,\tfx %o,\tfy %o\t-> %d',
+                    rotateD, flipX, flipY, d
+                )
 
-                    const t = expand({ ...b.n }, rD, fX, fY, depth + 1)
+                const t = expand({ ...b.n }, rD, fX, fY, depth + 1)
 
-                    bonds.push({
-                        c: b.c,
-                        a: b.a,
-                        d,
-                        t,
-                        f: struct.node
-                    })
+                bonds.push({
+                    c: b.c,
+                    a: b.a,
+                    d,
+                    t,
+                    f: struct.node
                 })
             })
-            const chem = {
-                g: struct.node,
-                bonds
-            }
-            return chem
+        })
+        const chem = {
+            g: struct.node,
+            bonds
         }
-        else if (struct.S === 'attr') {
-            throw Error('Not implemented')
-        }
-        throw Error('Not implemented')
+        return chem
     }
-
-    const chem = expand(one)
-    Debug.D('expand: %o', chem)
-    return chem
+    throw Error('Not implemented: attr structs')
 }

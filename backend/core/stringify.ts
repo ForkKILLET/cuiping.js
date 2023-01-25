@@ -5,7 +5,7 @@ export function stringifyStruct(struct: Struct, memory: Struct[] = [], depth = 0
         struct.S === 'chem'
             ? struct.node.t.B.map(x => x.s).join('')
             : struct.S === 'ref'
-                ? '&' + struct.node.names.join(',')
+                ? '&' + struct.node.l.join(',')
                 : ''
     )
     if (memory.includes(struct)) return headStr + ' [loop]\n'

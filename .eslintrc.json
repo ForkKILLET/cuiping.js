@@ -60,6 +60,7 @@
     "@typescript-eslint/restrict-plus-operands": "off",
     "@typescript-eslint/prefer-nullish-coalescing": "off",
     "@typescript-eslint/restrict-template-expressions": "off",
+    "@typescript-eslint/consistent-type-assertions": "off",
     "@typescript-eslint/brace-style": [ "error", "stroustrup" ],
     "@typescript-eslint/array-type": [
       "error",

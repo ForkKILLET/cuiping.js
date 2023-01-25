@@ -53,14 +53,31 @@ export type AttrStructHead = {
 }
 
 export type Ref = {
-    names: string[]
+    l: string[]
 }
 
 export type AttrCall = {
     d: AttrStructDef
     a: Attr<any>
 }
-export type ChemDef = {}
+
+export type AttrStructDef = {
+    type: 'chem'
+    attr: AttrSchema
+    chem: ChemDef
+} | {
+    type: 'void'
+    attr: AttrSchema
+}
+
+export type AttrStructDefs = Record<string, AttrStructDef>
+
+export type ChemDef = {
+    proto: Struct<ChemStructHead, ChemStructHead, ChemStructHead>
+    exposedLabels: string[]
+    defaultIn: string
+    defaultOut: string
+}
 
 export type Group = {
     t: GroupTypeset
@@ -225,17 +242,6 @@ export type AttrSchemaRule = Readonly<({
     validate?: AttrValidator
 }>
 export type AttrSchema = Record<string, string | Readonly<MaybeArray<AttrSchemaRule>>>
-
-export type AttrStructDef = {
-    type: 'chem'
-    attr: AttrSchema
-    chem: ChemDef
-} | {
-    type: 'void'
-    attr: AttrSchema
-}
-
-export type AttrStructDefs = Record<string, AttrStructDef>
 
 const isAttribute = (k: string, attrSchema: AttrSchema): k is keyof typeof attrSchema => {
     return k in attrSchema
@@ -763,9 +769,15 @@ export class ChemParser extends Parser<Formula> {
         if (def.type !== 'chem')
             throw this.expect('attr struct in chem type', `${def.type} type`)
 
-        const a = this.current === '{'
-            ? this.doParseAttr({ ...GroupAttrs, ...def.attr })
-            : {}
+        let a
+        if (this.current === '{') {
+            a = this.doParseAttr({
+                ...GroupAttrs,
+                ...def.attr
+            })
+            a = a.validate({})
+        }
+        else a = {}
 
         return { d: def, a }
     }
@@ -792,7 +804,7 @@ export class ChemParser extends Parser<Formula> {
         }
         names.push(s)
 
-        return { names }
+        return { l: names }
     }
 
     private doParseStructHead(): StructHead {
@@ -831,8 +843,12 @@ export class ChemParser extends Parser<Formula> {
         }
         struct.children = this.doParseBonds({ self: struct, dirFrom })
 
-        if (head.S === 'chem' && head.node.a.ref) {
-            this.labels[head.node.a.ref] = struct
+        if (head.S === 'chem') {
+            const label = head.node.a.ref
+            if (label) {
+                if (this.labels[label]) throw Error(`Not implemented: shared ref ('${label}')`)
+                else this.labels[label] = struct
+            }
         }
 
         return struct

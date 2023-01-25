@@ -115,10 +115,10 @@ export const getMonacoForCuiping = (monaco: typeof Monaco, {
             }
 
             if (before.match(/(?<![\^_`]({[^}]*)?)&\w*$/) != null) { // Note: complete ref
-                const refNames = getRefNames(all)
+                const labels = getRefNames(all)
                 range.startColumn --
                 return {
-                    suggestions: refNames.map(res => ({
+                    suggestions: labels.map(res => ({
                         label: '&' + res[2],
                         insertText: '&' + res[2],
                         kind: CompletionItemKind.Reference,
@@ -155,9 +155,9 @@ export const getMonacoForCuiping = (monaco: typeof Monaco, {
             const refRes = before.match(/(?<![\^_`]({[^}]*)?)(&\w*)$/)
             const word = model.getWordAtPosition(position)?.word
             if ((refRes != null) && word?.[0] === '&') { // Note: go to definition of ref
-                const refNames = getRefNames(all)
-                const refNameNow = word.slice(1)
-                const refDef = refNames.find(res => res[2] === refNameNow)
+                const labels = getRefNames(all)
+                const labelNow = word.slice(1)
+                const refDef = labels.find(res => res[2] === labelNow)
                 if (refDef == null) return null
                 const [ refDefPosition ] = model.findMatches(refDef[0], true, false, true, null, false)
                 return {

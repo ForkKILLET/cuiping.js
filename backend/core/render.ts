@@ -192,10 +192,36 @@ export function renderSVG(c: Chem, opt: SvgRendererOption = {}): SvgResult {
     const vp = getViewport(l, hw)
     Debug.D('layout: %o, viewport: %o', l, vp)
 
-    const width = vp.width + paddingX * 2
-    const height = vp.height + paddingY * 2
+    const O = { x: 0, y: 0 }
+    const R = (n: number) => MathEx.round(n, 7)
+    const X = (x: number) => R(x + vp.xOffset + paddingX + O.x)
+    const Y = (y: number) => R(y + vp.yOffset + paddingY + O.y)
+    const A = (attrs: string[]) => attrs.length ? ' ' + attrs.join(' ') : ''
+    const ln = (
+        x1: number, y1: number, x2: number, y2: number, attr: string[],
+        to: boolean = false, from: boolean = false
+    ) => {
+        svg += `<line x1="${X(x1)}" y1="${Y(y1)}" x2="${X(x2)}" y2="${Y(y2)}"${A(attr)}></line>`
+        if (to) arrow(x1, y1, x2, y2, attr)
+        if (from) arrow(x2, y2, x1, y1, attr)
+    }
+    const arrow = (x1: number, y1: number, x2: number, y2: number, attr: string[]) => {
+        const wh = 4
+        const xwh = wh * (x2 - x1) / u
+        const ywh = wh * (y2 - y1) / u
+        const wv = 1.5
+        const xwv = wv * (y2 - y1) / u
+        const ywv = wv * (x2 - x1) / u
+        svg += '<path d="'
+            + `M ${X(x2)} ${Y(y2)}`
+            + `L ${X(x2 - xwh + xwv)} ${Y(y2 - ywh - ywv)}`
+            + `L ${X(x2 - xwh - xwv)} ${Y(y2 - ywh + ywv)} Z`
+        + `"${A([ ...attr, 'tofill=""' ])}></path>`
+    }
 
     const id = `mol-${(Math.random() * 1e6 | 0)}-${Date.now().toString().slice(- 10)}`
+    const width = R(vp.width + paddingX * 2)
+    const height = R(vp.height + paddingY * 2)
 
     svg += `<svg id="${id}" xmlns="http://www.w3.org/2000/svg" `
         + `width="${width}" height="${height}" viewBox="0 0 ${width} ${height}">`
@@ -234,34 +260,6 @@ export function renderSVG(c: Chem, opt: SvgRendererOption = {}): SvgResult {
 
     if (displayBackground)
         svg += `<rect x="0" y="0" width="${width}" height="${height}" fill="${backgroundColor}"></rect>`
-
-    const O = { x: 0, y: 0 }
-    const R = (n: number) => MathEx.round(n, 7)
-    const X = (x: number) => R(x + vp.xOffset + paddingX + O.x)
-    const Y = (y: number) => R(y + vp.yOffset + paddingY + O.y)
-    const A = (attrs: string[]) => attrs.length ? ' ' + attrs.join(' ') : ''
-    const ln = (
-        x1: number, y1: number, x2: number, y2: number, attr: string[],
-        to: boolean = false, from: boolean = false
-    ) => {
-        svg += `<line x1="${X(x1)}" y1="${Y(y1)}" x2="${X(x2)}" y2="${Y(y2)}"${A(attr)}></line>`
-        if (to) arrow(x1, y1, x2, y2, attr)
-        if (from) arrow(x2, y2, x1, y1, attr)
-    }
-
-    const arrow = (x1: number, y1: number, x2: number, y2: number, attr: string[]) => {
-        const wh = 4
-        const xwh = wh * (x2 - x1) / u
-        const ywh = wh * (y2 - y1) / u
-        const wv = 1.5
-        const xwv = wv * (y2 - y1) / u
-        const ywv = wv * (x2 - x1) / u
-        svg += '<path d="'
-            + `M ${X(x2)} ${Y(y2)}`
-            + `L ${X(x2 - xwh + xwv)} ${Y(y2 - ywh - ywv)}`
-            + `L ${X(x2 - xwh - xwv)} ${Y(y2 - ywh + ywv)} Z`
-        + `"${A([ ...attr, 'tofill=""' ])}></path>`
-    }
 
     if (displayBonds) {
         for (const {
