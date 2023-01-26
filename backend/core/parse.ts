@@ -718,12 +718,15 @@ export class ChemParser extends Parser<Formula> {
         if (bond.n.children.some(({ d: ds }) => ds.some(d => d === pd[0])))
             throw Error(`Duplicated bond direction (${pd[0]}deg, same as parent)`)
 
-        bond.n.parents.push({
+        const parent = {
             c: bond.c,
-            d: pd,
-            a: bond.a,
+            d: [ ...pd ],
+            a: { ...bond.a },
             n: self
-        })
+        }
+        parent.a.side = bond.a.side === 'L' ? 'R' : bond.a.side === 'R' ? 'L' : undefined
+        bond.n.parents.push(parent)
+
         return bond
     }
 

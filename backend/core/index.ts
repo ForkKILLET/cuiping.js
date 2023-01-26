@@ -3,7 +3,7 @@ import { ChemParser } from './parse.js'
 import { combine, expand } from './postproc.js'
 import type { SvgRendererOption, SvgResult } from './render.js'
 import { renderSVG } from './render.js'
-import { attrStructDefs } from './builtin.js'
+import { funcStructDefs } from './builtin.js'
 
 export {
     GroupAttrs as Attributes,
@@ -25,7 +25,7 @@ export type {
 } from './parse.js'
 
 export {
-    attrStructDefs
+    funcStructDefs
 } from './builtin.js'
 
 export {
@@ -57,7 +57,7 @@ export function render(molecule: string, options: {
     rendererOptions: SvgRendererOption
 }): (SvgResult & { formula: Formula }) | undefined {
     try {
-        const parser = new ChemParser(molecule, attrStructDefs)
+        const parser = new ChemParser(molecule, funcStructDefs)
         const formula = parser.parse()
         const one = combine(formula)
         const chem = expand(one)

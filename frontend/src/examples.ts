@@ -16,7 +16,9 @@ export default [
     [{ zh: '一氧化碳 (配位键)', en: 'carbon oxide (coordinated bond)' }, 'C#{<}O' ],
     [{ zh: '氯化铝 (使用引用)', en: 'aluminium chloride (using ref)' },
         String.raw`Al{&:1}[Cl\/]/Cl\{>}&2;` + '\n' + String.raw`Al{&:2}[/\Cl]!/Cl!\{>}&1`
-    ]
+    ],
+    [{ zh: '对苯二酚', en: 'hydroquinone' }, 'HO-$Ben-OH' ],
+    [{ zh: '1,2-二溴苯', en: '1,2-dibromobenzene' }, '$Ben{&:a}; &a1!Br; &a2!\\Br' ]
 ] as [
     { [k in Locales]: string }, string
 ][]

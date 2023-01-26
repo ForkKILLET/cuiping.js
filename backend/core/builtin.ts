@@ -7,7 +7,7 @@ const quickParse = (molecule: string) => {
     return one
 }
 
-export const attrStructDefs: FuncStructDefs = {
+export const funcStructDefs: FuncStructDefs = {
     Ben: {
         type: 'chem',
         attr: {},

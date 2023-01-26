@@ -1,6 +1,6 @@
 import type {
     Formula, Struct,
-    AttrOfBond, BondCount, BondDir, Group, ChemStruct, ChemAndRefStruct
+    AttrOfBond, BondCount, BondDir, Group, ChemStruct, ChemAndRefStruct, FuncStructHead
 } from './parse.js'
 import { MathEx } from '../utils/math.js'
 import { Debug } from '../utils/debug.js'
@@ -25,28 +25,36 @@ export function combine(formula: Formula): ChemStruct {
     let visitedStruct = 0
 
     let unnamedFuncStructId = 0
+    const getGroupLabel = (struct: Struct<FuncStructHead>) => (
+        (struct.node.a.ref as string | undefined) ??= `unnamed:${unnamedFuncStructId ++}:`
+    )
 
-    function callFuncStruct(struct: Struct, parent: ChemAndRefStruct | null): ChemAndRefStruct[] {
+    function callFuncStruct(struct: Struct): ChemAndRefStruct[] {
+        let nextTree: Struct
+        const newTrees: ChemAndRefStruct[] = []
+
         if (struct.S === 'func') {
             const def = struct.node.d
 
             if (def.type === 'chem') {
-                const groupLabel = (struct.node.a.ref as string | undefined) ?? `unnamed:${unnamedFuncStructId ++}:`
-                const cloneChemProto = (proto: ChemAndRefStruct): ChemAndRefStruct => {
+                const groupLabel = getGroupLabel(struct)
+                const cloneChemProto = (proto: ChemAndRefStruct, parent: ChemAndRefStruct | null = null): ChemAndRefStruct => {
                     const cloned = {
                         S: proto.S,
                         node: deepClone(proto.node),
-                        children: proto.children.map(bond => ({
-                            ...bond,
-                            n: cloneChemProto(bond.n)
-                        })),
-                        parents: parent
-                            ? [ deepClone({
-                                ...proto.parents[0],
+                        children: proto.children,
+                        parents: (parent && proto.parents.length)
+                            ? [{
+                                ...deepClone(proto.parents[0]),
                                 n: parent
-                            }) ]
+                            }]
                             : []
                     } as ChemAndRefStruct
+                    cloned.children = cloned.children.map(bond => ({
+                        ...bond,
+                        n: cloneChemProto(bond.n, cloned)
+                    }))
+
                     if (proto.S === 'chem') {
                         const label = proto.node.a.ref
                         if (label && def.chem.exposedLabels.includes(label)) {
@@ -56,26 +64,48 @@ export function combine(formula: Formula): ChemStruct {
                     return cloned
                 }
 
-                const childTree = {
-                    S: 'ref' as const,
+                nextTree = {
+                    S: 'ref',
                     node: { l: [ groupLabel + def.chem.defaultOut ] },
                     parents: [],
                     children: struct.children
-                } as ChemAndRefStruct
+                }
 
-                childTree.children.forEach(child => {
-                    child.n.parents[0].n = childTree
+                nextTree.children.forEach(child => {
+                    child.n.parents[0].n = nextTree
                 })
 
-                return [
-                    cloneChemProto(def.chem.proto),
-                    childTree
-                ]
+                newTrees.push(cloneChemProto(def.chem.proto))
             }
+
+            else throw Error(`Not implemented: func struct of ${def.type}`)
         }
 
-        // Todo
-        return [ struct as ChemAndRefStruct ]
+        else nextTree = struct
+
+        nextTree.children.forEach(child => {
+            const { n } = child
+            if (n.S === 'func') {
+                if (n.node.d.type === 'chem') {
+                    const groupLabel = getGroupLabel(n)
+                    child.n = {
+                        S: 'ref',
+                        node: { l: [ groupLabel + n.node.d.chem.defaultIn ] },
+                        parents: n.parents,
+                        children: []
+                    } as ChemAndRefStruct
+                    child.n.parents[0].n.children[0].n = child.n
+                }
+            }
+
+            const [ childNextTree, ...childNewTrees ] = callFuncStruct(n)
+
+            if (n.S === 'func' && n.node.d.type === 'chem') newTrees.push(childNextTree)
+
+            newTrees.push(...childNewTrees)
+        })
+
+        return [ nextTree as ChemAndRefStruct, ...newTrees ]
     }
 
     function deref(struct: Struct): ChemStruct {
@@ -136,7 +166,6 @@ export function combine(formula: Formula): ChemStruct {
             struct.children.push(parent)
             parent.n.children = parent.n.children.filter(parentChild => parentChild.n !== struct)
         })
-        struct.parents = []
         return struct
     }
 
@@ -149,12 +178,12 @@ export function combine(formula: Formula): ChemStruct {
         invert(struct, parentStruct)
 
         const childrenToDelete: number[] = []
-        struct.children.forEach((bond, i) => {
+        struct.children.forEach(bond => {
             if (bond.n.toTreeVisited) {
                 bond.n = {
                     S: 'chem',
                     node: {
-                        t: { B: [{ s: '?', w: 1, a: 'base' as const, nd: true }], w: 1 },
+                        t: { B: [{ s: '', w: 1, a: 'base' as const, nd: true }], w: 1 },
                         a: {},
                         R: [ - 1, - 1 ],
                         i: - 1
@@ -170,7 +199,7 @@ export function combine(formula: Formula): ChemStruct {
         return struct
     }
 
-    const forest = formula.structs.flatMap(root => callFuncStruct(root, null))
+    const forest = formula.structs.flatMap(callFuncStruct)
 
     Debug.D('callFuncStruct: %o\n%s', forest, {
         toString: () => forest.map(wrapStructString).join('\n')
