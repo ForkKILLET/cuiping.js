@@ -1,4 +1,4 @@
-import type { AttrStructDefs } from './parse.js'
+import type { FuncStructDefs } from './parse.js'
 import { ChemParser, combine } from './index.js'
 
 const quickParse = (molecule: string) => {
@@ -7,7 +7,7 @@ const quickParse = (molecule: string) => {
     return one
 }
 
-export const attrStructDefs: AttrStructDefs = {
+export const attrStructDefs: FuncStructDefs = {
     Ben: {
         type: 'chem',
         attr: {},

@@ -28,7 +28,7 @@ export type Formula = {
     labels: Record<string, Struct | undefined>
 }
 
-export type StructHead = ChemStructHead | RefStructHead | AttrStructHead
+export type StructHead = ChemStructHead | RefStructHead | FuncStructHead
 export type Struct<
     H extends StructHead = StructHead,
     C extends StructHead = StructHead,
@@ -36,7 +36,6 @@ export type Struct<
 > = H & {
     children: Bond<C>[]
     parents: Bond<P>[]
-    treeId: number
     [key: `${string}Visited`]: boolean | undefined
 }
 export type ChemStructHead = {
@@ -47,21 +46,25 @@ export type RefStructHead = {
     S: 'ref'
     node: Ref
 }
-export type AttrStructHead = {
-    S: 'attr'
-    node: AttrCall
+export type FuncStructHead = {
+    S: 'func'
+    node: FuncCall
 }
+
+export type PureStruct<H extends StructHead> = Struct<H, H, H>
+export type ChemAndRefStruct = PureStruct<ChemStructHead | RefStructHead>
+export type ChemStruct = PureStruct<ChemStructHead>
 
 export type Ref = {
     l: string[]
 }
 
-export type AttrCall = {
-    d: AttrStructDef
+export type FuncCall = {
+    d: FuncStructDef
     a: Attr<any>
 }
 
-export type AttrStructDef = {
+export type FuncStructDef = {
     type: 'chem'
     attr: AttrSchema
     chem: ChemDef
@@ -70,7 +73,7 @@ export type AttrStructDef = {
     attr: AttrSchema
 }
 
-export type AttrStructDefs = Record<string, AttrStructDef>
+export type FuncStructDefs = Record<string, FuncStructDef>
 
 export type ChemDef = {
     proto: Struct<ChemStructHead, ChemStructHead, ChemStructHead>
@@ -354,7 +357,7 @@ export abstract class Parser<T> {
 }
 
 export class ChemParser extends Parser<Formula> {
-    constructor(str: string, private readonly defs: AttrStructDefs = {}) {
+    constructor(str: string, private readonly defs: FuncStructDefs = {}) {
         super(str)
     }
 
@@ -755,7 +758,7 @@ export class ChemParser extends Parser<Formula> {
         return bonds
     }
 
-    private doParseAttrCall(): AttrCall {
+    private doParseFuncCall(): FuncCall {
         this.index ++ // Note: skip '$'
 
         let name = ''
@@ -765,9 +768,9 @@ export class ChemParser extends Parser<Formula> {
         }
 
         const def = this.defs[name]
-        if (! def) throw Error(`Unknown attr struct "${name}"`)
+        if (! def) throw Error(`Unknown func struct "${name}"`)
         if (def.type !== 'chem')
-            throw this.expect('attr struct in chem type', `${def.type} type`)
+            throw this.expect('func struct of chem type', `${def.type} type`)
 
         let a
         if (this.current === '{') {
@@ -816,8 +819,8 @@ export class ChemParser extends Parser<Formula> {
                 }
             case '$':
                 return {
-                    S: 'attr',
-                    node: this.doParseAttrCall()
+                    S: 'func',
+                    node: this.doParseFuncCall()
                 }
             default:
                 return {
@@ -838,15 +841,14 @@ export class ChemParser extends Parser<Formula> {
         const struct: Struct = {
             ...head,
             children: null as unknown as Struct['children'],
-            parents: [],
-            treeId: this.treeId
+            parents: []
         }
         struct.children = this.doParseBonds({ self: struct, dirFrom })
 
         if (head.S === 'chem') {
             const label = head.node.a.ref
             if (label) {
-                if (this.labels[label]) throw Error(`Not implemented: shared ref ('${label}')`)
+                if (this.labels[label]) throw Error(`Not implemented: shared ref (label '${label}')`)
                 else this.labels[label] = struct
             }
         }
@@ -854,7 +856,6 @@ export class ChemParser extends Parser<Formula> {
         return struct
     }
 
-    private treeId = 0
     private groupId = 0
 
     protected doParse(): Formula {
@@ -865,7 +866,6 @@ export class ChemParser extends Parser<Formula> {
                 this.index ++
                 this.maybeSpace()
                 if (! this.current) break // Note: allow dangling semicolon
-                this.treeId ++
                 continue
             }
             else break
