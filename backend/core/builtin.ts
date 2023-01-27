@@ -17,5 +17,35 @@ export const funcStructDefs: FuncStructDefs = {
             defaultIn: '1',
             defaultOut: '4'
         }
+    },
+    BenV: {
+        type: 'chem',
+        attr: {},
+        chem: {
+            proto: quickParse(String.raw`.{&:1}~\.{&:2}!=|{S:R}.{&:3}!~/.{&:4}!~=\{S:R}.{&:5}|.{&:6}~=/{S:R}&1`),
+            exposedLabels: [ ...'123456' ],
+            defaultIn: '1',
+            defaultOut: '4'
+        }
+    },
+    C6: {
+        type: 'chem',
+        attr: {},
+        chem: {
+            proto: quickParse(String.raw`.{&:1}/.{&:2}-{S:R}.{&:3}\.{&:4}!/{S:R}.{&:5}!.{&:6}!\{S:R}&1`),
+            exposedLabels: [ ...'123456' ],
+            defaultIn: '1',
+            defaultOut: '4'
+        }
+    },
+    C6V: {
+        type: 'chem',
+        attr: {},
+        chem: {
+            proto: quickParse(String.raw`.{&:1}~\.{&:2}!|{S:R}.{&:3}!~/.{&:4}!~\{S:R}.{&:5}|.{&:6}~/{S:R}&1`),
+            exposedLabels: [ ...'123456' ],
+            defaultIn: '1',
+            defaultOut: '4'
+        }
     }
 }
