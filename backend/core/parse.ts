@@ -700,7 +700,7 @@ export class ChemParser extends Parser<Formula> {
 
         if (! inCharset(this.current, BondCharset)) {
             if (requirePrefix) throw this.expect('prefix-styled bond')
-            if (inCharset(this.current, GroupCharset) || this.current === '&') {
+            if (inCharset(this.current, GroupCharset) || this.current === '&' || this.current === '$') {
                 const n = this.doParseStruct({ dirFrom: null })
                 const { c, d, a } = this.doParseBondType({ isPrefix: false, parsedBonds, dirFrom })
                 bond = { c, d, a, n }
@@ -748,6 +748,7 @@ export class ChemParser extends Parser<Formula> {
                 this.maybeSpace()
                 if (this.current as string === ']') {
                     this.index ++
+                    this.maybeSpace()
                     break
                 }
             }
@@ -769,6 +770,7 @@ export class ChemParser extends Parser<Formula> {
             name += this.current
             this.index ++
         }
+        this.maybeSpace()
 
         const def = this.defs[name]
         if (! def) throw Error(`Unknown func struct "${name}"`)
@@ -778,8 +780,8 @@ export class ChemParser extends Parser<Formula> {
         let a
         if (this.current === '{') {
             a = this.doParseAttr({
-                ...GroupAttrs,
-                ...def.attr
+                ...def.attr,
+                ...GroupAttrs
             })
             a = a.validate({})
         }
@@ -865,6 +867,7 @@ export class ChemParser extends Parser<Formula> {
         const structs: Struct[] = []
         while (true) {
             structs.push(this.doParseStruct({ dirFrom: null }))
+            this.maybeSpace()
             if (this.current === ';') {
                 this.index ++
                 this.maybeSpace()
