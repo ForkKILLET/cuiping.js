@@ -83,7 +83,7 @@ export function locate(chem: Chem, {
             const Lu = L * u
 
             const x2 = x1 + MathEx.cosd(b.d) * Lu
-            const cx2 = x1 + MathEx.cosd(b.d) * (Lu + T.B[0].w * hw)
+            const cx2 = x1 + MathEx.cosd(b.d) * (Lu + (cd ? 0 : T.B[0].w * hw))
             const y2 = y1 + MathEx.sind(b.d) * Lu
             const cy2 = y1 + MathEx.sind(b.d) * (Lu + (cd ? 0 : hh))
 
