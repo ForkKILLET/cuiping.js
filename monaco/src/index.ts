@@ -20,6 +20,7 @@ export const getMonacoForCuiping = (monaco: typeof Monaco, {
                 [ /[+\-|/\\*!~=#]/, 'bond.type' ],
                 [ /@[@\-|]?(?=-?\d*\.\d+|\d+)/, 'bond.type.at', '@number' ],
                 [ /\s+/, 'space' ],
+                [ /\$/, 'func', '@func' ],
                 [ /(?=([\^_`](.|\([^)]*?\))|[^[\]{@+\-|/\\*!~=#;,]+)+)/, 'group.dlmt', '@group' ],
                 [ /;/, 'semicolon' ]
             ],
@@ -47,6 +48,9 @@ export const getMonacoForCuiping = (monaco: typeof Monaco, {
                 [ /[^,:}]+?(?=[,}])/, 'attr.key' ],
                 [ /,/, 'attrs.comma', '@pop' ],
                 [ /(?=})/, 'attr.dlmt', '@pop' ]
+            ],
+            'func': [
+                [ /\w*/, 'func.name', '@pop' ]
             ],
             'group': [
                 [ /[\^_`]{/, 'group.typeset', '@group-typeset-multiple' ],
@@ -184,7 +188,9 @@ export const getMonacoForCuiping = (monaco: typeof Monaco, {
             { token: 'attr.key', foreground: '64D99D', fontStyle: 'bold' },
             { token: 'attr.colon', foreground: '89E2B5' },
             { token: 'bonds.comma', foreground: 'B7ACf0' },
-            { token: 'semicolon', foreground: 'B7ACf0' }
+            { token: 'semicolon', foreground: 'B7ACf0' },
+            { token: 'func', foreground: '8CD7F3', fontStyle: 'bold' },
+            { token: 'func.name', foreground: '40A9F1' }
         ],
         colors: {
             'editor.foreground': '#876FFF'
