@@ -1,6 +1,7 @@
 import type * as Monaco from 'monaco-editor'
 import type { Formula } from 'cuiping/core/parse'
 import { GroupAttrs, BondAttrs } from 'cuiping/core/parse'
+import { funcStructDefs } from 'cuiping/core/builtin'
 
 export const getMonacoForCuiping = (monaco: typeof Monaco, {
     getFormula,
@@ -90,11 +91,15 @@ export const getMonacoForCuiping = (monaco: typeof Monaco, {
 
     const getRefNames = (all: string) => [ ...all.matchAll(/(&|ref)\s*:\s*(\w+)/g) ]
 
+    const noSuggestions = {
+        suggestions: []
+    }
+
     monaco.languages.registerCompletionItemProvider('cuipingFormula', {
         triggerCharacters: [
             ...'abcdefghijklmnopqrstucwxyz'
             + 'ABCDEFGHIJKLMNOPQRSTUCWXYZ'
-            + '&'
+            + '&' + '$'
         ],
         provideCompletionItems: (model, position): CompletionList => {
             const before = model.getValueInRange({
@@ -104,13 +109,7 @@ export const getMonacoForCuiping = (monaco: typeof Monaco, {
                 endColumn: position.column
             })
             const all = model.getValue()
-
-            const noSuggestions = {
-                suggestions: []
-            }
-
             const word = model.getWordUntilPosition(position)
-
             const range = {
                 startLineNumber: position.lineNumber,
                 endLineNumber: position.lineNumber,
@@ -118,7 +117,7 @@ export const getMonacoForCuiping = (monaco: typeof Monaco, {
                 endColumn: word.endColumn
             }
 
-            if (before.match(/(?<![\^_`]({[^}]*)?)&\w*$/) != null) { // Note: complete ref
+            if (before.match(/(?<![\^_`]({[^}]*)?|{[^}]*)&\w*$/) != null) { // Note: complete ref
                 const labels = getRefNames(all)
                 range.startColumn --
                 return {
@@ -126,6 +125,18 @@ export const getMonacoForCuiping = (monaco: typeof Monaco, {
                         label: '&' + res[2],
                         insertText: '&' + res[2],
                         kind: CompletionItemKind.Reference,
+                        range
+                    }))
+                }
+            }
+
+            if (before.match(/(?<![\^_`]({[^}]*)?|{[^}]*)\$\w*$/) != null) { // Note: complete func struct
+                range.startColumn --
+                return {
+                    suggestions: Object.entries(funcStructDefs).map(([ name, _def ]) => ({
+                        label: '$' + name,
+                        insertText: '$' + name,
+                        kind: CompletionItemKind.Function,
                         range
                     }))
                 }
@@ -181,6 +192,7 @@ export const getMonacoForCuiping = (monaco: typeof Monaco, {
             { token: 'number', foreground: '7CAF3D' },
             { token: 'bonds', foreground: 'FA9246' },
             { token: 'ref', foreground: 'DC68E6', fontStyle: 'italic' },
+            { token: 'func', foreground: '12ACE8', fontStyle: 'bold' },
             { token: 'bond.type', foreground: '545A7B', fontStyle: 'bold' },
             { token: 'group.typeset', foreground: 'AAAAAA', fontStyle: 'italic' },
             { token: 'group.content.typeset', foreground: 'B9E260', fontStyle: 'italic' },
@@ -222,5 +234,6 @@ export const getMonacoForCuiping = (monaco: typeof Monaco, {
 export const cuipingMonacoEditorOptions = {
     theme: 'cuipingFormulaDefaultTheme',
     language: 'cuipingFormula',
-    automaticLayout: true
+    automaticLayout: true,
+    tabSize: 2
 }
