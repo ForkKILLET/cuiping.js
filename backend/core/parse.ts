@@ -61,7 +61,7 @@ export type Ref = {
 
 export type FuncCall = {
     d: FuncStructDef
-    a: Attr<any>
+    a: AttrOfFuncCall
 }
 
 export type FuncStructDef = {
@@ -185,8 +185,13 @@ export const BondAttrs = {
     ],
     'S': 'side'
 } as const
+export const FuncCallAttrs = {
+    'ref': { type: 'string' },
+    '&': 'ref'
+} as const
 export type AttrOfGroup = Attr<typeof GroupAttrs>
 export type AttrOfBond = Attr<typeof BondAttrs>
+export type AttrOfFuncCall = Attr<typeof FuncCallAttrs>
 
 export type AttrOne<R extends AttrSchemaRule> =
     R extends { type: 'string' } ? string :

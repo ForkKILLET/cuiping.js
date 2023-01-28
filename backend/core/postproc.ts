@@ -26,7 +26,7 @@ export function combine(formula: Formula): ChemStruct {
 
     let unnamedFuncStructId = 0
     const getGroupLabel = (struct: Struct<FuncStructHead>) => (
-        (struct.node.a.ref as string | undefined) ??= `unnamed:${unnamedFuncStructId ++}:`
+        struct.node.a.ref ??= `unnamed:${unnamedFuncStructId ++}:`
     )
 
     function callFuncStruct(struct: Struct): ChemAndRefStruct[] {

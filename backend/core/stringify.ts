@@ -2,7 +2,7 @@ import type { Bond, Struct } from './index'
 
 export function stringifyStruct(struct: Struct, memory: Struct[] = [], depth = 0) {
     const headStr = `[${struct.S}] `
-        + ('a' in struct.node && (struct.node.a.ref as string) ? '\'' + struct.node.a.ref : '')
+        + ('a' in struct.node && struct.node.a.ref ? '\'' + struct.node.a.ref : '')
         + (struct.S === 'chem' && struct.node.t.B[0].nd ? '[nd]' : '')
         + (
             struct.S === 'chem'
