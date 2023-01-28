@@ -62,7 +62,8 @@ export function locate(chem: Chem, {
             const kr = yr / xr // Note: slope of the line from center to corner
             const k = MathEx.tand(b.d) // Note: tangent of the bond angle
 
-            const { cd } = c.g.t.B[0] // Note: collasped
+            const { t } = c.g
+            const { cd } = t.B[0] // Note: collapsed
 
             const dxo = cd
                 ? 0
@@ -70,7 +71,8 @@ export function locate(chem: Chem, {
                     ? yr / k // Note: yr / dxo = tan d
                     : xr)
 
-            const dyo = cd
+            const zw = b.a.length === 0
+            const dyo = (cd && ! (t.B[0].s && zw))
                 ? 0
                 : hh * (Math.abs(k) > Math.abs(kr)
                     ? yr
@@ -254,7 +256,7 @@ export function renderSVG(c: Chem, opt: SvgRendererOption = {}): SvgResult {
                 + 'stroke: red;'
                 + 'fill: none;'
             + '}'
-            + `#${id} [mask] {fill: white;}`
+            + `#${id} [mask] {fill: ${backgroundColor};}`
         + '</style>'
 
     if (displayBackground)
