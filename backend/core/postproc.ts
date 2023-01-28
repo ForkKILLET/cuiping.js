@@ -255,9 +255,14 @@ export function expand(
 
             const t = expand({ ...b.n }, rD, fX, fY, depth + 1)
 
+            const a = { ...b.a }
+            if (flipX !== flipY) {
+                a.side = a.side === 'L' ? 'R' : a.side === 'R' ? 'L' : undefined
+            }
+
             bonds.push({
                 c: b.c,
-                a: b.a,
+                a,
                 d,
                 t,
                 f: struct.node
