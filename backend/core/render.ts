@@ -83,14 +83,13 @@ export function locate(chem: Chem, {
             const Lu = L * u
 
             const x2 = x1 + MathEx.cosd(b.d) * Lu
-            const cx2 = x1 + MathEx.cosd(b.d) * (Lu + (cd ? 0 : T.B[0].w * hw))
+            const cx2 = x1 + MathEx.cosd(b.d) * (Lu + (Cd ? 0 : T.B[0].w * hw))
             const y2 = y1 + MathEx.sind(b.d) * Lu
-            const cy2 = y1 + MathEx.sind(b.d) * (Lu + (cd ? 0 : hh))
+            const cy2 = y1 + MathEx.sind(b.d) * (Lu + (Cd ? 0 : hh))
 
             const txo = MathEx.cosd(b.d) >= 0 // Note: text offset x of target group
                 ? 0
                 : (- T.w + T.B[0].w) * 2 * hw
-            const tyo = (Cd !== cd) ? (Cd ? - 1 : + 1) * (MathEx.sind(b.d) * hh) : 0
 
             bonds.push({
                 g1: b.f, g2: b.t.g,
@@ -102,7 +101,7 @@ export function locate(chem: Chem, {
                 b.t,
                 cx2, cy2,
                 xo + dxo + txo,
-                yo + dyo + tyo
+                yo + dyo
             )
         })
     }
