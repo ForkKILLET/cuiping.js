@@ -57,7 +57,9 @@ export function combine(formula: Formula): ChemStruct {
 
                     if (proto.S === 'chem') {
                         const label = proto.node.a.ref
-                        if (label && def.chem.exposedLabels.includes(label)) {
+                        if (label && label in def.chem.exposedLabels) {
+                            const labelDef = def.chem.exposedLabels[label]
+                            ; (cloned as ChemStruct).labelDef = labelDef
                             formula.labels[groupLabel + label] = cloned
                         }
                     }
@@ -138,9 +140,21 @@ export function combine(formula: Formula): ChemStruct {
             child.n.parents.forEach(parent => {
                 parent.n = deref(parent.n)
             })
+
+            if (! child.d.length) { // Note: use default dir
+                if (struct.S === 'chem') {
+                    const { labelDef } = struct
+                    if (typeof labelDef?.defaultDir === 'number') {
+                        child.d.push(labelDef.defaultDir)
+                        return
+                    }
+                }
+
+                throw Error('No default dir')
+            }
         })
 
-        if (struct.S === 'func') throw Error('Not implemented: func structs')
+        if (struct.S === 'func') throw Error('Unreachable: uncalled func structs')
 
         struct[`toGraph${index}Visited`] = true
         if (! struct.toGraphAnyVisited) {

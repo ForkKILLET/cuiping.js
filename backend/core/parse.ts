@@ -19,7 +19,7 @@ export const GroupCharset
 export const AttrEndCharset = ',}'
 export const BondCountCharset = '=#'
 export const BondDirCharset = '-|/\\+@'
-export const BondModifiersCharset = '*!~'
+export const BondModifiersCharset = '*!~:'
 export const BondCharset = BondCountCharset + BondDirCharset + BondModifiersCharset
 
 export type Formula = {
@@ -41,6 +41,7 @@ export type Struct<
 export type ChemStructHead = {
     S: 'chem'
     node: Group
+    labelDef?: LabelDef
 }
 export type RefStructHead = {
     S: 'ref'
@@ -77,9 +78,13 @@ export type FuncStructDefs = Record<string, FuncStructDef>
 
 export type ChemDef = {
     proto: Struct<ChemStructHead, ChemStructHead, ChemStructHead>
-    exposedLabels: string[]
+    exposedLabels: Record<string, LabelDef>
     defaultIn: string
     defaultOut: string
+}
+
+export type LabelDef = {
+    defaultDir?: number
 }
 
 export type Group = {
@@ -119,6 +124,7 @@ export type BondModifiers = {
     zeroWidth?: boolean
     add180Deg?: boolean
     use30Deg?: boolean
+    useDefDeg?: boolean
 }
 
 export const BondCountTable: Record<AllCharsInString<typeof BondCountCharset>, BondCount> = {
@@ -137,7 +143,8 @@ export const BondDirTable = {
 export const BondModifiersTable: Record<AllCharsInString<typeof BondModifiersCharset>, keyof BondModifiers> = {
     '*': 'zeroWidth',
     '!': 'add180Deg',
-    '~': 'use30Deg'
+    '~': 'use30Deg',
+    ':': 'useDefDeg'
 }
 
 export const GroupAttrs = {
@@ -187,7 +194,8 @@ export const BondAttrs = {
 } as const
 export const FuncCallAttrs = {
     'ref': { type: 'string' },
-    '&': 'ref'
+    '&': 'ref',
+    'deg': { type: 'float' }
 } as const
 export type AttrOfGroup = Attr<typeof GroupAttrs>
 export type AttrOfBond = Attr<typeof BondAttrs>
@@ -607,76 +615,80 @@ export class ChemParser extends Parser<Formula> {
             this.index ++
         }
 
-        const noImplictDir = ! inCharset(this.current, BondDirCharset)
-        const auto0Deg = noImplictDir && (c > 1 || preModifiers.zeroWidth)
-        const auto180Deg = noImplictDir && preModifiers.add180Deg
-        const auto30Deg = noImplictDir && preModifiers.use30Deg
+        if (! preModifiers.useDefDeg) {
+            const noImplictDir = ! inCharset(this.current, BondDirCharset)
+            const auto0Deg = noImplictDir && (c > 1 || preModifiers.zeroWidth)
+            const auto180Deg = noImplictDir && preModifiers.add180Deg
+            const auto30Deg = noImplictDir && preModifiers.use30Deg
 
-        while (inCharset(this.current, BondDirCharset) || auto0Deg || auto30Deg || auto180Deg) {
-            const ds = []
-            if (auto30Deg) {
-                if (preModifiers.add180Deg) {
-                    if (df === 150 || df === null) ds.push(30)
-                    else if (df === 210) ds.push(330)
+            while (inCharset(this.current, BondDirCharset) || auto0Deg || auto30Deg || auto180Deg) {
+                const ds = []
+                if (auto30Deg) {
+                    if (preModifiers.add180Deg) {
+                        if (df === 150 || df === null) ds.push(30)
+                        else if (df === 210) ds.push(330)
+                    }
+                    else {
+                        if (df === 30 || df === null) ds.push(330)
+                        else if (df === 330) ds.push(30)
+                    }
+                    if (! ds.length) {
+                        throw Error(`Cannot infer the direction of '${preModifiers.add180Deg ? '!' : ''}~' (from direction ${df} deg)`)
+                    }
+                }
+                else if (auto0Deg || auto180Deg) ds.push(0)
+                else if (this.current === '@') {
+                    this.index ++
+                    let deflect = false
+                    let filpX = false
+                    let filpY = false
+                    const op = this.current as string
+                    if (op === '!') {
+                        deflect = true
+                        this.index ++
+                    }
+                    else if (op === '|') {
+                        filpY = true
+                        this.index ++
+                    }
+                    else if (op === '-') {
+                        filpX = true
+                        this.index ++
+                    }
+
+                    const d = MathEx.stdAng(- this.doParseNumber())
+                    ds.push(d)
+                    if (deflect) ds.push(MathEx.stdAng(d + 180))
+                    else if (filpY) ds.push(MathEx.stdAng(180 - d))
+                    else if (filpX) ds.push(MathEx.stdAng(- d))
                 }
                 else {
-                    if (df === 30 || df === null) ds.push(330)
-                    else if (df === 330) ds.push(30)
-                }
-                if (! ds.length)
-                    throw Error(`Cannot infer the direction of '${preModifiers.add180Deg ? '!' : ''}~' (from direction ${df} deg)`)
-            }
-            else if (auto0Deg || auto180Deg) ds.push(0)
-            else if (this.current === '@') {
-                this.index ++
-                let deflect = false
-                let filpX = false
-                let filpY = false
-                const op = this.current as string
-                if (op === '!') {
-                    deflect = true
-                    this.index ++
-                }
-                else if (op === '|') {
-                    filpY = true
-                    this.index ++
-                }
-                else if (op === '-') {
-                    filpX = true
+                    ds.push(...BondDirTable[this.current as keyof typeof BondDirTable])
                     this.index ++
                 }
 
-                const d = MathEx.stdAng(- this.doParseNumber())
-                ds.push(d)
-                if (deflect) ds.push(MathEx.stdAng(d + 180))
-                else if (filpY) ds.push(MathEx.stdAng(180 - d))
-                else if (filpX) ds.push(MathEx.stdAng(- d))
-            }
-            else {
-                ds.push(...BondDirTable[this.current as keyof typeof BondDirTable])
-                this.index ++
-            }
+                for (let d of ds) {
+                    if (preModifiers.use30Deg) {
+                        if (d === 60) d = 30
+                        else if (d === 300) d = 330
+                    }
+                    if (preModifiers.add180Deg) d = MathEx.stdAng(d + 180)
+                    if (! isPrefix) d = MathEx.stdAng(d + 180)
+                    if (dirs.includes(d)) d = MathEx.stdAng(d + 180)
 
-            for (let d of ds) {
-                if (preModifiers.use30Deg) {
-                    if (d === 60) d = 30
-                    else if (d === 300) d = 330
+                    if (this.checkDupBondDir(parsedBonds, dirs, d))
+                        throw Error(`Duplicated bond direction (${ds} deg)`)
+
+                    dirs.push(d)
                 }
-                if (preModifiers.add180Deg) d = MathEx.stdAng(d + 180)
-                if (! isPrefix) d = MathEx.stdAng(d + 180)
-                if (dirs.includes(d)) d = MathEx.stdAng(d + 180)
 
-                if (this.checkDupBondDir(parsedBonds, dirs, d))
-                    throw Error(`Duplicated bond direction (${ds} deg)`)
-
-                dirs.push(d)
+                if (auto0Deg || auto30Deg || auto180Deg) break
             }
 
-            if (auto0Deg || auto30Deg || auto180Deg) break
+            if (! dirs.length) throw this.expect('at least one bond direction')
         }
-        this.maybeSpace()
 
-        if (! dirs.length) throw this.expect('at least one bond direction')
+        this.maybeSpace()
 
         let a
         if (this.current === '{') {
@@ -786,7 +798,7 @@ export class ChemParser extends Parser<Formula> {
         if (this.current === '{') {
             a = this.doParseAttr({
                 ...def.attr,
-                ...GroupAttrs
+                ...FuncCallAttrs
             })
             a = a.validate({})
         }
