@@ -1,7 +1,7 @@
 import { Debug } from '../utils/debug.js'
 import { MathEx } from '../utils/math.js'
 import { getWidth } from '../utils/measure.js'
-import type { AllCharsInString, MaybeArray, TupleToUnion, ValueOf } from '../utils/types'
+import type { AllCharsInString } from '../utils/types'
 import { inCharset } from '../utils/types.js'
 
 export const SpaceCharset = ' \t\t\n'
@@ -17,6 +17,8 @@ export const GroupCharset
     + '?' // Note: willcard
     + '.' // Note: collpased carbonA
 export const AttrEndCharset = ',}'
+export const AttrExtraCharset = '~&<>:'
+export const AttrCharset = AttrEndCharset + AttrExtraCharset + IdentifierCharset
 export const BondCountCharset = '=#'
 export const BondDirCharset = '-|/\\+@'
 export const BondModifiersCharset = '*!~:'
@@ -147,53 +149,77 @@ export const BondModifiersTable: Record<AllCharsInString<typeof BondModifiersCha
     ':': 'useDefDeg'
 }
 
-export const GroupAttrs = {
-    'color': { type: 'string' },
-    'C': 'color',
-    'bold': { type: 'boolean' },
-    'B': 'bold',
-    'ref': { type: 'string' },
-    '&': 'ref'
-} as const
-const coordinateBondValidator: AttrValidator = (attr, { bondType }) => {
-    const a = attr as AttrOfBond
+const labelValidator: AttrValidator = (a, { abbrLabel }) => {
+    if (abbrLabel) {
+        if (a.ref)
+            throw Error(`Abbr label '${abbrLabel} exists, so extra 'ref' attr is not allowed.`)
+        else
+            a.ref = abbrLabel
+    }
+}
+
+const coordinateBondValidator: AttrValidator = (a: AttrOfBond, { bondType }) => {
     const cc = (a.from ?? a.to) as number
     const { c } = bondType!
     if (cc > c)
         throw Error(`Coordinated bonds (${cc}) more than total bonds (${c}).`)
 }
+
+export const GroupAttrs = {
+    'color': { type: 'string' },
+    'C': 'color',
+    'bold': { type: 'boolean' },
+    'B': 'bold',
+    'ref': {
+        type: 'string',
+        validate: labelValidator
+    },
+    '&': 'ref'
+} as const
 export const BondAttrs = {
     'color': { type: 'string' },
     'C': 'color',
     'highEnergy': { type: 'boolean' },
     'HE': 'highEnergy',
     '~': 'highEnergy',
-    'from': [
-        { type: 'boolean' },
-        {
-            type: 'integer', min: 1, max: 3,
-            validate: coordinateBondValidator
-        }
-    ],
+    'from': {
+        type: 'union',
+        options: [
+            { type: 'boolean' },
+            {
+                type: 'integer', min: 1, max: 3,
+                validate: coordinateBondValidator
+            }
+        ]
+    },
     '<': 'from',
-    'to': [
-        { type: 'boolean' },
-        {
-            type: 'integer', min: 1, max: 3,
-            validate: coordinateBondValidator
-        }
-    ],
+    'to': {
+        type: 'union',
+        options: [
+            { type: 'boolean' },
+            {
+                type: 'integer', min: 1, max: 3,
+                validate: coordinateBondValidator
+            }
+        ]
+    },
     '>': 'to',
     'length': { type: 'float', min: 0 },
     'L': 'length',
-    'side': [
-        { type: 'const', value: 'L' },
-        { type: 'const', value: 'R' }
-    ],
+    'side': {
+        type: 'union',
+        options: [
+            { type: 'const', value: 'L' },
+            { type: 'const', value: 'R' }
+        ]
+    },
     'S': 'side'
 } as const
 export const FuncCallAttrs = {
-    'ref': { type: 'string' },
+    'ref': {
+        type: 'string',
+        validate: labelValidator
+    },
     '&': 'ref',
     'deg': { type: 'float' }
 } as const
@@ -202,44 +228,33 @@ export type AttrOfBond = Attr<typeof BondAttrs>
 export type AttrOfFuncCall = Attr<typeof FuncCallAttrs>
 
 export type AttrOne<R extends AttrSchemaRule> =
-    R extends { type: 'string' } ? string :
-        R extends { type: 'boolean' } ? boolean :
-            R extends { type: 'integer' } ? number :
-                R extends { type: 'float' } ? number :
+    R extends { type: 'union' } ? AttrMany<R['options']> :
+        R extends { type: 'string' } ? string :
+            R extends { type: 'boolean' } ? boolean :
+                R extends { type: 'integer' | 'float' } ? number :
                     R extends { type: 'const', value: infer V } ? V :
                         never
-export type AttrMany<S extends readonly AttrSchemaRule[]> =
-    TupleToUnion<{
-        [L in keyof S]: S[L] extends AttrSchemaRule
-            ? AttrOne<S[L]>
-            : never
-    }>
-export type AttrMaybeOne<S extends Readonly<ValueOf<AttrSchema>>> =
-    S extends readonly AttrSchemaRule[] ? TupleToUnion<{
-        [L in keyof S]: S[L] extends AttrSchemaRule
-            ? AttrOne<S[L]>
-            : never
-    }> :
-        S extends AttrSchemaRule ? AttrOne<S> :
-            never
+export type AttrMany<S extends readonly AttrSchemaRule[]> = {
+    [L in keyof S]: AttrOne<S[L]>
+}[number]
 export type Attr<S extends AttrSchema> = {
     -readonly [K in keyof S]?:
     S[K] extends keyof S
-        ? S[S[K]] extends MaybeArray<AttrSchemaRule>
-            ? AttrMaybeOne<S[S[K]]>
+        ? S[S[K]] extends AttrSchemaRule
+            ? AttrOne<S[S[K]]>
             : never
-        : S[K] extends Readonly<MaybeArray<AttrSchemaRule>>
-            ? AttrMaybeOne<S[K]>
+        : S[K] extends AttrSchemaRule
+            ? AttrOne<S[K]>
             : never
 }
 
 export type AttrValidatorParams = {
     group?: Group
     bondType?: BondType
+    abbrLabel?: string
 }
-export type AttrValidator =
-    ((raw: Attr<any>, params: AttrValidatorParams) => void)
-export type AttrSchemaRule = Readonly<({
+export type AttrValidator = ((raw: any, params: AttrValidatorParams) => void)
+export type AttrSchemaRule = ({
     type: 'boolean'
 } | {
     type: 'integer'
@@ -254,10 +269,13 @@ export type AttrSchemaRule = Readonly<({
 } | {
     type: 'const'
     value: string
+} | {
+    type: 'union'
+    options: readonly AttrSchemaRule[]
 }) & {
     validate?: AttrValidator
-}>
-export type AttrSchema = Record<string, string | Readonly<MaybeArray<AttrSchemaRule>>>
+}
+export type AttrSchema = Record<string, string | AttrSchemaRule>
 
 const isAttribute = (k: string, attrSchema: AttrSchema): k is keyof typeof attrSchema => {
     return k in attrSchema
@@ -377,63 +395,83 @@ export class ChemParser extends Parser<Formula> {
     }
 
     private doParseAttr<T extends AttrSchema>(attrSchema: T): AttrToValidate<T> {
-        this.index ++ // Note: skip '{'
-        this.maybeSpace()
-
-        let vf: AttrValidator
-
         const a: Record<string, string | boolean> = {}
-        let k = ''
-        let readingValue = false
-        attr: while (this.current) {
-            if (inCharset(this.current, SpaceCharset)) {
-                this.maybeSpace()
-                if (readingValue && ! inCharset(this.current, AttrEndCharset))
-                    throw Error('Attr value mustn\'t contain white spaces.')
-            }
-            switch (this.current) {
-                case '}':
-                    if (! readingValue) if (k) a[k] = true
-                    break attr
-                case ':':
-                    this.index ++
-                    this.maybeSpace()
-                    readingValue = true
-                    a[k] = ''
-                    break
-                case ',':
-                    this.index ++
-                    this.maybeSpace()
-                    if (! readingValue) if (k) a[k] = true
-                    else throw this.expect('Attribute key')
-                    k = ''
-                    readingValue = false
-                    break
-                default:
-                    if (readingValue) a[k] += this.current
-                    else k += this.current
-                    this.index ++
-            }
-        }
-        if (! this.current) throw this.expect('delimiter \'}\' of attributes')
-        this.index ++
-        this.maybeSpace()
+        if (this.current === '{') {
+            this.index ++
+            this.maybeSpace()
 
-        Debug.D('attr: %o', a)
+            let k = ''
+            let readingValue = false
+            attr: while (this.current) {
+                if (inCharset(this.current, SpaceCharset)) {
+                    this.maybeSpace()
+                    if (readingValue && ! inCharset(this.current, AttrEndCharset))
+                        throw Error('Attr value mustn\'t contain white spaces.')
+                }
+                if (! inCharset(this.current, AttrCharset))
+                    throw Error(`unexpected char '${this.current}' in attr`)
+                switch (this.current) {
+                    case '}':
+                        if (! readingValue) if (k) a[k] = true
+                        break attr
+                    case ':':
+                        this.index ++
+                        this.maybeSpace()
+                        readingValue = true
+                        a[k] = ''
+                        break
+                    case ',':
+                        this.index ++
+                        this.maybeSpace()
+                        if (! readingValue) if (k) a[k] = true
+                        else throw this.expect('Attribute key')
+                        k = ''
+                        readingValue = false
+                        break
+                    default:
+                        if (readingValue) a[k] += this.current
+                        else k += this.current
+                        this.index ++
+                }
+            }
+            if (! this.current) throw this.expect('delimiter \'}\' of attributes')
+            this.index ++
+            this.maybeSpace()
+
+            Debug.D('attr: %o', a)
+        }
+
+        const validators: AttrValidator[] = Object.values(attrSchema)
+            .map((s: string | AttrSchemaRule) => typeof s === 'string' ? undefined : s.validate)
+            .filter((f): f is AttrValidator => !! f)
+
+        for (const k in attrSchema) {
+            const s: string | AttrSchemaRule = attrSchema[k]
+            if (typeof s === 'object' && s.validate) validators.push(s.validate)
+        }
 
         for (const k in a) {
             if (isAttribute(k, attrSchema)) {
-                let ss = attrSchema[k]
-                if (typeof ss === 'string') {
-                    a[ss] = a[k]
-                    ss = attrSchema[ss] as Readonly<AttrSchemaRule>
+                let s = attrSchema[k]
+                if (typeof s === 'string') {
+                    a[s] = a[k]
+                    s = attrSchema[s] as AttrSchemaRule
                 }
-                if (! Array.isArray(ss)) ss = [ ss as AttrSchemaRule ]
+
                 const tyNow = typeof a[k]
                 let tyMatched = false
                 let tyError: string | undefined
-                typeCheck: for (const s of ss as AttrSchemaRule[]) {
+
+                const checkOne = (s: AttrSchemaRule, inner = false) => {
                     const ty = s.type
+
+                    if (ty === 'union') {
+                        for (const os of s.options) {
+                            checkOne(os, true)
+                            if (tyMatched) return
+                        }
+                    }
+
                     if (tyNow === ty
                         || (tyNow === 'string' && a[k] && ! isNaN(+ a[k]) && (ty === 'integer' || ty === 'float'))
                         || (ty === 'const' && a[k] === s.value)
@@ -443,34 +481,40 @@ export class ChemParser extends Parser<Formula> {
                             case 'float':
                                 if (ty === 'integer' && ! Number.isInteger(+ a[k])) {
                                     tyError = 'not integer'
-                                    break typeCheck
+                                    return
                                 }
                                 if (s.min !== undefined && + a[k] < s.min) {
                                     tyError = `less than min value ${s.min}`
-                                    break typeCheck
+                                    return
                                 }
                                 if (s.max !== undefined && + a[k] > s.max) {
                                     tyError = `greater than max value ${s.max}`
-                                    break typeCheck
+                                    return
                                 }
                         }
-                        if (s.validate) vf = s.validate
+                        if (inner && s.validate) { // Note: use inner validators only when the type is matched
+                            validators.push(s.validate)
+                        }
                         tyMatched = true
-                        break
                     }
                 }
+
+                checkOne(s)
+
                 if (! tyMatched)
-                    throw this.expect(`attribute '${k}' to be ${
-                        ss.map(s => s.type).join(' or ')
-                    } type`, a[k] + (tyError ? ': ' + tyError : ''))
+                    throw this.expect(`attribute '${k}' to satisfy ${JSON.stringify(s)}`, a[k] + (tyError ? ': ' + tyError : ''))
             }
             else throw Error(`Unknown attribute '${k}'.`)
         }
 
         return {
+            // @ts-expect-error
+            // Hack: 杂鱼 TypeScript 这点深度就受不了啦？
             raw: a as Attr<T>,
             validate(params: AttrValidatorParams) {
-                vf?.(this.raw, params)
+                validators.forEach(f => {
+                    f(this.raw, params)
+                })
                 return this.raw
             }
         }
@@ -565,12 +609,14 @@ export class ChemParser extends Parser<Formula> {
 
         const R: [number, number] = [ Rb, Re ]
         const i = this.groupId ++
-        let a
-        if (this.current === '{') {
-            a = this.doParseAttr(GroupAttrs)
-            a = a.validate({ group: { t, a: a.raw, R, i } })
-        }
-        else a = {}
+
+        let label
+        if (this.current === '\'') label = this.doParseLabelAbbr()
+
+        const a = this.doParseAttr(GroupAttrs).validate({
+            group: { t, a: {}, R, i },
+            abbrLabel: label
+        })
 
         const group = { t, a, R, i }
         this.groups.push(group)
@@ -699,12 +745,9 @@ export class ChemParser extends Parser<Formula> {
 
         this.maybeSpace()
 
-        let a
-        if (this.current === '{') {
-            a = this.doParseAttr(BondAttrs)
-            a = a.validate({ bondType: { c, d: dirs, a: a.raw } })
-        }
-        else a = {}
+        const a = this.doParseAttr(BondAttrs).validate({
+            bondType: { c, d: dirs, a: {} }
+        })
 
         if (preModifiers.zeroWidth) a.length = 0
 
@@ -803,21 +846,34 @@ export class ChemParser extends Parser<Formula> {
         if (def.type !== 'chem')
             throw this.expect('func struct of chem type', `${def.type} type`)
 
-        let a
-        if (this.current === '{') {
-            a = this.doParseAttr({
-                ...def.attr,
-                ...FuncCallAttrs
-            })
-            a = a.validate({})
-        }
-        else a = {}
+        let label
+        if (this.current === '\'') label = this.doParseLabelAbbr()
+
+        const a = this.doParseAttr({
+            ...def.attr,
+            ...FuncCallAttrs
+        }).validate({
+            abbrLabel: label
+        })
 
         return { d: def, a }
     }
 
     private labels: Record<string, Struct> = {}
     private readonly groups: Group[] = []
+
+    private doParseLabelAbbr(): string {
+        this.index ++ // Note: skip '\''
+
+        let label = ''
+        while (inCharset(this.current, IdentifierCharset)) {
+            label += this.current
+            this.index ++
+        }
+        if (! label) throw Error('Abbr label cannot be empty.')
+
+        return label
+    }
 
     private doParseRef(): Ref {
         this.index ++ // Note: skip '&'
