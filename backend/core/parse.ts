@@ -445,11 +445,6 @@ export class ChemParser extends Parser<Formula> {
             .map((s: string | AttrSchemaRule) => typeof s === 'string' ? undefined : s.validate)
             .filter((f): f is AttrValidator => !! f)
 
-        for (const k in attrSchema) {
-            const s: string | AttrSchemaRule = attrSchema[k]
-            if (typeof s === 'object' && s.validate) validators.push(s.validate)
-        }
-
         for (const k in a) {
             if (isAttribute(k, attrSchema)) {
                 let s = attrSchema[k]
@@ -947,6 +942,7 @@ export class ChemParser extends Parser<Formula> {
 
     protected doParse(): Formula {
         const structs: Struct[] = []
+        this.maybeSpace()
         while (true) {
             structs.push(this.doParseStruct({ dirFrom: null }))
             this.maybeSpace()
