@@ -18,7 +18,8 @@ export default [
         String.raw`Al{&:1}[Cl\/]/Cl\{>}&2;` + '\n' + String.raw`Al{&:2}[/\Cl]!/Cl!\{>}&1`
     ],
     [{ zh: '对苯二酚', en: 'hydroquinone' }, 'HO-$Ben-OH' ],
-    [{ zh: '1,2-二溴苯', en: '1,2-dibromobenzene' }, '$Ben{&:a}; &a1-Br; &a2/Br' ]
+    [{ zh: '1,2-二溴苯', en: '1,2-dibromobenzene' }, '$Ben{&:a}; &a1-Br; &a2/Br' ],
+    [{ zh: '水', en: 'water' }, 'O@|-37.75H' ]
 ] as [
     { [k in Locales]: string }, string
 ][]
