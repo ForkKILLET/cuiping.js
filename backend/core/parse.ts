@@ -866,6 +866,7 @@ export class ChemParser extends Parser<Formula> {
             this.index ++
         }
         if (! label) throw Error('Abbr label cannot be empty.')
+        this.maybeSpace()
 
         return label
     }
