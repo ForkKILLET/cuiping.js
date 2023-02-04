@@ -89,7 +89,7 @@ Overlapping more than one *Bond Direction* is allowed to express connecting to t
 
 Overlapping `@` (experimental)
 - `@!` means an extra direction with the opposite direction
-- `@-` means an extra direction with the x-flipped direction
+- `@_` means an extra direction with the x-flipped direction
 - `@|` means an extra direction with the y-flipped direction
 
 ## Referencing

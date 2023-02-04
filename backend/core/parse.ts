@@ -347,7 +347,9 @@ export abstract class Parser<T> {
 
         while (true) {
             if (this.current === '.') {
-                if (dotPower) return number
+                const next = this.after[0]
+                if (! next || next < '0' || next > '9') break
+                if (dotPower) break
                 else {
                     dotPower = 0.1
                 }
@@ -651,7 +653,7 @@ export class ChemParser extends Parser<Formula> {
                         filpY = true
                         this.index ++
                     }
-                    else if (op === '-') {
+                    else if (op === '_') {
                         filpX = true
                         this.index ++
                     }
