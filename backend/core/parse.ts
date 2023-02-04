@@ -123,7 +123,7 @@ export type BondType = { c: BondCount, d: BondDir[], a: AttrOfBond }
 export type BondModifiers = {
     zeroWidth?: boolean
     add180Deg?: boolean
-    use30Deg?: boolean
+    useInferred?: boolean
     useDefDeg?: boolean
 }
 
@@ -143,7 +143,7 @@ export const BondDirTable = {
 export const BondModifiersTable: Record<AllCharsInString<typeof BondModifiersCharset>, keyof BondModifiers> = {
     '*': 'zeroWidth',
     '!': 'add180Deg',
-    '~': 'use30Deg',
+    '~': 'useInferred',
     ':': 'useDefDeg'
 }
 
@@ -621,11 +621,12 @@ export class ChemParser extends Parser<Formula> {
             const noImplictDir = ! inCharset(this.current, BondDirCharset)
             const auto0Deg = noImplictDir && (c > 1 || preModifiers.zeroWidth)
             const auto180Deg = noImplictDir && preModifiers.add180Deg
-            const auto30Deg = noImplictDir && preModifiers.use30Deg
+            const auto30Deg = noImplictDir && preModifiers.useInferred
 
             while (inCharset(this.current, BondDirCharset) || auto0Deg || auto30Deg || auto180Deg) {
                 const ds = []
                 if (auto30Deg) {
+                    // Note: infer broken line
                     if (preModifiers.add180Deg) {
                         if (df === 150 || df === null) ds.push(30)
                         else if (df === 210) ds.push(330)
@@ -658,7 +659,13 @@ export class ChemParser extends Parser<Formula> {
                         this.index ++
                     }
 
-                    const d = MathEx.stdAng(- this.doParseNumber())
+                    let d = MathEx.stdAng(- this.doParseNumber())
+                    if (preModifiers.useInferred) { // Note: infer relative dir
+                        if (df === null)
+                            throw Error('Not implemented: Cannot infer relative direction for postfix bonds')
+                        else d = MathEx.stdAng(df - 180 - d)
+                    }
+
                     ds.push(d)
                     if (deflect) ds.push(MathEx.stdAng(d + 180))
                     else if (filpY) ds.push(MathEx.stdAng(180 - d))
@@ -670,7 +677,7 @@ export class ChemParser extends Parser<Formula> {
                 }
 
                 for (let d of ds) {
-                    if (preModifiers.use30Deg) {
+                    if (preModifiers.useInferred) {
                         if (d === 60) d = 30
                         else if (d === 300) d = 330
                     }
