@@ -120,6 +120,8 @@ export function getViewport(l: Layout, h: number) {
     let xMin = + Infinity; let yMin = + Infinity
     let xMax = - Infinity; let yMax = - Infinity
     for (const g of l.groups) {
+        if (g.i < 0) continue
+
         const y = g.y + g.yo
         if (y < yMin) yMin = y
         if (y > yMax) yMax = y
