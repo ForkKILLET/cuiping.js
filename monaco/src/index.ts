@@ -21,9 +21,14 @@ export const getMonacoForCuiping = (monaco: typeof Monaco, {
                 [ /[+\-|/\\*!~=#]/, 'bond.type' ],
                 [ /@[@\-|]?(?=-?\d*\.\d+|\d+)/, 'bond.type.at', '@number' ],
                 [ /\s+/, 'space' ],
+                [ /\(\*/, 'comment.dlmt', '@comment' ],
                 [ /\$/, 'func', '@func' ],
-                [ /(?=([\^_`](.|\([^)]*?\))|[^[\]{@+\-|/\\*!~=#;,]+)+)/, 'group.dlmt', '@group' ],
+                [ /(?=([\^_`](.|\([^)]*?\))|[^[\]{@+\-|/\\*!~=#;,(]+|\((?!\*))+)/, 'group.dlmt', '@group' ],
                 [ /;/, 'semicolon' ]
+            ],
+            'comment': [
+                [ /([^*]|\*(?!\)))+?/, 'comment.content' ],
+                [ /\*\)/, 'comment.dlmt', '@pop' ]
             ],
             'bonds': [
                 { include: 'root' },
@@ -56,8 +61,8 @@ export const getMonacoForCuiping = (monaco: typeof Monaco, {
             'group': [
                 [ /[\^_`]{/, 'group.typeset', '@group-typeset-multiple' ],
                 [ /[\^_`]/, 'group.typeset', '@group-typeset' ],
-                [ /[^[\]{@+\-|/\\*!~=#;,^_`]+/, 'group.content' ],
-                [ /(?=[[\]{@+\-|/\\*!~=#;,])/, 'group.dlmt', '@pop' ]
+                [ /([^[\]{@+\-|/\\*!~=#;,^_`(]|\((?!\*))+/, 'group.content' ],
+                [ /(?=[[\]{@+\-|/\\*!~=#;,]|\(\*)/, 'group.dlmt', '@pop' ]
             ],
             'group-typeset-multiple': [
                 [ /[^}]+/, 'group.content.typeset' ],
@@ -202,7 +207,8 @@ export const getMonacoForCuiping = (monaco: typeof Monaco, {
             { token: 'bonds.comma', foreground: 'B7ACf0' },
             { token: 'semicolon', foreground: 'B7ACf0' },
             { token: 'func', foreground: '8CD7F3', fontStyle: 'bold' },
-            { token: 'func.name', foreground: '40A9F1' }
+            { token: 'func.name', foreground: '40A9F1' },
+            { token: 'comment', foreground: '489964', fontStyle: 'italic' }
         ],
         colors: {
             'editor.foreground': '#876FFF'

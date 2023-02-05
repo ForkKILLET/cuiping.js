@@ -394,6 +394,25 @@ export class ChemParser extends Parser<Formula> {
         super(str)
     }
 
+    protected override maybeSpace() {
+        super.maybeSpace()
+
+        while (this.current === '(' && this.after[0] === '*') { // Note: maybe comment
+            let commentClosed = false
+            this.index += 2
+            while (this.current) {
+                if (this.current as string === '*' && this.after[0] as string === ')') {
+                    commentClosed = true
+                    this.index += 2
+                    break
+                }
+                this.index ++
+            }
+            if (! commentClosed) throw Error('Unclosed comment')
+            super.maybeSpace()
+        }
+    }
+
     private doParseAttr<T extends AttrSchema>(attrSchema: T): AttrToValidate<T> {
         const a: Record<string, string | boolean | number> = {}
         if (this.current === '{') {
