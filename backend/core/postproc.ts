@@ -1,6 +1,6 @@
 import type {
     Formula, Struct,
-    AttrOfBond, BondCount, BondDir, Group, ChemStruct, ChemAndRefStruct, FuncStructHead
+    AttrOfBond, BondCount, BondDir, Group, ChemStruct, ChemAndRefStruct, FuncStructHead, ChemStructHead, RefStructHead
 } from './parse.js'
 import { MathEx } from '../utils/math.js'
 import { Debug } from '../utils/debug.js'
@@ -38,7 +38,7 @@ export function combine(formula: Formula): ChemStruct {
 
             if (def.type === 'chem') {
                 const groupLabel = getGroupLabel(struct)
-                const cloneChemProto = (proto: ChemAndRefStruct, parent: ChemAndRefStruct | null = null): ChemAndRefStruct => {
+                const cloneChemProto = (proto: ChemAndRefStruct, rotateDeg: number, parent: ChemAndRefStruct | null = null): ChemAndRefStruct => {
                     const cloned = {
                         S: proto.S,
                         node: deepClone(proto.node),
@@ -46,20 +46,22 @@ export function combine(formula: Formula): ChemStruct {
                         parents: (parent && proto.parents.length)
                             ? [{
                                 ...deepClone(proto.parents[0]),
+                                d: proto.parents[0].d.map(d => MathEx.stdAng(d + rotateDeg)),
                                 n: parent
                             }]
                             : []
-                    } as ChemAndRefStruct
+                    } as Struct<ChemStructHead, ChemStructHead | RefStructHead, ChemStruct | RefStructHead>
                     cloned.children = cloned.children.map(bond => ({
                         ...bond,
-                        n: cloneChemProto(bond.n, cloned)
+                        d: bond.d.map(d => MathEx.stdAng(d + rotateDeg)),
+                        n: cloneChemProto(bond.n, rotateDeg, cloned)
                     }))
 
                     if (proto.S === 'chem') {
                         const label = proto.node.a.ref
                         if (label && label in def.chem.exposedLabels) {
                             const labelDef = def.chem.exposedLabels[label]
-                            ; (cloned as ChemStruct).labelDef = labelDef
+                            cloned.labelDef = labelDef
                             formula.labels[groupLabel + label] = cloned
                         }
                     }
@@ -77,7 +79,7 @@ export function combine(formula: Formula): ChemStruct {
                     child.n.parents[0].n = nextTree
                 })
 
-                newTrees.push(cloneChemProto(def.chem.proto))
+                newTrees.push(cloneChemProto(def.chem.proto, struct.node.a.deg ?? 0))
             }
 
             else throw Error(`Not implemented: func struct of ${def.type}`)

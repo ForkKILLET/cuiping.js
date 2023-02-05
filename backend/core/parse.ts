@@ -17,7 +17,7 @@ export const GroupCharset
     + '?' // Note: willcard
     + '.' // Note: collpased carbonA
 export const AttrEndCharset = ',}'
-export const AttrExtraCharset = '~&<>:'
+export const AttrExtraCharset = '~&<>:+-.'
 export const AttrCharset = AttrEndCharset + AttrExtraCharset + IdentifierCharset
 export const BondCountCharset = '=#'
 export const BondDirCharset = '-|/\\+@'
@@ -395,7 +395,7 @@ export class ChemParser extends Parser<Formula> {
     }
 
     private doParseAttr<T extends AttrSchema>(attrSchema: T): AttrToValidate<T> {
-        const a: Record<string, string | boolean> = {}
+        const a: Record<string, string | boolean | number> = {}
         if (this.current === '{') {
             this.index ++
             this.maybeSpace()
@@ -486,6 +486,7 @@ export class ChemParser extends Parser<Formula> {
                                     tyError = `greater than max value ${s.max}`
                                     return
                                 }
+                                a[k] = + a[k]
                         }
                         if (inner && s.validate) { // Note: use inner validators only when the type is matched
                             validators.push(s.validate)

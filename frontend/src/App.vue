@@ -145,7 +145,15 @@ watch(monacoContainer, () => {
 const query = new URLSearchParams(location.search)
 
 Debug.on = query.has('debug')
-if (Debug.on) Object.assign(window, { printStruct })
+if (Debug.on) Object.assign(window, {
+    printStruct,
+    showMoleculeSequence: async (sequence: string[], interval: number = 500) => {
+        for (const m of sequence) {
+            molecule.value = m
+            await new Promise(res => setTimeout(res, interval))
+        }
+    }
+})
 </script>
 
 <template>
