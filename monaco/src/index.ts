@@ -23,7 +23,7 @@ export const getMonacoForCuiping = (monaco: typeof Monaco, {
                 [ /\s+/, 'space' ],
                 [ /\(\*/, 'comment.dlmt', '@comment' ],
                 [ /\$/, 'func', '@func' ],
-                [ /(?=([\^_`](.|\([^)]*?\))|[^[\]{@+\-|/\\*!~=#;,(]+|\((?!\*))+)/, 'group.dlmt', '@group' ],
+                [ /(?=([\^_`](.|\([^)]*?\))|[^[\]{@+\-|/\\*!~=#;,(']+|\((?!\*))+)/, 'group.dlmt', '@group' ],
                 [ /;/, 'semicolon' ]
             ],
             'comment': [
@@ -41,19 +41,20 @@ export const getMonacoForCuiping = (monaco: typeof Monaco, {
             'attrs': [
                 [ /(?=[^,:}]+:[^,}]*)/, 'attr.dlmt', '@attr-with-value' ],
                 [ /(?=[^,:}]+)/, 'attr.dlmt', '@attr-without-value' ],
-                [ /}/, 'attrs', '@pop' ]
+                [ /\s*}/, 'attrs', '@pop' ]
             ],
             'attr-with-value': [
-                [ /[^,:}]+?(?=:)/, 'attr.key' ],
-                [ /:/, 'attr.colon' ],
+                [ /\s*(&|ref)(?=\s*:)/, 'attr.key.label' ],
+                [ /\s*[^,:}]+?(?=\s*:)/, 'attr.key' ],
+                [ /\s*:\s*/, 'attr.colon' ],
                 [ /[^,}]+?(?=[,}])/, 'attr.value' ],
-                [ /,/, 'attrs.comma', '@pop' ],
-                [ /(?=})/, 'attr.dlmt', '@pop' ]
+                [ /\s*,\s*/, 'attrs.comma', '@pop' ],
+                [ /(?=\s*})/, 'attr.dlmt', '@pop' ]
             ],
             'attr-without-value': [
-                [ /[^,:}]+?(?=[,}])/, 'attr.key' ],
-                [ /,/, 'attrs.comma', '@pop' ],
-                [ /(?=})/, 'attr.dlmt', '@pop' ]
+                [ /\s*[^,:}]+?(?=\s*[,}])/, 'attr.key' ],
+                [ /\s*,\s*/, 'attrs.comma', '@pop' ],
+                [ /(?=\s*})/, 'attr.dlmt', '@pop' ]
             ],
             'func': [
                 [ /\w*/, 'func.name', '@pop' ]
@@ -61,7 +62,8 @@ export const getMonacoForCuiping = (monaco: typeof Monaco, {
             'group': [
                 [ /[\^_`]{/, 'group.typeset', '@group-typeset-multiple' ],
                 [ /[\^_`]/, 'group.typeset', '@group-typeset' ],
-                [ /([^[\]{@+\-|/\\*!~=#;,^_`(]|\((?!\*))+/, 'group.content' ],
+                [ /([^[\]{@+\-|/\\*!~=#;,^_`(']|\((?!\*))+/, 'group.content' ],
+                [ /'\w+/, 'label-abbr' ],
                 [ /(?=[[\]{@+\-|/\\*!~=#;,]|\(\*)/, 'group.dlmt', '@pop' ]
             ],
             'group-typeset-multiple': [
@@ -94,7 +96,8 @@ export const getMonacoForCuiping = (monaco: typeof Monaco, {
             range
         }))
 
-    const getRefNames = (all: string) => [ ...all.matchAll(/(&|ref)\s*:\s*(\w+)/g) ]
+    const getLabels = (all: string) =>
+        [ ...all.matchAll(/(?<=((&|ref)\s*:\s*)|')(\w+)/g) ].map(res => res[3])
 
     const noSuggestions = {
         suggestions: []
@@ -123,12 +126,12 @@ export const getMonacoForCuiping = (monaco: typeof Monaco, {
             }
 
             if (before.match(/(?<![\^_`]({[^}]*)?|{[^}]*)&\w*$/) != null) { // Note: complete ref
-                const labels = getRefNames(all)
+                const labels = getLabels(all)
                 range.startColumn --
                 return {
-                    suggestions: labels.map(res => ({
-                        label: '&' + res[2],
-                        insertText: '&' + res[2],
+                    suggestions: labels.map(label => ({
+                        label: '&' + label,
+                        insertText: '&' + label,
                         kind: CompletionItemKind.Reference,
                         range
                     }))
@@ -175,9 +178,9 @@ export const getMonacoForCuiping = (monaco: typeof Monaco, {
             const refRes = before.match(/(?<![\^_`]({[^}]*)?)(&\w*)$/)
             const word = model.getWordAtPosition(position)?.word
             if ((refRes != null) && word?.[0] === '&') { // Note: go to definition of ref
-                const labels = getRefNames(all)
+                const labels = getLabels(all)
                 const labelNow = word.slice(1)
-                const refDef = labels.find(res => res[2] === labelNow)
+                const refDef = labels.find(label => label === labelNow)
                 if (refDef == null) return null
                 const [ refDefPosition ] = model.findMatches(refDef[0], true, false, true, null, false)
                 return {
@@ -197,12 +200,14 @@ export const getMonacoForCuiping = (monaco: typeof Monaco, {
             { token: 'number', foreground: '7CAF3D' },
             { token: 'bonds', foreground: 'FA9246' },
             { token: 'ref', foreground: 'DC68E6', fontStyle: 'italic' },
+            { token: 'label-abbr', foreground: 'DC68E6' },
             { token: 'func', foreground: '12ACE8', fontStyle: 'bold' },
             { token: 'bond.type', foreground: '545A7B', fontStyle: 'bold' },
             { token: 'group.typeset', foreground: 'AAAAAA', fontStyle: 'italic' },
             { token: 'group.content.typeset', foreground: 'B9E260', fontStyle: 'italic' },
             { token: 'attrs', foreground: '62C169' },
-            { token: 'attr.key', foreground: '64D99D', fontStyle: 'bold' },
+            { token: 'attr.key', foreground: '64D99D' },
+            { token: 'attr.key.label', foreground: 'DC68E6' },
             { token: 'attr.colon', foreground: '89E2B5' },
             { token: 'bonds.comma', foreground: 'B7ACf0' },
             { token: 'semicolon', foreground: 'B7ACf0' },
