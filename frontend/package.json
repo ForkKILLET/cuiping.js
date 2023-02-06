@@ -12,9 +12,9 @@
     "type-check": "vue-tsc --noEmit -p tsconfig.cypress-ct.json --composite false"
   },
   "dependencies": {
-    "cuiping": "workspace:^1.10.0",
-    "cuiping-component": "workspace:^1.5.0",
-    "cuiping-monaco": "workspace:^1.0.0",
+    "cuiping": "workspace:^2.0.0",
+    "cuiping-component": "workspace:^1.7.0",
+    "cuiping-monaco": "workspace:^1.1.0",
     "entities": "^4.4.0",
     "monaco-editor": "^0.34.1",
     "vite-plugin-monaco-editor": "^1.1.0",

@@ -1,6 +1,6 @@
 {
   "name": "cuiping-component",
-  "version": "1.6.0",
+  "version": "1.7.0",
   "description": "Vue component for cuiping.js",
   "type": "module",
   "files": [
@@ -27,7 +27,7 @@
   },
   "dependencies": {
     "canvg": "^4.0.1",
-    "cuiping": "workspace:^1.7.0",
+    "cuiping": "workspace:^2.0.0",
     "vue": "^3.2.45"
   },
   "devDependencies": {
