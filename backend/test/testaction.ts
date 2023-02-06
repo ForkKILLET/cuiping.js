@@ -3,6 +3,7 @@
 import chalk from 'chalk'
 import { render } from '../core/index.js'
 import testcases from './testcases.js'
+import './tokenizer.js'
 
 const verbose = !! process.env.VERBOSE
 const digit = testcases.length.toString().length

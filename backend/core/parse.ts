@@ -287,14 +287,13 @@ export type AttrToValidate<T extends AttrSchema> = {
 }
 
 export abstract class Parser<T> {
-    constructor(protected str: string) {}
+    constructor(protected str: string) { }
 
     protected expect(expect: string, got?: string) {
-        return Error(`Expecting ${expect}, but got ${
-            got ?? (this.current
-                ? `'${this.current}'`
-                : 'end of input'
-            )
+        return Error(`Expecting ${expect}, but got ${got ?? (this.current
+            ? `'${this.current}'`
+            : 'end of input'
+        )
         }.`)
     }
 
@@ -981,4 +980,76 @@ export class ChemParser extends Parser<Formula> {
         Debug.D('formula: %o', formula)
         return formula
     }
+}
+
+function getReader(source: string) {
+    let cursor = 0
+    return {
+        read() {
+            const result = source[cursor]
+            cursor ++
+            return result
+        },
+        getLast() {
+            return source[cursor - 1]
+        },
+        getCurrent() {
+            return source[cursor]
+        },
+        getNext() {
+            return source[cursor + 1]
+        },
+        get ended() {
+            return cursor >= source.length
+        }
+    }
+}
+
+export function tokenizer(input: string) {
+    const tokens = []
+    let temp = ''
+    const reader = getReader(input.trim())
+    let depth = 0
+    const readUntil = (token: string) => {
+        while (reader.getLast() === '`' || reader.getCurrent() !== token[0] || (token[1] && reader.getNext() !== token[1])) {
+            if (reader.ended) throw new Error('Unexpected end of input')
+            temp += reader.read()
+        }
+        temp += reader.read()
+        if (token.length === 2) temp += reader.read()
+    }
+    while (! reader.ended) {
+        const ch = reader.read()
+        if (ch === '(' && reader.getCurrent() === '*') {
+            temp += '('
+            readUntil('*)')
+        }
+        else if (ch === '`') {
+            temp += '`'
+            if (reader.getCurrent() === '{') readUntil('}')
+            else temp += reader.read()
+        }
+        else if (ch === '[') {
+            depth ++
+            temp += '['
+        }
+        else if (ch === ']') {
+            depth --
+            temp += ']'
+        }
+        else if (ch === '+' && depth === 0) {
+            tokens.push(temp.trim())
+            temp = ''
+            tokens.push('+')
+        }
+        else if (ch === '-' && reader.getCurrent() === '>' && depth === 0) {
+            tokens.push(temp.trim())
+            temp = ''
+            reader.read()
+            tokens.push('->')
+        }
+        else temp += ch
+    }
+    if (temp.length) tokens.push(temp.trim())
+    return tokens
 }
