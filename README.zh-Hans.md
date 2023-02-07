@@ -178,6 +178,10 @@
     ```shell
     $ DEBUG=1 pnpm build:run
     ```
+    运行测试用例：（如何添加测试用例见下）
+    ```shell
+    $ pnpm build:test
+    ```
 2. 在前端中测试所有功能（推荐）  
     开发模式：
     ```shell
@@ -190,7 +194,10 @@
     $ pnpm build
     $ pnpm preview
     ```
-3. 可以用添加 `?debug` URL 参数来启用调试
+3. 可以用添加 `?debug` URL 参数来启用调试。调试启用时，会：
+   - 输出调试日志
+   - 向 `window` 暴露调试函数（`printStruct` 和 `showMoleculeSequence`）
+   - 在组件的工具栏中加入 TestCase 按钮，点击可复制测试用例
 
 ### 提交更改
 

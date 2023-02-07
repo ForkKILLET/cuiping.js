@@ -178,6 +178,10 @@ The development plan of this project can be found on [Notion](https://humdrum-zi
     ```shell
     $ DEBUG=1 pnpm build:run
     ```
+    Run testcases: (How to add testcases is shown below)
+    ```shell
+    $ pnpm build:test
+    ```
 2. Test all functions in the frontend. (recommended)  
     Development mode:
     ```shell
@@ -190,7 +194,10 @@ The development plan of this project can be found on [Notion](https://humdrum-zi
     $ pnpm build
     $ pnpm preview
     ```
-3. You may add `?debug` URL param to enable debug.
+3. You may add `?debug` URL param to enable debug. When debug is on, the program will:
+   - Print debug-level logs
+   - Expose debug functions to `window` (`printStruct` and `showMoleculeSequence`)
+   - Add a TestCase button to the toolbar of the component. You may click it to copy the testcase.
 
 ### Commit your changes
 
