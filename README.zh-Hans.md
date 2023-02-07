@@ -29,6 +29,7 @@
   - [测试本项目](#测试本项目)
   - [提交更改](#提交更改)
   - [编码快乐！](#编码快乐)
+- [感谢](#感谢)
 - [许可证](#许可证)
 
 <p align="center"><img width="200" alt="logo" src="./docs/logo.svg" /></p>
@@ -196,6 +197,10 @@
 提交信息请使用 ng style，可参考 `git log`
 
 ### 编码快乐！
+
+## 感谢
+
+[![JetBrains Logo (Main) logo](https://resources.jetbrains.com/storage/products/company/brand/logos/jb_beam.png)](https://jb.gg/OpenSourceSupport)
 
 ## 许可证
 

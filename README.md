@@ -29,6 +29,7 @@ English | [简体中文](./README.zh-Hans.md)
   - [Test the project](#test-the-project)
   - [Commit your changes](#commit-your-changes)
   - [Happy coding!](#happy-coding)
+- [Thanks](#thanks)
 - [License](#license)
 
 <p align="center"><img width="200" alt="logo" src="./docs/logo.svg" /></p>
@@ -197,6 +198,10 @@ Please use ng style for commit message.
 You may refer to `git log`.
 
 ### Happy coding!
+
+## Thanks
+
+[![JetBrains Logo (Main) logo](https://resources.jetbrains.com/storage/products/company/brand/logos/jb_beam.png)](https://jb.gg/OpenSourceSupport)
 
 ## License
 
