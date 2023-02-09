@@ -4,7 +4,7 @@ import { getWidth } from '../utils/measure.js'
 import type { AllCharsInString } from '../utils/types'
 import { inCharset } from '../utils/types.js'
 
-export const SpaceCharset = ' \t\t\n'
+export const SpaceCharset = ' \t\r\n'
 export const IdentifierCharset
     = 'abcdefghijklmnopqrstuvwxyz'
     + 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'
@@ -1005,7 +1005,7 @@ function getReader(source: string) {
     }
 }
 
-export function tokenizer(input: string) {
+export function tokenizer(input: string): string[] {
     const tokens = []
     let temp = ''
     const reader = getReader(input.trim())
@@ -1024,8 +1024,8 @@ export function tokenizer(input: string) {
             temp += '('
             readUntil('*)')
         }
-        else if (ch === '`') {
-            temp += '`'
+        else if (ch === '`' || ch === '^' || ch === '_') {
+            temp += ch
             if (reader.getCurrent() === '{') readUntil('}')
             else temp += reader.read()
         }
